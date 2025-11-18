@@ -1,0 +1,143 @@
+@import './base.css';
+
+/* 定义方正准雅宋GBK字体 */
+@font-face {
+  font-family: 'FZYaSongGBK';
+  src: url('./fonts/FZYaSongGBK.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap; /* 优化字体加载性能 */
+}
+
+/* 重置默认样式 */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* 移除原有的居中样式，改为正常的布局 */
+body {
+  margin: 0;
+  padding: 0;
+  overflow: auto; /* 改为 auto 允许滚动 */
+  background-image: url('./wavy-lines.svg');
+  background-size: cover;
+  user-select: none;
+  display: block;
+  font-family: 'FZYaSongGBK', 'Microsoft YaHei', sans-serif;
+}
+
+code {
+  font-weight: 600;
+  padding: 3px 5px;
+  border-radius: 2px;
+  background-color: var(--color-background-mute);
+  font-family:
+    ui-monospace,
+    SFMono-Regular,
+    SF Mono,
+    Menlo,
+    Consolas,
+    Liberation Mono,
+    monospace;
+  font-size: 85%;
+}
+
+#app {
+  /* 移除居中样式，改为正常的块级元素 */
+  display: block;
+  margin: 0;
+  padding: 0;
+  height: 100vh;
+  font-family: 'FZYaSongGBK', 'Microsoft YaHei', sans-serif;
+}
+
+/* 删除或注释掉全局的 logo 样式，让 App.vue 中的样式生效 */
+/*
+.logo {
+  position: absolute;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  -webkit-user-drag: none;
+  height: 32px;
+  width: 32px;
+  will-change: filter;
+  transition: filter 300ms;
+  z-index: 1000;
+}
+
+.logo:hover {
+  filter: drop-shadow(0 0 1.2em #6988e6aa);
+}
+*/
+
+/* 移除或注释掉以下可能影响布局的样式 */
+/*
+.creator {
+  font-size: 14px;
+  line-height: 16px;
+  color: var(--ev-c-text-2);
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+
+.text {
+  font-size: 28px;
+  color: var(--ev-c-text-1);
+  font-weight: 700;
+  line-height: 32px;
+  text-align: center;
+  margin: 0 10px;
+  padding: 16px 0;
+}
+
+.tip {
+  font-size: 16px;
+  line-height: 24px;
+  color: var(--ev-c-text-2);
+  font-weight: 600;
+}
+
+.actions {
+  display: flex;
+  padding-top: 32px;
+  margin: -6px;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+}
+
+.action {
+  flex-shrink: 0;
+  padding: 6px;
+}
+*/
+
+.versions {
+  position: absolute;
+  bottom: 30px;
+  margin: 0 auto;
+  padding: 15px 0;
+  font-family: 'Menlo', 'Lucida Console', monospace;
+  display: inline-flex;
+  overflow: hidden;
+  align-items: center;
+  border-radius: 22px;
+  background-color: #202127;
+  backdrop-filter: blur(24px);
+}
+
+.versions li {
+  display: block;
+  float: left;
+  border-right: 1px solid var(--ev-c-gray-1);
+  padding: 0 20px;
+  font-size: 14px;
+  line-height: 14px;
+  opacity: 0.8;
+}
+
+.versions li:last-child {
+  border: none;
+}

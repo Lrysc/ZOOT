@@ -1,0 +1,24 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <title>PRTS Beta v0.1.0</title>
+  <!-- 生产环境安全 CSP -->
+  <meta
+    http-equiv="Content-Security-Policy"
+    content="default-src 'self';
+               script-src 'self' 'unsafe-inline';
+               style-src 'self' 'unsafe-inline';
+               img-src 'self' data: https:;
+               connect-src 'self' https://as.hypergryph.com https://zonai.skland.com https://www.skland.com;
+               font-src 'self' data:;
+               object-src 'none';
+               base-uri 'self';"
+  />
+</head>
+
+<body>
+<div id="app"></div>
+<script type="module" src="/src/main.ts"></script>
+</body>
+</html>
