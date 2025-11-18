@@ -19,7 +19,8 @@ function createWindow(): void {
       sandbox: false,
       nodeIntegration: false,
       contextIsolation: true,
-      webSecurity: false
+      webSecurity: true,
+      allowRunningInsecureContent: false
     }
   })
 
@@ -80,6 +81,40 @@ function createWindow(): void {
     );
     return { action: 'deny' }
   })
+
+  // 设置 CSP 策略
+  mainWindow.webContents.session.webRequest.onHeadersReceived(
+    { urls: ['*://*/*'] },
+    (details, callback) => {
+      const responseHeaders = { ...details.responseHeaders }
+      
+      if (is.dev) {
+        // 开发环境：允许热重载，但尽量减少不安全配置
+        responseHeaders['Content-Security-Policy'] = [
+          "default-src 'self' 'unsafe-inline' data: http://localhost:5173 https:; " +
+          "script-src 'self' 'unsafe-inline' http://localhost:5173; " +
+          "style-src 'self' 'unsafe-inline' http://localhost:5173; " +
+          "img-src 'self' data: https: http://localhost:5173; " +
+          "font-src 'self' data: http://localhost:5173; " +
+          "connect-src 'self' https: http://localhost:5173 ws://localhost:5173;"
+        ]
+      } else {
+        // 生产环境：严格的安全策略
+        responseHeaders['Content-Security-Policy'] = [
+          "default-src 'self'; " +
+          "script-src 'self' 'unsafe-inline'; " +
+          "style-src 'self' 'unsafe-inline'; " +
+          "img-src 'self' data: https:; " +
+          "font-src 'self' data:; " +
+          "connect-src 'self' https://as.hypergryph.com https://zonai.skland.com https://www.skland.com; " +
+          "object-src 'none'; " +
+          "frame-src 'none';"
+        ]
+      }
+      
+      callback({ responseHeaders })
+    }
+  )
 
   // 加载页面
   if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
