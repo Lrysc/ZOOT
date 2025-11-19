@@ -5,15 +5,11 @@ import Material from '@components/Material.vue'
 import LoginWindow from '@components/LoginWindow.vue'
 import Setting from '@components/Setting.vue'
 import { useAuthStore } from '@stores/auth'
-import { ref, computed } from 'vue'
+import { ref } from 'vue'
 
 const authStore = useAuthStore()
 const showLogin = ref(false)
 const activeComponent = ref('GameData') // 默认显示首页
-
-const openLogin = () => {
-  showLogin.value = true
-}
 
 const closeLogin = () => {
   showLogin.value = false
