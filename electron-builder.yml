@@ -1,7 +1,10 @@
 appId: com.prts.app
 productName: prts
+
 directories:
+  output: dist
   buildResources: build
+
 files:
   - '!**/.vscode/*'
   - '!src/*'
@@ -9,15 +12,30 @@ files:
   - '!{.eslintcache,eslint.config.mjs,.prettierignore,.prettierrc.yaml,dev-app-update.yml,CHANGELOG.md,README.md}'
   - '!{.env,.env.*,.npmrc,pnpm-lock.yaml}'
   - '!{tsconfig.json,tsconfig.node.json,tsconfig.web.json}'
+
 asarUnpack:
   - resources/**
+
 win:
   executableName: prts
+  target:
+    - target: nsis
+      arch:
+        - x64
+  icon: build/icon.ico
+
 nsis:
-  artifactName: ${name}-${version}-setup.${ext}
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+  allowElevation: false
+  createDesktopShortcut: always
+  createStartMenuShortcut: true
   shortcutName: ${productName}
   uninstallDisplayName: ${productName}
-  createDesktopShortcut: always
+  artifactName: ${name}-${version}-setup.${ext}
+  # 可选：添加自定义安装界面提示
+  # include: build/installer.nsh
+
 mac:
   entitlementsInherit: build/entitlements.mac.plist
   extendInfo:
@@ -26,13 +44,18 @@ mac:
     - NSDocumentsFolderUsageDescription: Application requests access to the user's Documents folder.
     - NSDownloadsFolderUsageDescription: Application requests access to the user's Downloads folder.
   notarize: false
+
 dmg:
   artifactName: ${name}-${version}.${ext}
+
 appImage:
   artifactName: ${name}-${version}.${ext}
+
 npmRebuild: false
+
 publish:
   provider: generic
   url: https://example.com/auto-updates
+
 electronDownload:
   mirror: https://npmmirror.com/mirrors/electron/
