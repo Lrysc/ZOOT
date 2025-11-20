@@ -7,10 +7,22 @@
       <div class="user-info-section" v-if="authStore.isLogin">
         <h3>当前账号</h3>
         <div class="user-card">
-          <div class="user-avatar">👤</div>
+          <div class="user-avatar">
+            <img
+              v-if="userAvatar && !avatarLoadError"
+              :src="userAvatar"
+              alt="用户头像"
+              class="avatar-img"
+              @error="handleAvatarError"
+              @load="handleAvatarLoad"
+            />
+            <div v-else class="avatar-placeholder">
+              {{ getAvatarPlaceholder() }}
+            </div>
+          </div>
           <div class="user-details">
             <p class="user-name">{{ authStore.userName }}</p>
-            <p class="user-level">等级: {{ authStore.userLevel }}</p>
+            <p class="user-level">等级: {{ userLevel }}</p>
             <p class="user-uid">游戏ID: {{ gameUid }}</p>
             <p class="login-status">状态: <span class="status-online">已登录</span></p>
           </div>
@@ -25,10 +37,6 @@
         </div>
       </div>
 
-<!--      <div class="setting-section">-->
-<!--        <h3>账号管理</h3>-->
-<!--      </div>-->
-
       <div class="setting-tips">
         <p>更多设置功能开发中...</p>
       </div>
@@ -37,10 +45,12 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref, onMounted, watch } from 'vue'
 import { useAuthStore } from '@stores/auth'
 
 const authStore = useAuthStore()
+const userAvatar = ref<string>('')
+const avatarLoadError = ref<boolean>(false)
 
 /**
  * 获取游戏内UID
@@ -55,6 +65,119 @@ const gameUid = computed(() => {
   return defaultRole?.uid || '未获取'
 })
 
+/**
+ * 获取用户等级
+ */
+const userLevel = computed(() => {
+  if (!authStore.isLogin || !authStore.playerData?.status) {
+    return '未获取'
+  }
+  return authStore.playerData.status.level || '未获取'
+})
+
+/**
+ * 处理CDN图片URL
+ */
+const processImageUrl = (url: string): string => {
+  if (!url) return ''
+
+  // 如果已经是完整URL，直接返回
+  if (url.startsWith('http')) {
+    return url
+  }
+
+  // 如果是相对路径，添加CDN域名
+  // 这里需要根据你的实际CDN域名进行调整
+  if (url.startsWith('/')) {
+    return `https://web.hycdn.cn${url}`
+  }
+
+  return url
+}
+
+/**
+ * 获取头像占位符
+ */
+const getAvatarPlaceholder = (): string => {
+  if (!authStore.userName) return '👤'
+
+  // 从用户名中提取第一个字符作为占位符
+  const firstChar = authStore.userName.charAt(0)
+  return firstChar || '👤'
+}
+
+/**
+ * 处理头像加载错误
+ */
+const handleAvatarError = () => {
+  console.warn('头像加载失败，使用默认占位符')
+  avatarLoadError.value = true
+}
+
+/**
+ * 处理头像加载成功
+ */
+const handleAvatarLoad = () => {
+  avatarLoadError.value = false
+}
+
+/**
+ * 获取用户头像
+ */
+const fetchUserAvatar = () => {
+  if (!authStore.isLogin || !authStore.playerData?.status?.avatar) {
+    userAvatar.value = ''
+    avatarLoadError.value = true
+    return
+  }
+
+  try {
+    // 直接从 playerData 中获取头像信息
+    const avatarData = authStore.playerData.status.avatar
+    if (avatarData && avatarData.url) {
+      // 处理CDN URL
+      userAvatar.value = processImageUrl(avatarData.url)
+      avatarLoadError.value = false
+      console.log('头像URL:', userAvatar.value) // 调试用
+    } else {
+      userAvatar.value = ''
+      avatarLoadError.value = true
+    }
+  } catch (error) {
+    console.error('获取用户头像失败:', error)
+    userAvatar.value = ''
+    avatarLoadError.value = true
+  }
+}
+
+// 监听 playerData 变化，更新头像
+watch(
+  () => authStore.playerData,
+  () => {
+    fetchUserAvatar()
+  },
+  { deep: true, immediate: true }
+)
+
+// 监听登录状态变化
+watch(
+  () => authStore.isLogin,
+  (newVal) => {
+    if (newVal) {
+      fetchUserAvatar()
+    } else {
+      userAvatar.value = ''
+      avatarLoadError.value = true
+    }
+  }
+)
+
+// 组件挂载时获取头像
+onMounted(() => {
+  if (authStore.isLogin) {
+    fetchUserAvatar()
+  }
+})
 </script>
 
 <style scoped>
@@ -104,11 +227,29 @@ const gameUid = computed(() => {
   width: 50px;
   height: 50px;
   border-radius: 50%;
-  background: #646cff;
+  background: linear-gradient(135deg, #646cff, #af47ff);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 20px;
+  font-size: 18px;
+  overflow: hidden;
+  flex-shrink: 0;
+  color: white;
+  font-weight: 600;
+}
+
+.avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.avatar-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .user-details {
@@ -162,21 +303,6 @@ const gameUid = computed(() => {
   margin: 0;
 }
 
-/* 设置区域 */
-.setting-section {
-  background: #2d2d2d;
-  border-radius: 8px;
-  border: 1px solid #404040;
-  padding: 20px;
-  margin-bottom: 20px;
-}
-
-.setting-section h3 {
-  margin-bottom: 20px;
-  color: #9feaf9;
-  font-size: 16px;
-}
-
 .setting-tips {
   text-align: center;
   padding: 20px;
@@ -186,22 +312,6 @@ const gameUid = computed(() => {
   border-radius: 8px;
   border: 1px solid #404040;
 }
-
-
-
-.dialog-header h3 {
-  margin: 0;
-  color: #fff;
-  font-size: 16px;
-  font-weight: 600;
-}
-
-.dialog-content p {
-  margin: 0 0 12px 0;
-  color: #ccc;
-  font-size: 14px;
-}
-
 
 @keyframes modalSlideIn {
   from {
