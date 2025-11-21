@@ -3,6 +3,7 @@ import { ref, computed } from 'vue';
 import { AuthAPI } from '@services/api';
 import { useAuthStore } from '@stores/auth';
 import { showSuccess, showError } from '@services/toastService';
+import { logger } from '@services/logger';
 
 /**
  * 游戏数据状态管理Store
@@ -194,7 +195,7 @@ export const useGameDataStore = defineStore('gameData', () => {
    * 当头像加载失败时设置错误状态
    */
   const handleAvatarError = (): void => {
-    console.warn('头像加载失败，使用默认占位符');
+    logger.warn('头像加载失败，使用默认占位符');
     avatarLoadError.value = true;
   };
 
@@ -203,6 +204,7 @@ export const useGameDataStore = defineStore('gameData', () => {
    * 当头像加载成功时清除错误状态
    */
   const handleAvatarLoad = (): void => {
+    logger.debug('头像加载成功');
     avatarLoadError.value = false;
   };
 
@@ -214,6 +216,7 @@ export const useGameDataStore = defineStore('gameData', () => {
     if (!authStore.isLogin || !playerData.value?.status?.avatar) {
       userAvatar.value = '';
       avatarLoadError.value = true;
+      logger.debug('无法获取用户头像：未登录或没有头像数据');
       return;
     }
 
@@ -224,13 +227,17 @@ export const useGameDataStore = defineStore('gameData', () => {
         // 处理CDN URL
         userAvatar.value = processImageUrl(avatarData.url);
         avatarLoadError.value = false;
-        console.log('头像URL:', userAvatar.value);
+        logger.debug('用户头像URL处理成功', {
+          originalUrl: avatarData.url,
+          processedUrl: userAvatar.value
+        });
       } else {
         userAvatar.value = '';
         avatarLoadError.value = true;
+        logger.warn('头像数据不完整', { avatarData });
       }
     } catch (error) {
-      console.error('获取用户头像失败:', error);
+      logger.error('获取用户头像失败', error);
       userAvatar.value = '';
       avatarLoadError.value = true;
     }
@@ -243,53 +250,58 @@ export const useGameDataStore = defineStore('gameData', () => {
    * @returns 复制是否成功的Promise
    */
   const copyToClipboard = async (text: string): Promise<boolean> => {
-    try {
-      // 优先使用现代剪贴板API
-      if (navigator.clipboard && window.isSecureContext) {
-        await navigator.clipboard.writeText(text);
-        return true;
-      } else {
-        // 降级方案：使用textarea元素和现代选择API
-        const textArea = document.createElement('textarea');
-        textArea.value = text;
+    return logger.performanceAsync('复制到剪贴板', async () => {
+      try {
+        // 优先使用现代剪贴板API
+        if (navigator.clipboard && window.isSecureContext) {
+          await navigator.clipboard.writeText(text);
+          logger.debug('使用现代剪贴板API复制成功');
+          return true;
+        } else {
+          // 降级方案：使用textarea元素和现代选择API
+          const textArea = document.createElement('textarea');
+          textArea.value = text;
 
-        // 设置样式确保元素不可见
-        textArea.style.position = 'fixed';
-        textArea.style.top = '0';
-        textArea.style.left = '0';
-        textArea.style.width = '2em';
-        textArea.style.height = '2em';
-        textArea.style.padding = '0';
-        textArea.style.border = 'none';
-        textArea.style.outline = 'none';
-        textArea.style.boxShadow = 'none';
-        textArea.style.background = 'transparent';
-        textArea.style.opacity = '0';
+          // 设置样式确保元素不可见
+          textArea.style.position = 'fixed';
+          textArea.style.top = '0';
+          textArea.style.left = '0';
+          textArea.style.width = '2em';
+          textArea.style.height = '2em';
+          textArea.style.padding = '0';
+          textArea.style.border = 'none';
+          textArea.style.outline = 'none';
+          textArea.style.boxShadow = 'none';
+          textArea.style.background = 'transparent';
+          textArea.style.opacity = '0';
 
-        document.body.appendChild(textArea);
+          document.body.appendChild(textArea);
 
-        try {
-          // 使用现代选择API选择文本
-          textArea.select();
-          textArea.setSelectionRange(0, textArea.value.length);
+          try {
+            // 使用现代选择API选择文本
+            textArea.select();
+            textArea.setSelectionRange(0, textArea.value.length);
 
-          // 尝试使用现代剪贴板API
-          if (navigator.clipboard) {
-            await navigator.clipboard.writeText(text);
-            return true;
-          } else {
-            // 如果现代API不可用，提示用户手动复制
-            return false;
+            // 尝试使用现代剪贴板API
+            if (navigator.clipboard) {
+              await navigator.clipboard.writeText(text);
+              logger.debug('使用降级方案的剪贴板API复制成功');
+              return true;
+            } else {
+              // 如果现代API不可用，提示用户手动复制
+              logger.warn('剪贴板API不可用，需要用户手动复制');
+              return false;
+            }
+          } finally {
+            // 确保清理DOM元素
+            document.body.removeChild(textArea);
           }
-        } finally {
-          // 确保清理DOM元素
-          document.body.removeChild(textArea);
         }
+      } catch (error) {
+        logger.error('复制到剪贴板失败', error);
+        return false;
       }
-    } catch (error) {
-      console.error('复制到剪贴板失败:', error);
-      return false;
-    }
+    });
   };
 
   /**
@@ -300,16 +312,22 @@ export const useGameDataStore = defineStore('gameData', () => {
   const copyUid = async (uid: string): Promise<void> => {
     // 检查UID是否有效
     if (!uid || uid === '未获取') {
+      const error = new Error('UID不可用，无法复制');
+      logger.warn('复制UID失败', error);
       showError('UID不可用，无法复制');
       return;
     }
 
     try {
+      logger.info('用户尝试复制UID', { uid });
+
       const success = await copyToClipboard(uid);
       if (success) {
+        logger.info('UID复制成功', { uid });
         showSuccess(`已复制 UID ${uid}`);
       } else {
         // 如果复制失败，提供手动复制选项
+        logger.warn('UID复制失败，提供手动复制选项');
         showError('复制失败，请手动选择并复制UID');
 
         // 自动选择文本以便用户手动复制
@@ -320,10 +338,11 @@ export const useGameDataStore = defineStore('gameData', () => {
           range.selectNodeContents(elements[0] as Node);
           selection.removeAllRanges();
           selection.addRange(range);
+          logger.debug('已自动选择UID文本供用户手动复制');
         }
       }
     } catch (error) {
-      console.error('复制UID失败:', error);
+      logger.error('复制UID过程中发生异常', error);
       showError('复制失败，请手动复制UID');
     }
   };
@@ -781,15 +800,15 @@ export const useGameDataStore = defineStore('gameData', () => {
    * 调试数据函数
    */
   const debugData = (): void => {
-    console.log('=== 完整玩家数据 ===', playerData.value);
-    console.log('=== 任务数据 ===', playerData.value?.routine);
-    console.log('=== 基建数据 ===', playerData.value?.building);
-    console.log('=== 宿舍数据 ===', playerData.value?.building?.dormitories);
-    console.log('=== 会客室数据 ===', playerData.value?.building?.meeting);
-    console.log('=== 无人机数据 ===', playerData.value?.building?.labor);
-    console.log('=== 贸易站数据 ===', playerData.value?.building?.tradings);
-    console.log('=== 制造站数据 ===', playerData.value?.building?.manufactures);
-    console.log('=== 公招数据 ===', playerData.value?.recruit);
+    logger.debug('=== 完整玩家数据 ===', playerData.value);
+    logger.debug('=== 任务数据 ===', playerData.value?.routine);
+    logger.debug('=== 基建数据 ===', playerData.value?.building);
+    logger.debug('=== 宿舍数据 ===', playerData.value?.building?.dormitories);
+    logger.debug('=== 会客室数据 ===', playerData.value?.building?.meeting);
+    logger.debug('=== 无人机数据 ===', playerData.value?.building?.labor);
+    logger.debug('=== 贸易站数据 ===', playerData.value?.building?.tradings);
+    logger.debug('=== 制造站数据 ===', playerData.value?.building?.manufactures);
+    logger.debug('=== 公招数据 ===', playerData.value?.recruit);
   };
 
   // ========== 核心方法 ==========
@@ -799,105 +818,132 @@ export const useGameDataStore = defineStore('gameData', () => {
    * @param refresh - 是否强制刷新（忽略缓存）
    */
   const fetchGameData = async (refresh = false): Promise<void> => {
-    if (!refresh && dataCache.value && dataCache.value.data) {
-      const currentMs = Date.now();
-      const cacheAge = currentMs - dataCache.value.timestamp;
-      if (cacheAge < CACHE_DURATION) {
-        console.log('使用缓存数据，缓存年龄:', Math.floor(cacheAge / 1000), '秒');
-        playerData.value = dataCache.value.data;
-        lastUpdateTime.value = currentMs;
-        // 数据加载成功后更新头像
-        fetchUserAvatar();
-        isLoading.value = false;
-        debugData();
-        return;
-      }
-    }
-
-    if (refresh) {
-      isRefreshing.value = true;
-    } else {
-      isLoading.value = true;
-    }
-    errorMsg.value = '';
-
-    try {
-      console.log('开始加载游戏数据...');
-
-      if (!authStore.isLogin) {
-        errorMsg.value = '请先登录账号';
-        return;
-      }
-
-      console.log('用户已登录，检查绑定角色...');
-
-      if (!authStore.bindingRoles || authStore.bindingRoles.length === 0) {
-        console.log('没有绑定角色，正在获取...');
-        try {
-          await authStore.fetchBindingRoles();
-        } catch (error: any) {
-          errorMsg.value = '获取角色列表失败: ' + (error.message || '未知错误');
+    return logger.performanceAsync('加载游戏数据', async () => {
+      // 缓存检查逻辑
+      if (!refresh && dataCache.value && dataCache.value.data) {
+        const currentMs = Date.now();
+        const cacheAge = currentMs - dataCache.value.timestamp;
+        if (cacheAge < CACHE_DURATION) {
+          const cacheAgeSeconds = Math.floor(cacheAge / 1000);
+          logger.debug('使用缓存数据', {
+            cacheAge: cacheAgeSeconds,
+            cacheDuration: CACHE_DURATION / 1000
+          });
+          playerData.value = dataCache.value.data;
+          lastUpdateTime.value = currentMs;
+          // 数据加载成功后更新头像
+          fetchUserAvatar();
+          isLoading.value = false;
+          debugData();
           return;
         }
       }
 
-      console.log(`当前绑定角色数量: ${authStore.bindingRoles.length}`);
-
-      const targetRole = authStore.bindingRoles.find((role: any) => role.isDefault) || authStore.bindingRoles[0];
-
-      if (!targetRole) {
-        errorMsg.value = '未找到绑定的游戏角色';
-        return;
-      }
-
-      console.log(`使用角色: ${targetRole.nickName} (${targetRole.uid})`);
-
-      const data = await AuthAPI.getPlayerData(
-        authStore.sklandCred,
-        authStore.sklandSignToken,
-        targetRole.uid
-      );
-
-      console.log('玩家数据获取成功');
-      playerData.value = data;
-      lastUpdateTime.value = Date.now();
-
-      dataCache.value = {
-        data: data,
-        timestamp: Date.now()
-      };
-
-      // 数据加载成功后更新头像
-      fetchUserAvatar();
-
-      debugData();
-
-      console.log('游戏数据加载完成并已缓存');
-    } catch (error: any) {
-      console.error('GameData load error:', error);
-
-      const message = error.message || '游戏数据加载失败，请稍后重试';
-
-      if (message.includes('认证失败') || message.includes('401')) {
-        errorMsg.value = '登录已过期，请重新登录';
-      } else if (message.includes('网络') || message.includes('Network')) {
-        errorMsg.value = '网络连接失败，请检查网络设置';
-      } else if (message.includes('角色')) {
-        errorMsg.value = '未找到游戏角色，请确认账号绑定';
+      if (refresh) {
+        isRefreshing.value = true;
+        logger.info('手动刷新游戏数据');
       } else {
-        errorMsg.value = message;
+        isLoading.value = true;
+        logger.info('开始加载游戏数据');
       }
-    } finally {
-      isLoading.value = false;
-      isRefreshing.value = false;
-      console.log('加载状态已重置');
-    }
+      errorMsg.value = '';
+
+      try {
+        logger.debug('检查用户登录状态');
+        if (!authStore.isLogin) {
+          errorMsg.value = '请先登录账号';
+          logger.warn('未登录状态下尝试获取游戏数据');
+          return;
+        }
+
+        logger.debug('检查绑定角色列表');
+        if (!authStore.bindingRoles || authStore.bindingRoles.length === 0) {
+          logger.info('没有绑定角色，正在获取角色列表...');
+          try {
+            await authStore.fetchBindingRoles();
+            logger.info('角色列表获取成功');
+          } catch (error: any) {
+            const errorMessage = '获取角色列表失败: ' + (error.message || '未知错误');
+            errorMsg.value = errorMessage;
+            logger.error('获取角色列表失败', error);
+            return;
+          }
+        }
+
+        const roleCount = authStore.bindingRoles.length;
+        logger.debug(`当前绑定角色数量: ${roleCount}`);
+
+        const targetRole = authStore.bindingRoles.find((role: any) => role.isDefault) || authStore.bindingRoles[0];
+
+        if (!targetRole) {
+          errorMsg.value = '未找到绑定的游戏角色';
+          logger.error('未找到绑定的游戏角色');
+          return;
+        }
+
+        logger.info(`使用角色获取数据`, {
+          name: targetRole.nickName,
+          uid: targetRole.uid
+        });
+
+        const data = await AuthAPI.getPlayerData(
+          authStore.sklandCred,
+          authStore.sklandSignToken,
+          targetRole.uid
+        );
+
+        logger.info('玩家数据获取成功', {
+          hasData: !!data,
+          dataKeys: data ? Object.keys(data) : []
+        });
+
+        playerData.value = data;
+        lastUpdateTime.value = Date.now();
+
+        dataCache.value = {
+          data: data,
+          timestamp: Date.now()
+        };
+
+        // 数据加载成功后更新头像
+        fetchUserAvatar();
+        debugData();
+
+        logger.debug('游戏数据加载完成并已缓存');
+
+      } catch (error: any) {
+        const errorMessage = error.message || '游戏数据加载失败，请稍后重试';
+        logger.error('游戏数据加载失败', error);
+
+        if (errorMessage.includes('认证失败') || errorMessage.includes('401')) {
+          errorMsg.value = '登录已过期，请重新登录';
+          logger.warn('认证失败，需要重新登录');
+        } else if (errorMessage.includes('网络') || errorMessage.includes('Network')) {
+          errorMsg.value = '网络连接失败，请检查网络设置';
+          logger.warn('网络连接失败');
+        } else if (errorMessage.includes('角色')) {
+          errorMsg.value = '未找到游戏角色，请确认账号绑定';
+          logger.warn('未找到游戏角色');
+        } else {
+          errorMsg.value = errorMessage;
+          logger.error('未知错误类型', { message: errorMessage });
+        }
+      } finally {
+        isLoading.value = false;
+        isRefreshing.value = false;
+        logger.debug('游戏数据加载状态已重置', {
+          isLoading: isLoading.value,
+          isRefreshing: isRefreshing.value
+        });
+      }
+    });
   };
 
   /**
    * 刷新数据
    */
   const refreshData = async (): Promise<void> => {
+    logger.info('用户手动刷新游戏数据');
     await fetchGameData(true);
   };
 
@@ -906,12 +952,15 @@ export const useGameDataStore = defineStore('gameData', () => {
    */
   const startTimeUpdate = (): void => {
     if (timeUpdateInterval) {
+      logger.debug('时间更新定时器已在运行');
       return;
     }
 
     timeUpdateInterval = setInterval(() => {
       currentTime.value = Math.floor(Date.now() / 1000);
     }, 1000);
+
+    logger.info('时间更新定时器已启动');
   };
 
   /**
@@ -921,7 +970,9 @@ export const useGameDataStore = defineStore('gameData', () => {
     if (timeUpdateInterval) {
       clearInterval(timeUpdateInterval);
       timeUpdateInterval = null;
-      console.log('时间更新定时器已清理');
+      logger.info('时间更新定时器已停止');
+    } else {
+      logger.debug('时间更新定时器未运行，无需停止');
     }
   };
 
@@ -930,6 +981,7 @@ export const useGameDataStore = defineStore('gameData', () => {
    */
   const clearCache = (): void => {
     dataCache.value = null;
+    logger.info('游戏数据缓存已清除');
   };
 
   // ========== 导出接口 ==========

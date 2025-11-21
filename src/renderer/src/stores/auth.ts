@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia';
 import { AuthAPI } from '@services/api';
+import { logger } from '@services/logger';
 
 /**
  * 认证状态接口定义
@@ -115,14 +116,17 @@ export const useAuthStore = defineStore('auth', {
      */
     async handleLogin(hgToken: string): Promise<void> {
       try {
+        logger.info('开始登录流程', { hasToken: !!hgToken });
         console.time('登录流程总耗时');
 
         // 1. 获取授权码
         const grantCode = await AuthAPI.getGrantCode(hgToken);
+        logger.debug('获取授权码成功');
 
         // 2. 获取森空岛凭证
         const credResult = await AuthAPI.getSklandCred(grantCode);
         const { cred, token: signToken, userId } = credResult;
+        logger.debug('获取森空岛凭证成功', { userId });
 
         // 3. 更新本地状态
         this.hgToken = hgToken;
@@ -145,13 +149,18 @@ export const useAuthStore = defineStore('auth', {
         await this.saveToLocalStorage();
 
         console.timeEnd('登录流程总耗时');
-        console.log('登录成功');
+        logger.info('登录流程完成', {
+          userId,
+          roleCount: this.bindingRoles.length,
+          hasPlayerData: !!this.playerData
+        });
 
       } catch (error) {
+        const normalizedError = this.normalizeError(error);
+        logger.error('登录流程失败', normalizedError);
         console.error('登录失败:', error);
         this.logout();
-        // 使用 return 而不是 throw 来避免本地捕获异常警告
-        return Promise.reject(this.normalizeError(error));
+        return Promise.reject(normalizedError);
       }
     },
 
@@ -160,10 +169,14 @@ export const useAuthStore = defineStore('auth', {
      */
     async loginWithPassword(phone: string, password: string): Promise<void> {
       try {
+        logger.info('开始密码登录', { phone: phone.replace(/(\d{3})\d{4}(\d{4})/, '$1****$2') });
         const hgToken = await AuthAPI.loginByPassword(phone, password);
         await this.handleLogin(hgToken);
+        logger.info('密码登录成功');
       } catch (error) {
-        return Promise.reject(this.normalizeError(error));
+        const normalizedError = this.normalizeError(error);
+        logger.error('密码登录失败', normalizedError);
+        return Promise.reject(normalizedError);
       }
     },
 
@@ -172,10 +185,14 @@ export const useAuthStore = defineStore('auth', {
      */
     async loginWithSmsCode(phone: string, code: string): Promise<void> {
       try {
+        logger.info('开始验证码登录', { phone: phone.replace(/(\d{3})\d{4}(\d{4})/, '$1****$2') });
         const hgToken = await AuthAPI.loginBySmsCode(phone, code);
         await this.handleLogin(hgToken);
+        logger.info('验证码登录成功');
       } catch (error) {
-        return Promise.reject(this.normalizeError(error));
+        const normalizedError = this.normalizeError(error);
+        logger.error('验证码登录失败', normalizedError);
+        return Promise.reject(normalizedError);
       }
     },
 
@@ -202,13 +219,12 @@ export const useAuthStore = defineStore('auth', {
               timestamp: Date.now(),
               lastUpdated: this.lastUpdated,
               restoreAttempts: this.restoreAttempts,
-              // 添加版本标识，便于后续兼容性处理
               version: '1.0.0'
             };
 
             // 双重验证数据完整性
             if (!this.validateAuthStateForStorage(authState)) {
-              console.warn('保存前的数据验证失败');
+              logger.warn('保存前的数据验证失败');
               reject(new Error('数据验证失败'));
               return;
             }
@@ -218,18 +234,19 @@ export const useAuthStore = defineStore('auth', {
             // 验证保存是否成功
             const savedData = localStorage.getItem('authState');
             if (!savedData) {
+              logger.error('保存到本地存储失败');
               reject(new Error('保存到本地存储失败'));
               return;
             }
 
             this.cacheValid = true;
-            console.log('登录状态保存成功');
+            logger.debug('登录状态保存成功', { userId: this.userId });
             resolve();
           } catch (error) {
-            console.error('保存到本地存储失败:', error);
+            logger.error('保存到本地存储失败', error);
             reject(error);
           }
-        }, 300); // 缩短防抖时间，确保及时保存
+        }, 300);
       });
     },
 
@@ -247,7 +264,6 @@ export const useAuthStore = defineStore('auth', {
           registerTs: playerData.status.registerTs,
           mainStageProgress: playerData.status.mainStageProgress
         } : null,
-        // 可以根据需要添加其他必要字段
         chars: playerData.chars ? { length: playerData.chars.length } : null
       };
     },
@@ -256,6 +272,7 @@ export const useAuthStore = defineStore('auth', {
      * 退出登录 - 优化清理流程
      */
     logout(): void {
+      logger.info('开始执行退出登录流程');
       console.log('开始执行退出登录流程...');
 
       // 清理状态
@@ -282,11 +299,14 @@ export const useAuthStore = defineStore('auth', {
         // 清理凭证检查缓存
         const cacheKeys = Object.keys(localStorage).filter(key => key.startsWith('cred_check_'));
         cacheKeys.forEach(key => localStorage.removeItem(key));
+        logger.debug('本地存储清理完成');
         console.log('本地存储清理完成');
       } catch (error) {
+        logger.warn('清理本地存储失败', error);
         console.warn('清理本地存储失败:', error);
       }
 
+      logger.info('退出登录成功');
       console.log('退出登录成功');
     },
 
@@ -296,19 +316,22 @@ export const useAuthStore = defineStore('auth', {
     async restoreAuthState(): Promise<boolean> {
       // 检查恢复尝试次数
       if (!this.canAttemptRestore) {
-        console.warn('已达到最大恢复尝试次数，不再尝试恢复');
+        logger.warn('已达到最大恢复尝试次数，不再尝试恢复', {
+          attempts: this.restoreAttempts,
+          maxAttempts: CACHE_CONFIG.MAX_RESTORE_ATTEMPTS
+        });
         return false;
       }
 
       this.restoreAttempts++;
+      logger.info(`尝试恢复登录状态 (第 ${this.restoreAttempts} 次)`);
 
       try {
         console.time('恢复登录状态耗时');
-        console.log(`第 ${this.restoreAttempts} 次尝试恢复登录状态`);
 
         const authStr = localStorage.getItem('authState');
         if (!authStr) {
-          console.log('本地存储中没有登录状态');
+          logger.info('本地存储中没有登录状态');
           return false;
         }
 
@@ -316,21 +339,24 @@ export const useAuthStore = defineStore('auth', {
         try {
           authState = JSON.parse(authStr);
         } catch (parseError) {
-          console.error('解析本地存储数据失败:', parseError);
+          logger.error('解析本地存储数据失败', parseError);
           this.clearCorruptedStorage();
           return false;
         }
 
         // 检查数据完整性
         if (!this.validateAuthStateForRestore(authState)) {
-          console.warn('本地存储的登录状态不完整或格式错误');
+          logger.warn('本地存储的登录状态不完整或格式错误');
           this.clearCorruptedStorage();
           return false;
         }
 
         // 检查过期时间 - 使用更宽松的检查
         if (this.isAuthStateExpired(authState)) {
-          console.warn('登录状态已过期');
+          logger.warn('登录状态已过期', {
+            savedTime: new Date(authState.timestamp).toLocaleString(),
+            expiryDays: CACHE_CONFIG.LOCAL_STORAGE_EXPIRY / (24 * 60 * 60 * 1000)
+          });
           this.clearExpiredStorage();
           return false;
         }
@@ -347,13 +373,16 @@ export const useAuthStore = defineStore('auth', {
         this.restoreAttempts = authState.restoreAttempts || 0;
         this.cacheValid = true;
 
-        console.log('从本地存储恢复登录状态成功');
+        logger.info('从本地存储恢复登录状态成功', {
+          userId: this.userId,
+          roleCount: this.bindingRoles.length,
+          isLogin: this.isLogin
+        });
 
         // 异步验证凭证有效性（不阻塞恢复，且失败不自动登出）
         setTimeout(() => {
           this.validateCredInBackground().catch(error => {
-            console.warn('后台验证凭证失败，但不影响当前登录状态:', error);
-            // 这里不自动登出，让用户继续使用
+            logger.warn('后台验证凭证失败，但不影响当前登录状态', error);
           });
         }, 1000);
 
@@ -361,8 +390,7 @@ export const useAuthStore = defineStore('auth', {
         return true;
 
       } catch (error) {
-        console.error('恢复登录状态失败:', error);
-        // 恢复失败时不自动登出，保持当前状态
+        logger.error('恢复登录状态失败', error);
         return false;
       }
     },
@@ -373,9 +401,9 @@ export const useAuthStore = defineStore('auth', {
     clearCorruptedStorage(): void {
       try {
         localStorage.removeItem('authState');
-        console.log('已清理损坏的存储数据');
+        logger.info('已清理损坏的存储数据');
       } catch (error) {
-        console.warn('清理损坏存储数据失败:', error);
+        logger.warn('清理损坏存储数据失败', error);
       }
     },
 
@@ -385,9 +413,9 @@ export const useAuthStore = defineStore('auth', {
     clearExpiredStorage(): void {
       try {
         localStorage.removeItem('authState');
-        console.log('已清理过期的存储数据');
+        logger.info('已清理过期的存储数据');
       } catch (error) {
-        console.warn('清理过期存储数据失败:', error);
+        logger.warn('清理过期存储数据失败', error);
       }
     },
 
@@ -396,7 +424,7 @@ export const useAuthStore = defineStore('auth', {
      */
     async validateCredInBackground(): Promise<boolean> {
       if (!this.sklandCred || !this.sklandSignToken) {
-        console.warn('凭证信息不完整，跳过验证');
+        logger.warn('凭证信息不完整，跳过验证');
         return false;
       }
 
@@ -408,15 +436,14 @@ export const useAuthStore = defineStore('auth', {
         if (cachedCheck) {
           const { timestamp, isValid } = JSON.parse(cachedCheck);
           if (Date.now() - timestamp < CACHE_CONFIG.CRED_CHECK_CACHE) {
-            console.log('使用缓存的凭证验证结果:', isValid);
+            logger.debug('使用缓存的凭证验证结果', { isValid });
             return isValid;
           }
         }
 
-        console.log('开始验证凭证有效性...');
+        logger.debug('开始验证凭证有效性');
 
         // 实际验证 - 通过获取绑定角色来验证凭证有效性
-        // 设置超时，避免长时间阻塞
         const timeoutPromise = new Promise<never>((_, reject) => {
           setTimeout(() => reject(new Error('验证超时')), 10000);
         });
@@ -431,11 +458,12 @@ export const useAuthStore = defineStore('auth', {
           isValid: true
         }));
 
-        console.log('凭证验证成功');
+        logger.info('凭证验证成功');
         return true;
 
       } catch (error) {
-        console.warn('凭证验证失败:', error);
+        const normalizedError = this.normalizeError(error);
+        logger.warn('凭证验证失败', normalizedError);
 
         // 验证失败，但不立即登出，更新缓存
         const cacheKey = `cred_check_${this.userId}`;
@@ -444,8 +472,6 @@ export const useAuthStore = defineStore('auth', {
           isValid: false
         }));
 
-        // 这里不自动登出，让用户继续尝试使用
-        // 只有在用户主动操作时才提示重新登录
         return false;
       }
     },
@@ -460,7 +486,8 @@ export const useAuthStore = defineStore('auth', {
       );
 
       if (!isValid) {
-        console.warn('存储前验证失败，缺失必要字段:', requiredFields.filter(field => !authState[field]));
+        const missingFields = requiredFields.filter(field => !authState[field]);
+        logger.warn('存储前验证失败，缺失必要字段', { missingFields });
       }
 
       return isValid;
@@ -477,7 +504,8 @@ export const useAuthStore = defineStore('auth', {
       );
 
       if (!isValid) {
-        console.warn('恢复时验证失败，缺失必要字段:', requiredFields.filter(field => !authState[field]));
+        const missingFields = requiredFields.filter(field => !authState[field]);
+        logger.warn('恢复时验证失败，缺失必要字段', { missingFields });
       }
 
       return isValid;
@@ -493,7 +521,10 @@ export const useAuthStore = defineStore('auth', {
       const isExpired = Date.now() > expiryTime;
 
       if (isExpired) {
-        console.log(`存储数据已过期，保存时间: ${new Date(authState.timestamp).toLocaleString()}`);
+        logger.debug(`存储数据已过期`, {
+          savedTime: new Date(authState.timestamp).toLocaleString(),
+          currentTime: new Date().toLocaleString()
+        });
       }
 
       return isExpired;
@@ -504,17 +535,18 @@ export const useAuthStore = defineStore('auth', {
      */
     async fetchBindingRoles(forceRefresh = false): Promise<any[]> {
       if (!this.sklandCred || !this.sklandSignToken) {
-        // 使用 return 而不是 throw 来避免本地捕获异常警告
-        return Promise.reject(new Error('未登录或登录凭证无效'));
+        const error = new Error('未登录或登录凭证无效');
+        logger.warn('获取绑定角色失败', error);
+        return Promise.reject(error);
       }
 
       // 使用缓存避免重复请求
       if (!forceRefresh && !this.shouldRefreshRoles && this.bindingRoles.length > 0) {
-        console.log('使用缓存的角色列表');
+        logger.debug('使用缓存的角色列表', { roleCount: this.bindingRoles.length });
         return this.bindingRoles;
       }
 
-      console.log('正在获取绑定角色列表...');
+      logger.info('正在获取绑定角色列表');
 
       try {
         const roles = await AuthAPI.getBindingRoles(this.sklandCred, this.sklandSignToken);
@@ -526,29 +558,27 @@ export const useAuthStore = defineStore('auth', {
 
         // 异步保存到本地存储
         this.saveToLocalStorage().catch(error => {
-          console.warn('保存角色列表失败:', error);
+          logger.warn('保存角色列表失败', error);
         });
 
-        console.log(`获取到 ${roles.length} 个绑定角色`);
+        logger.info(`获取到 ${roles.length} 个绑定角色`, { roles: roles.map(r => ({ uid: r.uid, name: r.nickName })) });
         return roles;
 
       } catch (error) {
         const normalizedError = this.normalizeError(error);
-        console.error('获取绑定角色失败:', normalizedError.message);
+        logger.error('获取绑定角色失败', normalizedError);
 
         if (this.isAuthError(normalizedError)) {
-          console.warn('认证错误，需要重新登录');
-          // 使用 return 而不是 throw 来避免本地捕获异常警告
+          logger.warn('认证错误，需要重新登录');
           return Promise.reject(new Error('登录已过期，请重新登录'));
         }
 
         // 如果是网络错误，尝试使用缓存
         if (this.isNetworkError(normalizedError) && this.bindingRoles.length > 0) {
-          console.warn('网络错误，使用缓存的角色列表');
+          logger.warn('网络错误，使用缓存的角色列表', { cachedRoleCount: this.bindingRoles.length });
           return this.bindingRoles;
         }
 
-        // 使用 return 而不是 throw 来避免本地捕获异常警告
         return Promise.reject(normalizedError);
       }
     },
@@ -558,23 +588,25 @@ export const useAuthStore = defineStore('auth', {
      */
     async fetchPlayerData(forceRefresh = false): Promise<any> {
       if (!this.sklandCred || !this.sklandSignToken) {
-        // 使用 return 而不是 throw 来避免本地捕获异常警告
-        return Promise.reject(new Error('未登录或登录凭证无效'));
+        const error = new Error('未登录或登录凭证无效');
+        logger.warn('获取玩家数据失败', error);
+        return Promise.reject(error);
       }
 
       if (!this.bindingRoles.length) {
-        // 使用 return 而不是 throw 来避免本地捕获异常警告
-        return Promise.reject(new Error('没有绑定角色'));
+        const error = new Error('没有绑定角色');
+        logger.warn('获取玩家数据失败', error);
+        return Promise.reject(error);
       }
 
       // 使用缓存避免重复请求
       if (!forceRefresh && !this.shouldRefreshPlayerData && this.playerData) {
-        console.log('使用缓存的玩家数据');
+        logger.debug('使用缓存的玩家数据');
         return this.playerData;
       }
 
       const defaultUid = this.bindingRoles.find(role => role.isDefault)?.uid || this.bindingRoles[0].uid;
-      console.log(`正在获取玩家数据，UID: ${defaultUid}`);
+      logger.info(`正在获取玩家数据`, { uid: defaultUid });
 
       try {
         const playerData = await AuthAPI.getPlayerData(this.sklandCred, this.sklandSignToken, defaultUid);
@@ -586,29 +618,31 @@ export const useAuthStore = defineStore('auth', {
 
         // 异步保存到本地存储
         this.saveToLocalStorage().catch(error => {
-          console.warn('保存玩家数据失败:', error);
+          logger.warn('保存玩家数据失败', error);
         });
 
-        console.log('玩家数据获取成功');
+        logger.info('玩家数据获取成功', {
+          hasData: !!playerData,
+          level: playerData?.status?.level,
+          name: playerData?.status?.name
+        });
         return playerData;
 
       } catch (error) {
         const normalizedError = this.normalizeError(error);
-        console.error('获取玩家数据失败:', normalizedError.message);
+        logger.error('获取玩家数据失败', normalizedError);
 
         if (this.isAuthError(normalizedError)) {
-          console.warn('认证错误，需要重新登录');
-          // 使用 return 而不是 throw 来避免本地捕获异常警告
+          logger.warn('认证错误，需要重新登录');
           return Promise.reject(new Error('登录已过期，请重新登录'));
         }
 
         // 如果是网络错误，尝试使用缓存
         if (this.isNetworkError(normalizedError) && this.playerData) {
-          console.warn('网络错误，使用缓存的玩家数据');
+          logger.warn('网络错误，使用缓存的玩家数据');
           return this.playerData;
         }
 
-        // 使用 return 而不是 throw 来避免本地捕获异常警告
         return Promise.reject(normalizedError);
       }
     },
