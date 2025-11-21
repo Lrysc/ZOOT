@@ -338,12 +338,35 @@ onUnmounted(() => {
       <!-- 助战干员卡片 -->
       <div class="section-card">
         <h3 class="section-title">--- 助战干员 ---</h3>
-        <ul class="data-grid">
-          <li class="data-item">
-            <span class="label">助战干员数量</span>
-            <span class="value">{{ gameDataStore.getAssistCharCount }}</span>
-          </li>
-        </ul>
+        <div class="assist-chars-grid">
+          <div
+            v-for="(char, index) in gameDataStore.getAssistCharArrayStatus"
+            :key="index"
+            class="assist-char-item"
+          >
+            <!-- 左边：头像 -->
+            <div class="char-avatar-container">
+              <img
+                :src="char.avatarUrl"
+                :alt="char.name"
+                class="char-avatar"
+                @error="(event) => gameDataStore.handleOperatorAvatarError(char.charId, event)"
+                @load="() => gameDataStore.handleOperatorAvatarLoad(char.charId)"
+              />
+            </div>
+
+            <!-- 右边：干员信息 -->
+            <div class="char-info-container">
+              <div class="char-name">{{ char.name }}</div>
+              <div class="char-level">{{ char.level }}</div>
+              <div class="char-skill">{{ char.skill }}</div>
+            </div>
+          </div>
+          <div v-if="gameDataStore.getAssistCharArrayStatus.length === 0" class="no-assist-char">
+            无助战干员
+          </div>
+        </div>
+        <div class="assist-count">共 {{ gameDataStore.getAssistCharCount }} 名助战干员</div>
       </div>
 
       <!-- 实时数据卡片 -->
@@ -366,9 +389,9 @@ onUnmounted(() => {
             <span class="label">公招刷新次数</span>
             <span class="value">{{ gameDataStore.getHireRefreshCount }}</span>
           </li>
-          <li class="data-item">
+          <li class="data-item training-item">
             <span class="label">训练室</span>
-            <span class="value">{{ gameDataStore.getTrainingStatus }}</span>
+            <span class="value training-value">{{ gameDataStore.getTrainingSimpleStatus }}</span>
           </li>
           <li class="data-item">
             <span class="label">每日任务</span>
@@ -759,10 +782,204 @@ onUnmounted(() => {
   font-weight: 600;
 }
 
+/* 训练室特殊样式 */
+.training-item {
+  min-height: 60px;
+}
+
+.training-value {
+  white-space: pre-line;
+  line-height: 1.4;
+}
+
 .sub-value {
   font-size: 12px;
   color: #666;
   margin-top: 2px;
+}
+
+/* 助战干员头像样式 */
+.char-avatar-container {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 8px;
+}
+
+.char-avatar {
+  width: 50px;
+  height: 50px;
+  object-fit: cover;
+  border: 2px solid #404040;
+  background: #2d2d2d;
+}
+
+/* 助战干员网格布局 */
+.assist-chars-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+  margin-bottom: 12px;
+}
+
+.assist-char-item {
+  background: #333333;
+  border: 1px solid #404040;
+  border-radius: 8px;
+  padding: 12px;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  transition: all 0.3s ease;
+  min-height: 80px;
+}
+
+.assist-char-item:hover {
+  background: #3a3a3a;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+/* 左边：头像容器 */
+.char-avatar-container {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.char-avatar {
+  width: 60px;
+  height: 60px;
+  object-fit: cover;
+  border: 2px solid #404040;
+  background: #2d2d2d;
+}
+
+/* 右边：信息容器 */
+.char-info-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0; /* 防止文本溢出 */
+}
+
+.char-name {
+  font-size: 16px;
+  font-weight: 600;
+  color: #9feaf9;
+  line-height: 1.2;
+}
+
+.char-level {
+  font-size: 13px;
+  color: #fad000;
+  line-height: 1.2;
+}
+
+.char-skill {
+  font-size: 12px;
+  color: #6cc24a;
+  line-height: 1.2;
+}
+
+.no-assist-char {
+  grid-column: 1 / -1;
+  text-align: center;
+  color: #999;
+  font-size: 14px;
+  padding: 20px;
+  background: #333333;
+  border: 1px solid #404040;
+  border-radius: 8px;
+}
+
+.assist-count {
+  text-align: center;
+  font-size: 12px;
+  color: #666;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid #404040;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .assist-chars-grid {
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 12px;
+  }
+
+  .assist-char-item {
+    padding: 10px;
+    gap: 10px;
+    min-height: 70px;
+  }
+
+  .char-avatar {
+    width: 50px;
+    height: 50px;
+  }
+
+  .char-name {
+    font-size: 15px;
+  }
+
+  .char-level {
+    font-size: 12px;
+  }
+
+  .char-skill {
+    font-size: 11px;
+  }
+}
+
+@media (max-width: 480px) {
+  .assist-chars-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .assist-char-item {
+    padding: 8px;
+    gap: 8px;
+    min-height: 65px;
+  }
+
+  .char-avatar {
+    width: 45px;
+    height: 45px;
+  }
+
+  .char-name {
+    font-size: 14px;
+  }
+
+  .char-level,
+  .char-skill {
+    font-size: 11px;
+  }
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .assist-chars-grid {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 8px;
+  }
+
+  .assist-char-item {
+    padding: 8px;
+    min-height: 70px;
+  }
+
+  .char-name {
+    font-size: 14px;
+  }
+
+  .char-level, .char-skill {
+    font-size: 11px;
+  }
 }
 
 /* 数据项颜色区分 */

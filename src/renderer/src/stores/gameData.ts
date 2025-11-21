@@ -347,6 +347,34 @@ export const useGameDataStore = defineStore('gameData', () => {
     }
   };
 
+  /**
+   * 复制昵称到剪贴板
+   * @param nickname - 要复制的昵称
+   */
+  const copyNickname = async (nickname: string): Promise<void> => {
+    // 检查昵称是否有效
+    if (!nickname || nickname === '未获取' || nickname === '未知用户') {
+      showError('昵称不可用，无法复制');
+      return;
+    }
+
+    try {
+      logger.info('用户尝试复制昵称', { nickname });
+
+      const success = await copyToClipboard(nickname);
+      if (success) {
+        logger.info('昵称复制成功', { nickname });
+        showSuccess(`已复制昵称 ${nickname}`);
+      } else {
+        logger.warn('昵称复制失败');
+        showError('复制失败，请手动复制');
+      }
+    } catch (error) {
+      logger.error('复制昵称过程中发生异常', error);
+      showError('复制失败，请手动复制');
+    }
+  };
+
   // ========== 计算属性 ==========
 
   /**
@@ -715,21 +743,276 @@ export const useGameDataStore = defineStore('gameData', () => {
   });
 
   /**
-   * 获取训练室状态
+   * 获取训练室状态 - 分行显示训练干员和协助者名字
    */
   const getTrainingStatus = computed((): string => {
-    const trainees = playerData.value?.building?.training?.trainee;
-    if (!trainees || !Array.isArray(trainees) || trainees.length === 0) return '0/0 训练中';
+    const training = playerData.value?.building?.training;
+    if (!training) return '未配置训练室';
 
-    const activeCount = trainees.filter((t: any) => t.completeTime > getCurrentTimestamp()).length;
-    return `${activeCount}/${trainees.length} 训练中`;
+    const trainee = training.trainee;
+    const trainer = training.trainer;
+
+    if (!trainee && !trainer) return '训练室空闲';
+
+    // 获取角色信息映射表
+    const charInfoMap = playerData.value?.charInfoMap;
+
+    let result = '';
+
+    // 处理训练干员
+    if (trainee && trainee.charId) {
+      const traineeInfo = charInfoMap?.[trainee.charId];
+      const traineeName = traineeInfo?.name || trainee.charId;
+      result += `训练干员：${traineeName}`;
+    }
+
+    // 处理协助者
+    if (trainer && trainer.charId) {
+      const trainerInfo = charInfoMap?.[trainer.charId];
+      const trainerName = trainerInfo?.name || trainer.charId;
+      if (result) {
+        result += `\n协助干员：${trainerName}`;
+      } else {
+        result += `协助干员：${trainerName}`;
+      }
+    }
+
+    return result || '训练室配置异常';
   });
 
+  /**
+   * 获取训练室详细信息
+   */
+  const getTrainingDetails = computed(() => {
+    const training = playerData.value?.building?.training;
+    if (!training) return null;
+
+    const trainee = training.trainee;
+    const trainer = training.trainer;
+    const charInfoMap = playerData.value?.charInfoMap;
+
+    const details: {
+      trainee?: { charId: string; name: string; originalData: any };
+      trainer?: { charId: string; name: string; originalData: any };
+    } = {};
+
+    // 处理训练干员信息
+    if (trainee && trainee.charId) {
+      const traineeInfo = charInfoMap?.[trainee.charId];
+      details.trainee = {
+        charId: trainee.charId,
+        name: traineeInfo?.name || trainee.charId,
+        originalData: trainee
+      };
+    }
+
+    // 处理协助者信息
+    if (trainer && trainer.charId) {
+      const trainerInfo = charInfoMap?.[trainer.charId];
+      details.trainer = {
+        charId: trainer.charId,
+        name: trainerInfo?.name || trainer.charId,
+        originalData: trainer
+      };
+    }
+
+    return details;
+  });
+
+  /**
+   * 获取训练室状态（简版）- 用于卡片显示，分行显示
+   */
+  const getTrainingSimpleStatus = computed((): string => {
+    const details = getTrainingDetails.value;
+    if (!details) return '训练室空闲';
+
+    const traineeName = details.trainee?.name || '无';
+    const trainerName = details.trainer?.name || '无';
+
+    return `训练干员：${traineeName}\n协助干员：${trainerName}`;
+  });
+
+  /**
+   * 获取训练室状态（HTML格式）- 用于支持HTML渲染的组件
+   */
+  const getTrainingHtmlStatus = computed((): string => {
+    const details = getTrainingDetails.value;
+    if (!details) return '训练室空闲';
+
+    const traineeName = details.trainee?.name || '无';
+    const trainerName = details.trainer?.name || '无';
+
+    return `<p>训练干员：</p>${traineeName}<br> <p>协助干员：</p>${trainerName}`;
+  });
+
+  /**
+   * 检查训练室是否正在运行
+   */
+  const isTrainingActive = computed((): boolean => {
+    const training = playerData.value?.building?.training;
+    if (!training) return false;
+
+    const trainee = training.trainee;
+    return !!(trainee && trainee.charId);
+  });
+
+  /**
+   * 获取干员头像URL
+   * @param charId 干员ID
+   * @param evolvePhase 精英阶段
+   * @returns 干员头像URL
+   */
+  const getOperatorAvatarUrl = (charId: string, evolvePhase: number): string => {
+    if (!charId) return '';
+
+    // 基础CDN URL
+    const baseUrl = 'https://raw.githubusercontent.com/yuanyan3060/ArknightsGameResource/main/avatar';
+
+    let avatarFileName = charId;
+
+    // 根据精英阶段判断头像文件名
+    // 精英阶段0和1使用基础头像，精英阶段2使用精英二头像
+    if (evolvePhase === 2) {
+      // 精英二头像文件名格式：charId + '_2'
+      avatarFileName = `${charId}_2`;
+    }
+    // 精英阶段0和1使用基础头像，不需要修改文件名
+
+    // 构建完整的头像URL
+    const avatarUrl = `${baseUrl}/${avatarFileName}.png`;
+
+    logger.debug('生成干员头像URL', {
+      charId,
+      evolvePhase,
+      avatarFileName,
+      avatarUrl
+    });
+
+    return avatarUrl;
+  };
+
+  /**
+   * 处理干员头像加载错误
+   * @param charId 干员ID
+   * @param event 错误事件
+   */
+  const handleOperatorAvatarError = (charId: string, event: Event): void => {
+    const imgElement = event.target as HTMLImageElement;
+    logger.warn('干员头像加载失败', {
+      charId,
+      imgSrc: imgElement.src
+    });
+
+    // 可以在这里设置默认头像或错误处理
+    // 目前只是记录日志，保持原有显示
+  };
+
+  /**
+   * 处理干员头像加载成功
+   * @param charId 干员ID
+   */
+  const handleOperatorAvatarLoad = (charId: string): void => {
+    logger.debug('干员头像加载成功', { charId });
+  };
+
+  /**
+   * 获取助战干员详细信息（每个干员作为独立对象）
+   */
+  const getAssistCharDetails = computed(() => {
+    const assistChars = playerData.value?.assistChars;
+
+    if (!Array.isArray(assistChars) || assistChars.length === 0) {
+      return [];
+    }
+
+    const charInfoMap = playerData.value?.charInfoMap;
+
+    return assistChars.map((char: any) => {
+      const charInfo = charInfoMap?.[char.charId];
+      const charName = charInfo?.name || char.charId;
+
+      // 处理精英阶段显示
+      let evolvePhaseText = '';
+      if (char.evolvePhase === 1) {
+        evolvePhaseText = '精一';
+      } else if (char.evolvePhase === 2) {
+        evolvePhaseText = '精二';
+      }
+
+      // 处理技能信息
+      let skillText = '';
+      let skillNumber = '1';
+      if (char.skillId) {
+        // 从skillId中提取技能编号，如 "skchr_wisdel_3" 中的 3
+        const skillMatch = char.skillId.match(/_(\d+)$/);
+        skillNumber = skillMatch ? skillMatch[1] : '1';
+        skillText = `${skillNumber}技能 ${char.mainSkillLvl || 1}级`;
+      } else {
+        skillText = `1技能 ${char.mainSkillLvl || 1}级`;
+      }
+
+      // 处理潜能等级
+      const potentialText = char.potentialRank > 0 ? `潜${char.potentialRank}` : '';
+
+      // 处理模组等级
+      let moduleText = '';
+      if (char.specializeLevel > 0) {
+        moduleText = `模组${char.specializeLevel}级`;
+      }
+
+      // 获取干员头像URL
+      const avatarUrl = getOperatorAvatarUrl(char.charId, char.evolvePhase || 0);
+
+      return {
+        charId: char.charId,
+        name: charName,
+        level: char.level || 0,
+        evolvePhase: char.evolvePhase || 0,
+        evolvePhaseText,
+        skillId: char.skillId || '',
+        skillNumber,
+        skillText,
+        mainSkillLvl: char.mainSkillLvl || 1,
+        potentialRank: char.potentialRank || 0,
+        potentialText,
+        specializeLevel: char.specializeLevel || 0,
+        moduleText,
+        skinId: char.skinId || '',
+        avatarUrl, // 添加头像URL
+        originalData: char
+      };
+    });
+  });
   /**
    * 获取助战干员数量
    */
   const getAssistCharCount = computed((): number => {
     return playerData.value?.assistChars?.length || 0;
+  });
+
+  /**
+   * 获取助战干员状态（数组格式）- 每个干员独立显示
+   */
+  const getAssistCharArrayStatus = computed((): any[] => {
+    const details = getAssistCharDetails.value;
+    if (details.length === 0) return [{ name: '无助战干员', level: '', skill: '', avatarUrl: '' }];
+
+    return details.map(char => {
+      const levelText = char.evolvePhaseText ? `${char.evolvePhaseText} ${char.level}级` : `${char.level}级`;
+      const potentialText = char.potentialText ? ` ${char.potentialText}` : '';
+      const moduleText = char.moduleText ? ` ${char.moduleText}` : '';
+
+      return {
+        name: char.name,
+        level: `${levelText}${potentialText}`,
+        skill: `${char.skillText}${moduleText}`,
+        fullInfo: `${char.name} ${levelText}${potentialText} ${char.skillText}${moduleText}`,
+        avatarUrl: char.avatarUrl, // 添加头像URL
+        charId: char.charId, // 添加charId用于错误处理
+        evolvePhase: char.evolvePhase, // 添加精英阶段
+        rawData: char
+      };
+    });
   });
 
   /**
@@ -863,8 +1146,7 @@ export const useGameDataStore = defineStore('gameData', () => {
             await authStore.fetchBindingRoles();
             logger.info('角色列表获取成功');
           } catch (error: any) {
-            const errorMessage = '获取角色列表失败: ' + (error.message || '未知错误');
-            errorMsg.value = errorMessage;
+            errorMsg.value = '获取角色列表失败: ' + (error.message || '未知错误');
             logger.error('获取角色列表失败', error);
             return;
           }
@@ -912,21 +1194,21 @@ export const useGameDataStore = defineStore('gameData', () => {
         logger.debug('游戏数据加载完成并已缓存');
 
       } catch (error: any) {
-        const errorMessage = error.message || '游戏数据加载失败，请稍后重试';
+        const message = error.message || '游戏数据加载失败，请稍后重试';
         logger.error('游戏数据加载失败', error);
 
-        if (errorMessage.includes('认证失败') || errorMessage.includes('401')) {
+        if (message.includes('认证失败') || message.includes('401')) {
           errorMsg.value = '登录已过期，请重新登录';
           logger.warn('认证失败，需要重新登录');
-        } else if (errorMessage.includes('网络') || errorMessage.includes('Network')) {
+        } else if (message.includes('网络') || message.includes('Network')) {
           errorMsg.value = '网络连接失败，请检查网络设置';
           logger.warn('网络连接失败');
-        } else if (errorMessage.includes('角色')) {
+        } else if (message.includes('角色')) {
           errorMsg.value = '未找到游戏角色，请确认账号绑定';
           logger.warn('未找到游戏角色');
         } else {
-          errorMsg.value = errorMessage;
-          logger.error('未知错误类型', { message: errorMessage });
+          errorMsg.value = message;
+          logger.error('未知错误类型', { message });
         }
       } finally {
         isLoading.value = false;
@@ -984,7 +1266,7 @@ export const useGameDataStore = defineStore('gameData', () => {
     logger.info('游戏数据缓存已清除');
   };
 
-  // ========== 导出接口 ==========
+// ========== 导出接口 ==========
   return {
     // 状态
     isLoading,
@@ -1015,7 +1297,14 @@ export const useGameDataStore = defineStore('gameData', () => {
     getLaborRecoveryRate,
     getDormRestCount,
     getTrainingStatus,
+    getTrainingDetails,
+    getTrainingSimpleStatus,
+    getTrainingHtmlStatus,
+    isTrainingActive,
+    // 助战干员相关计算属性
     getAssistCharCount,
+    getAssistCharDetails,
+    getAssistCharArrayStatus,
     getRelicCount,
     getActualApInfo,
     getTiredCharsCount,
@@ -1040,6 +1329,11 @@ export const useGameDataStore = defineStore('gameData', () => {
     handleAvatarError,
     handleAvatarLoad,
     fetchUserAvatar,
-    copyUid
+    copyUid,
+    copyNickname,
+    // 干员头像相关方法
+    getOperatorAvatarUrl,
+    handleOperatorAvatarError,
+    handleOperatorAvatarLoad
   };
 });

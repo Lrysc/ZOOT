@@ -24,14 +24,14 @@
             />
           </div>
           <div class="user-details">
-            <p class="user-name">{{ authStore.userName }}</p>
+            <p class="user-name" @click="copyNickname" title="点击复制昵称">{{ authStore.userName }}</p>
             <p class="user-level">Lv: {{ gameDataStore.userLevel }}</p>
             <p class="user-uid">
               UID:
               <span
                 class="uid-value copyable"
                 @click="handleCopyUid"
-                :title="`点击复制 UID: ${gameDataStore.gameUid}`"
+                :title="`点击复制UID`"
               >
                 {{ gameDataStore.gameUid }}
               </span>
@@ -93,7 +93,7 @@
             </button>
 
             <button
-              @click="clearLogs"
+              @click="showClearConfirm"
               :disabled="logCount === 0"
               class="log-btn clear-btn"
               title="清除所有日志记录"
@@ -141,6 +141,35 @@
         </div>
       </div>
     </div>
+
+    <!-- 清除日志确认弹窗 -->
+    <div v-if="showClearConfirmModal" class="custom-modal-overlay" @click="cancelClear">
+      <div
+        class="custom-modal-content"
+        :class="{
+          'opening': isOpening,
+          'closing': isClosing
+        }"
+        @click.stop
+      >
+        <div class="custom-modal-body">
+          <div class="custom-modal-icon">⚠️</div>
+          <h3 class="custom-modal-title">清除日志确认</h3>
+          <p class="custom-modal-message">
+            确定要清除所有日志吗？<br>
+            此操作将删除 {{ logCount }} 条日志记录，且不可恢复。
+          </p>
+          <div class="custom-modal-actions">
+            <button @click="confirmClear" class="custom-modal-btn confirm-btn">
+              确认清除
+            </button>
+            <button @click="cancelClear" class="custom-modal-btn cancel-btn">
+              取消
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -160,6 +189,9 @@ const logs = ref<LogEntry[]>([])
 const showManualCopyModal = ref(false)
 const manualCopyContent = ref('')
 const manualCopyTextarea = ref<HTMLTextAreaElement>()
+const showClearConfirmModal = ref(false)
+const isOpening = ref(false)
+const isClosing = ref(false)
 
 // ==================== 计算属性 ====================
 
@@ -185,6 +217,10 @@ const lastLogTime = computed(() => {
 const handleCopyUid = async () => {
   await copyToClipboard(gameDataStore.gameUid, 'UID')
 }
+
+const copyNickname = () => {
+  gameDataStore.copyNickname(authStore.userName);
+};
 
 /**
  * 加载日志数据
@@ -307,19 +343,52 @@ const closeManualCopyModal = () => {
 }
 
 /**
- * 清除所有日志
- * 提供确认对话框防止误操作
+ * 显示清除日志确认弹窗
  */
-const clearLogs = () => {
-  if (confirm('确定要清除所有日志吗？此操作不可恢复。')) {
+const showClearConfirm = () => {
+  showClearConfirmModal.value = true
+  isOpening.value = true
+  isClosing.value = false
+
+  // 动画完成后重置状态
+  setTimeout(() => {
+    isOpening.value = false
+  }, 600)
+}
+
+/**
+ * 确认清除日志
+ */
+const confirmClear = () => {
+  // 开始关闭动画
+  isClosing.value = true
+  isOpening.value = false
+
+  setTimeout(() => {
     const clearedCount = logCount.value
     logger.clearLogs()
     loadLogs()
+    showClearConfirmModal.value = false
+    isClosing.value = false
     showSuccess('日志已清除')
 
-    // 记录清除操作（在清除前记录）
+    // 记录清除操作
     logger.info('用户清除了所有日志', { clearedCount })
-  }
+  }, 500)
+}
+
+/**
+ * 取消清除日志
+ */
+const cancelClear = () => {
+  // 开始关闭动画
+  isClosing.value = true
+  isOpening.value = false
+
+  setTimeout(() => {
+    showClearConfirmModal.value = false
+    isClosing.value = false
+  }, 500)
 }
 
 /**
@@ -489,7 +558,7 @@ onMounted(() => {
 
 /* UID复制样式 */
 .uid-value.copyable {
-  color: #9feaf9;
+  color: #ffffff;
   cursor: pointer;
   padding: 2px 6px;
   border-radius: 4px;
@@ -500,7 +569,7 @@ onMounted(() => {
 
 .uid-value.copyable:hover {
   background: rgba(159, 234, 249, 0.1);
-  border-color: #9feaf9;
+  border-color: #1b74c8;
 }
 
 .uid-value.copyable:active {
@@ -814,7 +883,107 @@ onMounted(() => {
   transform: translateY(-1px);
 }
 
-/* 动画 */
+/* 自定义清除日志确认弹窗 */
+.custom-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10001;
+  animation: fadeIn 0.3s ease;
+}
+
+.custom-modal-content {
+  background: #2d2d2d;
+  border-radius: 8px;
+  border: 2px solid #404040;
+  width: 90%;
+  max-width: 400px;
+  overflow: hidden;
+  position: relative;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+/* 打开动画 - 机械式水平扩展 */
+.custom-modal-content.opening {
+  animation: mechanicalExpand 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+/* 关闭动画 - 机械式水平收缩 */
+.custom-modal-content.closing {
+  animation: mechanicalCollapse 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.custom-modal-body {
+  padding: 30px 25px;
+  text-align: center;
+  opacity: 0;
+  animation: fadeInContent 0.2s ease 0.3s forwards;
+}
+
+.custom-modal-icon {
+  font-size: 48px;
+  margin-bottom: 20px;
+}
+
+.custom-modal-title {
+  color: #ff6b6b;
+  font-size: 20px;
+  font-weight: 600;
+  margin-bottom: 15px;
+}
+
+.custom-modal-message {
+  color: #e0e0e0;
+  font-size: 14px;
+  line-height: 1.5;
+  margin-bottom: 25px;
+}
+
+.custom-modal-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+
+.custom-modal-btn {
+  padding: 10px 24px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  min-width: 100px;
+}
+
+.confirm-btn {
+  background: linear-gradient(135deg, #dc3545, #c82333);
+  color: white;
+}
+
+.confirm-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(220, 53, 69, 0.3);
+}
+
+.cancel-btn {
+  background: #6c757d;
+  color: white;
+}
+
+.cancel-btn:hover {
+  background: #5a6268;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(108, 117, 125, 0.3);
+}
+
+/* 关键帧动画 */
 @keyframes fadeIn {
   from { opacity: 0; }
   to { opacity: 1; }
@@ -828,6 +997,71 @@ onMounted(() => {
   to {
     opacity: 1;
     transform: translateY(0) scale(1);
+  }
+}
+
+/* 机械式水平扩展动画 */
+@keyframes mechanicalExpand {
+  0% {
+    opacity: 0;
+    transform: scaleX(0) scaleY(0.1);
+    width: 0;
+    height: 4px;
+    border-radius: 2px;
+  }
+  50% {
+    opacity: 1;
+    transform: scaleX(1) scaleY(0.1);
+    width: 90%;
+    max-width: 400px;
+    height: 4px;
+    border-radius: 2px;
+  }
+  100% {
+    transform: scaleX(1) scaleY(1);
+    width: 90%;
+    max-width: 400px;
+    height: auto;
+    border-radius: 8px;
+  }
+}
+
+/* 机械式水平收缩动画 */
+@keyframes mechanicalCollapse {
+  0% {
+    transform: scaleX(1) scaleY(1);
+    width: 90%;
+    max-width: 400px;
+    height: auto;
+    border-radius: 8px;
+    opacity: 1;
+  }
+  50% {
+    transform: scaleX(1) scaleY(0.1);
+    width: 90%;
+    max-width: 400px;
+    height: 4px;
+    border-radius: 2px;
+    opacity: 0.7;
+  }
+  100% {
+    opacity: 0;
+    transform: scaleX(0) scaleY(0.1);
+    width: 0;
+    height: 4px;
+    border-radius: 2px;
+  }
+}
+
+/* 内容淡入动画 */
+@keyframes fadeInContent {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 
@@ -857,6 +1091,67 @@ onMounted(() => {
 
   .modal-actions {
     flex-direction: column;
+  }
+
+  .custom-modal-content {
+    width: 95%;
+    margin: 10px;
+  }
+
+  .custom-modal-actions {
+    flex-direction: column;
+  }
+
+  .custom-modal-btn {
+    width: 100%;
+  }
+
+  /* 移动端动画调整 */
+  @keyframes mechanicalExpand {
+    0% {
+      opacity: 0;
+      transform: scaleX(0) scaleY(0.1);
+      width: 0;
+      height: 4px;
+      border-radius: 2px;
+    }
+    50% {
+      opacity: 1;
+      transform: scaleX(1) scaleY(0.1);
+      width: 95%;
+      height: 4px;
+      border-radius: 2px;
+    }
+    100% {
+      transform: scaleX(1) scaleY(1);
+      width: 95%;
+      height: auto;
+      border-radius: 8px;
+    }
+  }
+
+  @keyframes mechanicalCollapse {
+    0% {
+      transform: scaleX(1) scaleY(1);
+      width: 95%;
+      height: auto;
+      border-radius: 8px;
+      opacity: 1;
+    }
+    50% {
+      transform: scaleX(1) scaleY(0.1);
+      width: 95%;
+      height: 4px;
+      border-radius: 2px;
+      opacity: 0.7;
+    }
+    100% {
+      opacity: 0;
+      transform: scaleX(0) scaleY(0.1);
+      width: 0;
+      height: 4px;
+      border-radius: 2px;
+    }
   }
 }
 </style>
