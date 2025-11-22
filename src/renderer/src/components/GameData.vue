@@ -255,6 +255,7 @@ onMounted(async () => {
       if (isRestored) {
         console.log('登录状态恢复成功，加载游戏数据');
         await gameDataStore.fetchGameData();
+        showSuccess('欢迎回来，博士！');
       } else {
         console.log('登录状态恢复失败，显示未登录状态');
         // 不设置loading状态，让组件正常显示未登录状态
