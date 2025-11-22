@@ -53,10 +53,10 @@ interface StoredAuthState {
  * 缓存配置
  */
 const CACHE_CONFIG = {
-  LOCAL_STORAGE_EXPIRY: 30 * 24 * 60 * 60 * 1000,
-  PLAYER_DATA_CACHE: 5 * 60 * 1000,
-  ROLES_CACHE: 10 * 60 * 1000,
-  CRED_CACHE: 10 * 60 * 1000,
+  LOCAL_STORAGE_EXPIRY: 30 * 24 * 60 * 60 * 1000, // 30天
+  PLAYER_DATA_CACHE: 5 * 60 * 1000, // 5分钟
+  ROLES_CACHE: 10 * 60 * 1000, // 10分钟
+  CRED_CACHE: 10 * 60 * 1000, // 10分钟
   MAX_RESTORE_ATTEMPTS: 3,
   MAX_CRED_RETRY: 2,
   CRED_RETRY_DELAY: 1000
@@ -104,19 +104,19 @@ export const useAuthStore = defineStore('auth', {
     hasBindingRoles: (state) => state.bindingRoles.length > 0,
 
     /**
-     * 是否需要刷新玩家数据
+     * 是否需要刷新玩家数据 - 修改：现在总是返回true，强制刷新
      */
-    shouldRefreshPlayerData: (state): boolean => {
-      if (!state.playerData) return true;
-      return Date.now() - state.lastUpdated > CACHE_CONFIG.PLAYER_DATA_CACHE;
+    shouldRefreshPlayerData: (): boolean => {
+      // 修改点1: 移除未使用的state参数，现在总是返回true强制刷新
+      return true;
     },
 
     /**
-     * 是否需要刷新角色列表
+     * 是否需要刷新角色列表 - 修改：现在总是返回true，强制刷新
      */
-    shouldRefreshRoles: (state): boolean => {
-      if (state.bindingRoles.length === 0) return true;
-      return Date.now() - state.lastUpdated > CACHE_CONFIG.ROLES_CACHE;
+    shouldRefreshRoles: (): boolean => {
+      // 修改点2: 移除未使用的state参数，现在总是返回true强制刷新
+      return true;
     },
 
     /**
@@ -127,7 +127,7 @@ export const useAuthStore = defineStore('auth', {
     },
 
     /**
-     * 是否有有效的hgToken - 修复：确保正确导出
+     * 是否有有效的hgToken
      */
     hasValidHgToken(): boolean {
       return !!this.hgToken && this.hgToken.length > 0;
@@ -160,16 +160,8 @@ export const useAuthStore = defineStore('auth', {
      * 核心方法：动态获取森空岛凭证
      */
     async ensureSklandCred(): Promise<{ cred: string; token: string }> {
-      if (this.isCredentialsReady) {
-        const credAge = Date.now() - this.lastUpdated;
-        if (credAge < CACHE_CONFIG.CRED_CACHE) {
-          logger.debug('使用内存中的有效临时凭证');
-          return {
-            cred: this.sklandCred,
-            token: this.sklandSignToken
-          };
-        }
-      }
+      // 修改点3: 移除内存缓存检查，总是重新获取凭证
+      // 不再检查内存中的凭证是否有效，强制重新获取
 
       if (this.isFetchingCred && this.credPromise) {
         logger.debug('已有凭证获取请求在进行中，等待结果');
@@ -270,7 +262,7 @@ export const useAuthStore = defineStore('auth', {
     },
 
     /**
-     * 优化恢复登录状态 - 新增完整数据获取流程
+     * 优化恢复登录状态 - 修改：现在总是执行完整数据获取流程
      */
     async restoreAuthState(): Promise<boolean> {
       if (!this.canAttemptRestore) {
@@ -282,7 +274,6 @@ export const useAuthStore = defineStore('auth', {
       this.isInitializing = true;
       logger.info(`尝试恢复登录状态 (第 ${this.restoreAttempts} 次)`);
 
-      // 将 authState 声明移到方法作用域顶部
       let authState: StoredAuthState | null = null;
 
       try {
@@ -304,9 +295,9 @@ export const useAuthStore = defineStore('auth', {
           return false;
         }
 
-        // 现在 authState 在整个方法中都可用，但需要检查是否为 null
-        if (!authState || !this.validateAuthStateForRestore(authState)) {
-          logger.warn('本地存储的登录状态不完整或格式错误');
+        // 修改点4: 简化验证，只检查最基本的hgToken存在性
+        if (!authState || !authState.hgToken) {
+          logger.warn('本地存储中没有有效的hgToken');
           this.clearCorruptedStorage();
           this.isInitializing = false;
           return false;
@@ -319,30 +310,26 @@ export const useAuthStore = defineStore('auth', {
           return false;
         }
 
-        // 恢复基础状态 - 这里 authState 已经通过上面的检查，不会是 null
-        this.isLogin = authState.isLogin || false;
-        this.hgToken = authState.hgToken || '';
-        this.userId = authState.userId || '';
-        this.playerData = authState.playerData || null;
-        this.bindingRoles = authState.bindingRoles || [];
-        this.lastUpdated = authState.lastUpdated || 0;
-        this.restoreAttempts = authState.restoreAttempts || 0;
-        this.cacheValid = true;
-        this.isCredReady = false;
+        // 修改点5: 只恢复最基础的hgToken，不恢复其他缓存数据
+        this.isLogin = true; // 标记为已登录状态
+        this.hgToken = authState.hgToken;
+        this.userId = authState.userId || ''; // 恢复userId但不依赖它
+        // 注意：不恢复playerData和bindingRoles，强制重新获取
+        this.playerData = null;
+        this.bindingRoles = [];
+        this.lastUpdated = 0; // 重置最后更新时间
+        this.cacheValid = false; // 标记缓存无效
+        this.isCredReady = false; // 凭证需要重新获取
         this.authError = null;
 
-        logger.info('从本地存储恢复hgToken成功', {
+        logger.info('从本地存储恢复hgToken成功，开始重新获取所有数据', {
           userId: this.userId,
-          hasHgToken: !!this.hgToken,
-          hasPlayerData: !!this.playerData,
-          roleCount: this.bindingRoles.length
+          hasHgToken: !!this.hgToken
         });
 
-        // 关键优化：按照完整流程获取最新数据
-        if (this.hgToken) {
-          logger.info('开始执行完整数据获取流程...');
-          await this.executeFullDataRefresh();
-        }
+        // 修改点6: 总是执行完整数据获取流程，强制重新获取所有数据
+        logger.info('开始执行完整数据获取流程...');
+        await this.executeFullDataRefresh();
 
         console.timeEnd('恢复登录状态耗时');
         this.isInitializing = false;
@@ -356,7 +343,7 @@ export const useAuthStore = defineStore('auth', {
     },
 
     /**
-     * 新增：执行完整数据刷新流程
+     * 执行完整数据刷新流程
      * 按照登录后的标准流程获取所有必要数据
      */
     async executeFullDataRefresh(): Promise<void> {
@@ -370,13 +357,13 @@ export const useAuthStore = defineStore('auth', {
 
         // 第二步：获取绑定角色列表
         logger.info('步骤2: 获取绑定角色列表...');
-        await this.fetchBindingRoles(true);
+        await this.fetchBindingRoles(); // 修改点7: 移除未使用的forceRefresh参数
         logger.info(`✓ 角色列表获取成功，共 ${this.bindingRoles.length} 个角色`);
 
         // 第三步：获取玩家数据（如果有角色）
         if (this.bindingRoles.length > 0) {
           logger.info('步骤3: 获取玩家详细数据...');
-          await this.fetchPlayerData(true);
+          await this.fetchPlayerData(); // 修改点8: 移除未使用的forceRefresh参数
           logger.info('✓ 玩家数据获取成功');
         }
 
@@ -392,32 +379,30 @@ export const useAuthStore = defineStore('auth', {
 
       } catch (error) {
         const normalizedError = this.normalizeError(error);
-        logger.warn('完整数据刷新过程中出现错误，使用缓存数据继续', normalizedError);
+        logger.warn('完整数据刷新过程中出现错误', normalizedError);
 
-        // 即使刷新失败，也标记初始化完成，避免卡在加载状态
         this.isInitializing = false;
 
-        // 对于网络错误，使用缓存数据继续
-        if (this.isNetworkError(normalizedError) && (this.playerData || this.bindingRoles.length > 0)) {
-          logger.info('网络错误，但使用缓存数据继续显示');
-          this.authError = '网络连接失败，使用缓存数据';
-          return;
-        }
-
-        // 对于认证错误，需要重新登录
+        // 修改点9: 不再使用缓存数据，直接抛出错误
         if (this.isAuthError(normalizedError)) {
           this.authError = '登录已过期，请重新登录';
           throw normalizedError;
         }
 
+        if (this.isNetworkError(normalizedError)) {
+          this.authError = '网络连接失败，请检查网络后重试';
+          throw normalizedError;
+        }
+
+        this.authError = '数据获取失败，请重试';
         throw normalizedError;
       }
     },
 
     /**
-     * 优化获取玩家数据
+     * 优化获取玩家数据 - 修改：移除缓存逻辑和未使用参数
      */
-    async fetchPlayerData(forceRefresh = false): Promise<any> {
+    async fetchPlayerData(): Promise<any> { // 修改点10: 移除未使用的forceRefresh参数
       try {
         const { cred, token } = await this.ensureSklandCred();
 
@@ -427,10 +412,8 @@ export const useAuthStore = defineStore('auth', {
           return Promise.reject(error);
         }
 
-        if (!forceRefresh && !this.shouldRefreshPlayerData && this.playerData) {
-          logger.debug('使用缓存的玩家数据');
-          return this.playerData;
-        }
+        // 修改点11: 不再检查缓存，总是重新获取数据
+        logger.info('正在获取玩家数据');
 
         const defaultUid = this.bindingRoles.find(role => role.isDefault)?.uid || this.bindingRoles[0].uid;
         logger.info(`正在获取玩家数据`, { uid: defaultUid });
@@ -456,36 +439,29 @@ export const useAuthStore = defineStore('auth', {
         const normalizedError = this.normalizeError(error);
         logger.error('获取玩家数据失败', normalizedError);
 
+        // 修改点12: 不再使用缓存数据，直接抛出错误
         if (this.isAuthError(normalizedError)) {
           this.authError = '登录已过期，请重新登录';
-          if (this.playerData) {
-            logger.warn('认证失败，使用缓存的玩家数据');
-            return this.playerData;
-          }
+          throw normalizedError;
         }
 
-        if (this.isNetworkError(normalizedError) && this.playerData) {
-          logger.warn('网络错误，使用缓存的玩家数据');
-          this.authError = '网络连接失败，使用缓存数据';
-          return this.playerData;
+        if (this.isNetworkError(normalizedError)) {
+          this.authError = '网络连接失败，请检查网络后重试';
+          throw normalizedError;
         }
 
-        return Promise.reject(normalizedError);
+        throw normalizedError;
       }
     },
 
     /**
-     * 优化获取绑定角色列表
+     * 优化获取绑定角色列表 - 修改：移除缓存逻辑和未使用参数
      */
-    async fetchBindingRoles(forceRefresh = false): Promise<any[]> {
+    async fetchBindingRoles(): Promise<any[]> { // 修改点13: 移除未使用的forceRefresh参数
       try {
         const { cred, token } = await this.ensureSklandCred();
 
-        if (!forceRefresh && !this.shouldRefreshRoles && this.bindingRoles.length > 0) {
-          logger.debug('使用缓存的角色列表', { roleCount: this.bindingRoles.length });
-          return this.bindingRoles;
-        }
-
+        // 修改点14: 不再检查缓存，总是重新获取数据
         logger.info('正在获取绑定角色列表');
 
         const roles = await AuthAPI.getBindingRoles(cred, token);
@@ -506,18 +482,15 @@ export const useAuthStore = defineStore('auth', {
         const normalizedError = this.normalizeError(error);
         logger.error('获取绑定角色失败', normalizedError);
 
+        // 修改点15: 不再使用缓存数据，直接抛出错误
         if (this.isAuthError(normalizedError)) {
           this.authError = '登录已过期，请重新登录';
-          if (this.bindingRoles.length > 0) {
-            logger.warn('认证失败，使用缓存的角色列表');
-            return this.bindingRoles;
-          }
+          throw normalizedError;
         }
 
-        if (this.isNetworkError(normalizedError) && this.bindingRoles.length > 0) {
-          logger.warn('网络错误，使用缓存的角色列表');
-          this.authError = '网络连接失败，使用缓存数据';
-          return this.bindingRoles;
+        if (this.isNetworkError(normalizedError)) {
+          this.authError = '网络连接失败，请检查网络后重试';
+          throw normalizedError;
         }
 
         return Promise.reject(normalizedError);
@@ -532,7 +505,7 @@ export const useAuthStore = defineStore('auth', {
     },
 
     /**
-     * 优化后的通用登录流程 - 使用新的完整数据获取流程
+     * 优化后的通用登录流程
      */
     async handleLogin(hgToken: string): Promise<void> {
       try {
@@ -546,7 +519,7 @@ export const useAuthStore = defineStore('auth', {
         this.authError = null;
         this.isInitializing = true;
 
-        // 使用新的完整数据获取流程
+        // 使用完整数据获取流程
         await this.executeFullDataRefresh();
 
         console.timeEnd('登录流程总耗时');
@@ -620,7 +593,7 @@ export const useAuthStore = defineStore('auth', {
               timestamp: Date.now(),
               lastUpdated: this.lastUpdated,
               restoreAttempts: this.restoreAttempts,
-              version: '2.1.0'
+              version: '2.2.0' // 更新版本号
             };
 
             if (!this.validateAuthStateForStorage(authState)) {
@@ -739,19 +712,6 @@ export const useAuthStore = defineStore('auth', {
 
       if (!isValid) {
         logger.warn('存储前验证失败：hgToken无效');
-      }
-
-      return isValid;
-    },
-
-    /**
-     * 验证认证状态数据的完整性 - 恢复时验证
-     */
-    validateAuthStateForRestore(authState: StoredAuthState): boolean {
-      const isValid = !!authState.hgToken && typeof authState.hgToken === 'string' && authState.hgToken.length > 0;
-
-      if (!isValid) {
-        logger.warn('恢复时验证失败：hgToken无效');
       }
 
       return isValid;
