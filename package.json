@@ -1,6 +1,6 @@
 {
   "name": "prts",
-  "version": "0.2.6",
+  "version": "0.2.7",
   "description": "PRTS系统助手",
   "productName": "PRTS系统",
   "main": "./out/main/index.js",

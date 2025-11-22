@@ -5,7 +5,7 @@
     <div class="setting-content">
       <!-- 用户信息展示 -->
       <div class="user-info-section" v-if="authStore.isLogin">
-        <h3>当前账号</h3>
+        <h3>账号信息</h3>
         <div class="user-card">
           <div class="user-avatar">
             <img
@@ -38,6 +38,32 @@
             </p>
             <p class="login-status">状态: <span class="status-online">已登录</span></p>
           </div>
+        </div>
+
+        <!-- 基本信息卡片 - 已融入账号信息板块 -->
+        <div class="basic-info-card">
+          <ul class="data-grid">
+            <li class="data-item">
+              <span class="label">入职日期</span>
+              <span class="value">{{ gameDataStore.formatTimestamp(gameDataStore.playerData?.status?.registerTs) || '--' }}</span>
+            </li>
+            <li class="data-item">
+              <span class="label">作战进度</span>
+              <span class="value">{{ gameDataStore.getMainStageProgress || '--' }}</span>
+            </li>
+            <li class="data-item">
+              <span class="label">家具保有数</span>
+              <span class="value">{{ gameDataStore.playerData?.building?.furniture?.total || '--' }}</span>
+            </li>
+            <li class="data-item">
+              <span class="label">雇佣干员数</span>
+              <span class="value">{{ gameDataStore.getCharCount || '--' }}</span>
+            </li>
+              <li class="data-item">
+                <span class="label">时装数量</span>
+                <span class="value">{{ gameDataStore.playerData?.skins?.length || '--' }}</span>
+              </li>
+          </ul>
         </div>
       </div>
 
@@ -649,7 +675,7 @@ onMounted(() => {
 .user-info-section h3 {
   margin-bottom: 15px;
   color: #9feaf9;
-  font-size: 16px;
+  font-size: 20px;
 }
 
 .user-card {
@@ -660,11 +686,12 @@ onMounted(() => {
   background: #3a3a3a;
   border-radius: 6px;
   border: 1px solid #4a4a4a;
+  margin-bottom: 15px;
 }
 
 .user-avatar {
-  width: 60px;
-  height: 60px;
+  width: 100px;
+  height: 100px;
   background: linear-gradient(135deg, #646cff, #af47ff);
   display: flex;
   align-items: center;
@@ -693,6 +720,12 @@ onMounted(() => {
   color: #fff;
   margin-bottom: 4px;
   font-size: 16px;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.user-name:hover {
+  color: #9feaf9;
 }
 
 .user-level, .user-uid, .login-status {
@@ -712,9 +745,60 @@ onMounted(() => {
   user-select: none;
 }
 
+.uid-value.copyable:hover {
+  background: rgba(159, 234, 249, 0.1);
+  border-color: #9feaf9;
+}
+
 .status-online {
   color: #4caf50;
   font-weight: 500;
+}
+
+/* 基本信息卡片 */
+.basic-info-card {
+  background: #3a3a3a;
+  border-radius: 6px;
+  border: 1px solid #4a4a4a;
+  padding: 15px;
+}
+
+.data-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 12px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.data-item {
+  display: flex;
+  flex-direction: column;
+  padding: 12px;
+  background: #333333;
+  border-radius: 6px;
+  transition: all 0.3s ease;
+  border: 1px solid #404040;
+}
+
+.data-item:hover {
+  background: #3a3a3a;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.label {
+  font-size: 12px;
+  color: #999;
+  margin-bottom: 4px;
+  font-weight: 500;
+}
+
+.value {
+  font-size: 14px;
+  color: #ccc;
+  font-weight: 600;
 }
 
 /* 未登录状态 */
@@ -1056,124 +1140,6 @@ onMounted(() => {
   }
 }
 
-/* 响应式设计 */
-@media (max-width: 768px) {
-  .modal-overlay {
-    padding: 15px;
-  }
-
-  .modal-content {
-    max-width: 95vw;
-    max-height: 85vh;
-  }
-
-  .modal-header {
-    padding: 16px 20px;
-  }
-
-  .modal-header h3 {
-    font-size: 16px;
-  }
-
-  .modal-body {
-    padding: 20px;
-    gap: 16px;
-  }
-
-  .modal-tip {
-    font-size: 13px;
-  }
-
-  .manual-copy-textarea {
-    font-size: 12px;
-    padding: 12px;
-    max-height: 300px;
-  }
-
-  .modal-actions {
-    flex-direction: column;
-    gap: 8px;
-  }
-
-  .modal-btn {
-    width: 100%;
-    min-width: auto;
-  }
-}
-
-@media (max-width: 480px) {
-  .modal-overlay {
-    padding: 10px;
-  }
-
-  .modal-content {
-    max-width: 98vw;
-    max-height: 90vh;
-    border-radius: 10px;
-  }
-
-  .modal-header {
-    padding: 14px 16px;
-  }
-
-  .modal-header h3 {
-    font-size: 15px;
-  }
-
-  .modal-body {
-    padding: 16px;
-    gap: 12px;
-  }
-
-  .modal-tip {
-    font-size: 12px;
-  }
-
-  .manual-copy-textarea {
-    font-size: 11px;
-    padding: 10px;
-    max-height: 250px;
-  }
-
-  .modal-close {
-    width: 28px;
-    height: 28px;
-    font-size: 20px;
-  }
-}
-
-/* 小屏幕高度适配 */
-@media (max-height: 600px) {
-  .modal-overlay {
-    align-items: flex-start;
-    padding-top: 40px;
-  }
-
-  .modal-content {
-    max-height: calc(100vh - 80px);
-  }
-
-  .manual-copy-textarea {
-    max-height: 200px;
-  }
-}
-
-/* 超小屏幕适配 */
-@media (max-width: 320px) {
-  .modal-header {
-    padding: 12px 14px;
-  }
-
-  .modal-body {
-    padding: 14px;
-  }
-
-  .modal-btn {
-    padding: 8px 16px;
-    font-size: 13px;
-  }
-}
-
 /* 自定义清除日志确认弹窗 */
 .custom-modal-overlay {
   position: fixed;
@@ -1274,23 +1240,6 @@ onMounted(() => {
   box-shadow: 0 4px 8px rgba(108, 117, 125, 0.3);
 }
 
-/* 关键帧动画 */
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-@keyframes slideIn {
-  from {
-    opacity: 0;
-    transform: translateY(-20px) scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-}
-
 /* 机械式水平扩展动画 */
 @keyframes mechanicalExpand {
   0% {
@@ -1373,6 +1322,10 @@ onMounted(() => {
 
   .user-details {
     width: 100%;
+  }
+
+  .data-grid {
+    grid-template-columns: 1fr;
   }
 
   .modal-content {

@@ -281,3 +281,96 @@ export const AuthAPI = {
     return data.data;
   }
 };
+
+// 抽卡记录相关接口
+export const GachaAPI = {
+  // 获取卡池分类
+  getGachaCategories: async (cred: string, signToken: string, uid: string) => {
+    const url = `${API_BASE.skland}/user/api/inquiry/gacha/cate?uid=${uid}`;
+    const headers = getSignedHeaders(url, 'GET', null, cred, signToken);
+
+    console.log('获取卡池分类请求头:', headers);
+
+    const response = await fetch(url, {
+      method: 'GET',
+      headers
+    });
+
+    if (!response.ok) {
+      console.error(`HTTP ${response.status} - 获取卡池分类失败`);
+      if (response.status === 401) {
+        throw new Error('认证失败，请检查登录凭证是否有效');
+      }
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    console.log('卡池分类响应:', data);
+
+    if (data.code !== 0) {
+      console.error('API错误:', data);
+      throw new Error(data.message || '获取卡池分类失败');
+    }
+    return data.data;
+  },
+
+  // 获取抽卡记录
+  getGachaRecords: async (cred: string, signToken: string, uid: string, category: string, size: number = 20) => {
+    const url = `${API_BASE.skland}/user/api/inquiry/gacha/history?uid=${uid}&category=${category}&size=${size}`;
+    const headers = getSignedHeaders(url, 'GET', null, cred, signToken);
+
+    console.log('获取抽卡记录请求头:', headers);
+
+    const response = await fetch(url, {
+      method: 'GET',
+      headers
+    });
+
+    if (!response.ok) {
+      console.error(`HTTP ${response.status} - 获取抽卡记录失败`);
+      if (response.status === 401) {
+        throw new Error('认证失败，请检查登录凭证是否有效');
+      }
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    console.log('抽卡记录响应:', data);
+
+    if (data.code !== 0) {
+      console.error('API错误:', data);
+      throw new Error(data.message || '获取抽卡记录失败');
+    }
+    return data.data;
+  },
+
+  // 获取更多抽卡记录
+  getMoreGachaRecords: async (cred: string, signToken: string, uid: string, category: string, gachaTs: number, pos: number = 1, size: number = 20) => {
+    const url = `${API_BASE.skland}/user/api/inquiry/gacha/history?uid=${uid}&category=${category}&pos=${pos}&gachaTs=${gachaTs}&size=${size}`;
+    const headers = getSignedHeaders(url, 'GET', null, cred, signToken);
+
+    console.log('获取更多抽卡记录请求头:', headers);
+
+    const response = await fetch(url, {
+      method: 'GET',
+      headers
+    });
+
+    if (!response.ok) {
+      console.error(`HTTP ${response.status} - 获取更多抽卡记录失败`);
+      if (response.status === 401) {
+        throw new Error('认证失败，请检查登录凭证是否有效');
+      }
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    console.log('更多抽卡记录响应:', data);
+
+    if (data.code !== 0) {
+      console.error('API错误:', data);
+      throw new Error(data.message || '获取更多抽卡记录失败');
+    }
+    return data.data;
+  }
+};

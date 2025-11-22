@@ -282,6 +282,9 @@ export const useAuthStore = defineStore('auth', {
       this.isInitializing = true;
       logger.info(`尝试恢复登录状态 (第 ${this.restoreAttempts} 次)`);
 
+      // 将 authState 声明移到方法作用域顶部
+      let authState: StoredAuthState | null = null;
+
       try {
         console.time('恢复登录状态耗时');
 
@@ -292,7 +295,6 @@ export const useAuthStore = defineStore('auth', {
           return false;
         }
 
-        let authState: StoredAuthState;
         try {
           authState = JSON.parse(authStr);
         } catch (parseError) {
@@ -302,7 +304,8 @@ export const useAuthStore = defineStore('auth', {
           return false;
         }
 
-        if (!this.validateAuthStateForRestore(authState)) {
+        // 现在 authState 在整个方法中都可用，但需要检查是否为 null
+        if (!authState || !this.validateAuthStateForRestore(authState)) {
           logger.warn('本地存储的登录状态不完整或格式错误');
           this.clearCorruptedStorage();
           this.isInitializing = false;
@@ -316,7 +319,7 @@ export const useAuthStore = defineStore('auth', {
           return false;
         }
 
-        // 恢复基础状态
+        // 恢复基础状态 - 这里 authState 已经通过上面的检查，不会是 null
         this.isLogin = authState.isLogin || false;
         this.hgToken = authState.hgToken || '';
         this.userId = authState.userId || '';

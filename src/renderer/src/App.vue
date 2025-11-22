@@ -130,6 +130,12 @@ const componentMap: Record<string, any> = {
               >
                 材料计算
               </li>
+              <li
+                :class="['nav-item', { active: activeComponent === 'HeadhuntingRecord' }]"
+                @click="switchComponent('HeadhuntingRecord')"
+              >
+                寻访记录
+              </li>
             </ul>
           </div>
         </nav>

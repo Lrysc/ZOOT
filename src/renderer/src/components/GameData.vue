@@ -130,15 +130,19 @@ const handleRefresh = async () => {
   hideContextMenu();
 
   try {
+    // 显示刷新中的浮窗通知 - 修复参数问题
+    showInfo('神经连接中...');
+
     // 调用store的刷新数据方法
     await gameDataStore.refreshData();
+
     // 显示成功提示
-    showSuccess('数据刷新成功！');
+    showSuccess('神经连接同步完成！');
   } catch (error: any) {
     // 安全的错误处理，避免未处理的Promise拒绝
     const errorMessage = error?.message || '未知错误';
     console.error('刷新数据失败:', error);
-    showError(`刷新失败：${errorMessage}`);
+    showError(`同步失败：${errorMessage}`);
   }
 };
 
@@ -321,7 +325,7 @@ onUnmounted(() => {
         :class="{ refreshing: gameDataStore.isRefreshing }"
       >
         <span class="context-menu-text">
-          {{ gameDataStore.isRefreshing ? '刷新中...' : '刷新数据' }}
+          {{ gameDataStore.isRefreshing ? '刷新中...' : '刷新' }}
         </span>
       </button>
     </div>
@@ -379,67 +383,6 @@ onUnmounted(() => {
         </div>
       </div>
 
-      <!-- 基本信息卡片 -->
-      <div class="section-card" v-if="authStore.isLogin">
-        <h3 class="section-title">--- 基本信息 ---</h3>
-        <ul class="data-grid">
-          <li class="data-item">
-            <span class="label">入职日期</span>
-            <span class="value">{{ gameDataStore.formatTimestamp(gameDataStore.playerData?.status?.registerTs) || '--' }}</span>
-          </li>
-          <li class="data-item">
-            <span class="label">游戏昵称</span>
-            <span class="value">Dr.{{ gameDataStore.playerData?.status?.name || '未知' }}</span>
-          </li>
-          <li class="data-item">
-            <span class="label">作战进度</span>
-            <span class="value">{{ gameDataStore.getMainStageProgress || '--' }}</span>
-          </li>
-          <li class="data-item">
-            <span class="label">家具保有数</span>
-            <span class="value">{{ gameDataStore.playerData?.building?.furniture?.total || '--' }}</span>
-          </li>
-          <li class="data-item">
-            <span class="label">雇佣干员数</span>
-            <span class="value">{{ gameDataStore.getCharCount || '--' }}</span>
-          </li>
-        </ul>
-      </div>
-
-      <!-- 助战干员卡片 -->
-      <div class="section-card" v-if="authStore.isLogin">
-        <h3 class="section-title">--- 助战干员 ---</h3>
-        <div class="assist-chars-grid">
-          <div
-            v-for="(char, index) in gameDataStore.getAssistCharArrayStatus"
-            :key="index"
-            class="assist-char-item"
-          >
-            <!-- 左边：头像 -->
-            <div class="char-avatar-container">
-              <img
-                :src="char.avatarUrl"
-                :alt="char.name"
-                class="char-avatar"
-                @error="(event) => gameDataStore.handleOperatorAvatarError(char.charId, event)"
-                @load="() => gameDataStore.handleOperatorAvatarLoad(char.charId)"
-              />
-            </div>
-
-            <!-- 右边：干员信息 -->
-            <div class="char-info-container">
-              <div class="char-name">{{ char.name }}</div>
-              <div class="char-level">{{ char.level }}</div>
-              <div class="char-skill">{{ char.skill }}</div>
-            </div>
-          </div>
-          <div v-if="!gameDataStore.getAssistCharArrayStatus || gameDataStore.getAssistCharArrayStatus.length === 0" class="no-assist-char">
-            无助战干员
-          </div>
-        </div>
-        <div class="assist-count">共 {{ gameDataStore.getAssistCharCount || 0 }} 名助战干员</div>
-      </div>
-
       <!-- 实时数据卡片 -->
       <div class="section-card" v-if="authStore.isLogin">
         <h3 class="section-title">--- 实时数据 ---</h3>
@@ -483,19 +426,38 @@ onUnmounted(() => {
         </ul>
       </div>
 
-      <!-- 我的干员卡片 -->
+      <!-- 助战干员卡片 -->
       <div class="section-card" v-if="authStore.isLogin">
-        <h3 class="section-title">--- 我的干员 ---</h3>
-        <ul class="data-grid">
-          <li class="data-item">
-            <span class="label">干员总数</span>
-            <span class="value">{{ gameDataStore.getCharCount || '--' }}</span>
-          </li>
-          <li class="data-item">
-            <span class="label">时装数量</span>
-            <span class="value">{{ gameDataStore.playerData?.skins?.length || '--' }}</span>
-          </li>
-        </ul>
+        <h3 class="section-title">--- 助战干员 ---</h3>
+        <div class="assist-chars-grid">
+          <div
+            v-for="(char, index) in gameDataStore.getAssistCharArrayStatus"
+            :key="index"
+            class="assist-char-item"
+          >
+            <!-- 左边：头像 -->
+            <div class="char-avatar-container">
+              <img
+                :src="char.avatarUrl"
+                :alt="char.name"
+                class="char-avatar"
+                @error="(event) => gameDataStore.handleOperatorAvatarError(char.charId, event)"
+                @load="() => gameDataStore.handleOperatorAvatarLoad(char.charId)"
+              />
+            </div>
+
+            <!-- 右边：干员信息 -->
+            <div class="char-info-container">
+              <div class="char-name">{{ char.name }}</div>
+              <div class="char-level">{{ char.level }}</div>
+              <div class="char-skill">{{ char.skill }}</div>
+            </div>
+          </div>
+          <div v-if="!gameDataStore.getAssistCharArrayStatus || gameDataStore.getAssistCharArrayStatus.length === 0" class="no-assist-char">
+            无助战干员
+          </div>
+        </div>
+        <div class="assist-count">共 {{ gameDataStore.getAssistCharCount || 0 }} 名助战干员</div>
       </div>
 
       <!-- 基建数据卡片 -->
@@ -551,6 +513,7 @@ onUnmounted(() => {
     </div>
   </div>
 </template>
+
 
 <style scoped>
 /* ==================== 容器布局样式 ==================== */
