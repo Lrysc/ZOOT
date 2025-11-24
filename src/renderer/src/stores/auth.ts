@@ -293,8 +293,7 @@ export const useAuthStore = defineStore('auth', {
       this.restorePromise = this._doRestoreAuthState();
 
       try {
-        const result = await this.restorePromise;
-        return result;
+        return await this.restorePromise;
       } finally {
         this.isRestoring = false;
         this.restorePromise = null;
@@ -384,9 +383,8 @@ export const useAuthStore = defineStore('auth', {
      * 执行完整数据刷新流程
      * 按照登录后的标准流程获取所有必要数据
      */
-    async executeFullDataRefresh(): Promise<void> {
+    async executeFullDataRefresh(startTimer: boolean = true): Promise<void> {
       // 添加可选参数来控制是否启动计时器，避免与调用方计时器冲突
-      const startTimer = arguments.length === 0; // 只有在没有参数时才启动计时器
       let timerStarted = false;
 
       if (startTimer) {
