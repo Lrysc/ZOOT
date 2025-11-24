@@ -602,6 +602,7 @@ export const GachaAPI = {
   ): Promise<GachaCategory[]> => {
     // 尝试多个可能的API路径
     const possibleUrls = [
+      isDev ? `/api/user/api/inquiry/gacha/cate?uid=${uid}` : `${API_BASE.skland}/user/api/inquiry/gacha/cate?uid=${uid}`,
       `${API_BASE.skland}/api/v1/gacha/cate?uid=${uid}`,
       `${API_BASE.skland}/api/v2/gacha/cate?uid=${uid}`,
       `${API_BASE.skland}/gacha/api/v1/cate?uid=${uid}`,
@@ -624,7 +625,7 @@ export const GachaAPI = {
 
         const data = await handleApiResponse(response, '获取卡池分类');
         console.log(`成功获取卡池分类，使用URL: ${url}`);
-        return data.data;
+        return data.data || data;
       } catch (error) {
         console.log(`URL ${url} 失败:`, error);
         lastError = error as Error;
@@ -656,6 +657,7 @@ export const GachaAPI = {
   ): Promise<GachaRecordsResponse> => {
     // 尝试多个可能的API路径
     const possibleUrls = [
+      isDev ? `/api/user/api/inquiry/gacha/history?uid=${uid}&category=${category}&size=${size}` : `${API_BASE.skland}/user/api/inquiry/gacha/history?uid=${uid}&category=${category}&size=${size}`,
       `${API_BASE.skland}/api/v1/gacha/history?uid=${uid}&category=${category}&size=${size}`,
       `${API_BASE.skland}/api/v2/gacha/history?uid=${uid}&category=${category}&size=${size}`,
       `${API_BASE.skland}/gacha/api/v1/history?uid=${uid}&category=${category}&size=${size}`,
@@ -678,7 +680,7 @@ export const GachaAPI = {
 
         const data = await handleApiResponse(response, '获取抽卡记录');
         console.log(`成功获取抽卡记录，使用URL: ${url}`);
-        return data.data;
+        return data.data || data;
       } catch (error) {
         console.log(`URL ${url} 失败:`, error);
         lastError = error as Error;
@@ -714,6 +716,7 @@ export const GachaAPI = {
   ): Promise<GachaRecordsResponse> => {
     // 尝试多个可能的API路径
     const possibleUrls = [
+      isDev ? `/api/user/api/inquiry/gacha/history?uid=${uid}&category=${category}&pos=${pos}&gachaTs=${gachaTs}&size=${size}` : `${API_BASE.skland}/user/api/inquiry/gacha/history?uid=${uid}&category=${category}&pos=${pos}&gachaTs=${gachaTs}&size=${size}`,
       `${API_BASE.skland}/api/v1/gacha/history?uid=${uid}&category=${category}&pos=${pos}&gachaTs=${gachaTs}&size=${size}`,
       `${API_BASE.skland}/api/v2/gacha/history?uid=${uid}&category=${category}&pos=${pos}&gachaTs=${gachaTs}&size=${size}`,
       `${API_BASE.skland}/gacha/api/v1/history?uid=${uid}&category=${category}&pos=${pos}&gachaTs=${gachaTs}&size=${size}`,
@@ -736,7 +739,7 @@ export const GachaAPI = {
 
         const data = await handleApiResponse(response, '获取更多抽卡记录');
         console.log(`成功获取更多抽卡记录，使用URL: ${url}`);
-        return data.data;
+        return data.data || data;
       } catch (error) {
         console.log(`URL ${url} 失败:`, error);
         lastError = error as Error;

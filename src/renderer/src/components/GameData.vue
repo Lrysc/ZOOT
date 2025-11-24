@@ -40,7 +40,7 @@
       <div class="section-card" v-if="!authStore.isLogin">
         <h3 class="section-title">--- 登录提示 ---</h3>
         <div class="login-prompt">
-          <p class="prompt-text">请登录森空岛账号以查看游戏数据</p>
+          <p class="prompt-text">请登录鹰角网络通行证以查看游戏数据</p>
           <p class="prompt-subtext">登录后即可查看详细的游戏信息和统计数据</p>
         </div>
       </div>

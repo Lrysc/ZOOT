@@ -79,6 +79,8 @@ export function getSignedHeaders(
       fullUrl = 'https://as.hypergryph.com' + url.replace('/api/hg', '');
     } else if (url.startsWith('/api/skland')) {
       fullUrl = 'https://zonai.skland.com' + url.replace('/api/skland', '');
+    } else if (url.startsWith('/api/user')) {
+      fullUrl = 'https://zonai.skland.com' + url.replace('/api', '');
     }
   }
   

@@ -1228,13 +1228,17 @@ export const useGameDataStore = defineStore('gameData', () => {
     }
   });
 
+//主线作战进度
   const getMainStageProgress = computed((): string => {
     try {
       const status = playerData.value?.status;
       if (!status) return '未知';
       if (status.mainStageProgress === '') return '全部完成';
       if (status.mainStageProgress && typeof status.mainStageProgress === 'string') {
-        return status.mainStageProgress.trim();
+        const progress = status.mainStageProgress.trim();
+
+        // 移除 "main_" 前缀（如果存在）
+        return progress.replace(/^main_/, '');
       }
       return '未通关主线';
     } catch (error) {

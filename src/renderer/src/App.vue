@@ -5,7 +5,7 @@ import Material from '@components/Material.vue'
 import LoginWindow from '@components/LoginWindow.vue'
 import Setting from '@components/Setting.vue'
 import ToastNotification from '@components/ToastNotification.vue'
-// import HeadhuntingRecord from '@components/headhuntingrecord.vue'
+import HeadhuntingRecord from '@components/headhuntingrecord.vue'
 import { useAuthStore } from '@stores/auth'
 import { useGameDataStore } from '@stores/gameData'
 import { ref, onMounted, onUnmounted, provide, computed } from 'vue'
@@ -360,7 +360,7 @@ const componentMap: Record<string, any> = {
   'GameData': GameData,
   'Recruit': Recruit,
   'Material': Material,
-  // 'HeadhuntingRecord': HeadhuntingRecord,
+  'HeadhuntingRecord': HeadhuntingRecord,
   'Setting': Setting
 };
 </script>

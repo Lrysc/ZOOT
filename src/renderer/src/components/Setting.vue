@@ -793,6 +793,8 @@ onMounted(() => {
   cursor: pointer;
   transition: color 0.2s ease;
   margin-bottom: 4px;
+  width: fit-content;
+  user-select: none;
 }
 
 .user-name:hover {

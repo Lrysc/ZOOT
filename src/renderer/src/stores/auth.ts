@@ -104,19 +104,24 @@ export const useAuthStore = defineStore('auth', {
     hasBindingRoles: (state) => state.bindingRoles.length > 0,
 
     /**
-     * 是否需要刷新玩家数据 - 修改：现在总是返回true，强制刷新
+     * 是否需要刷新玩家数据 - 添加智能缓存判断
      */
-    shouldRefreshPlayerData: (): boolean => {
-      // 修改点1: 移除未使用的state参数，现在总是返回true强制刷新
-      return true;
+    shouldRefreshPlayerData: (state): boolean => {
+      if (!state.lastUpdated) return true;
+      const now = Date.now();
+      const age = now - state.lastUpdated;
+      // 根据数据类型设置不同的缓存时间
+      return age > CACHE_CONFIG.PLAYER_DATA_CACHE;
     },
 
     /**
-     * 是否需要刷新角色列表 - 修改：现在总是返回true，强制刷新
+     * 是否需要刷新角色列表 - 添加智能缓存判断
      */
-    shouldRefreshRoles: (): boolean => {
-      // 修改点2: 移除未使用的state参数，现在总是返回true强制刷新
-      return true;
+    shouldRefreshRoles: (state): boolean => {
+      if (!state.lastUpdated) return true;
+      const now = Date.now();
+      const age = now - state.lastUpdated;
+      return age > CACHE_CONFIG.ROLES_CACHE;
     },
 
     /**
@@ -152,7 +157,7 @@ export const useAuthStore = defineStore('auth', {
      */
     isInitialized: (state): boolean => {
       return !state.isInitializing && (state.isLogin || !state.hgToken);
-    }
+    },
   },
 
   actions: {
