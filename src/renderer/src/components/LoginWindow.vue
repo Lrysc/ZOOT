@@ -41,6 +41,27 @@ const errorMsg = ref('');
 const smsBtnText = ref('发送验证码');
 const smsBtnDisabled = ref(false);
 
+// 多账号管理状态
+const showDropdown = ref(false); // 控制下拉菜单显示
+const showManualLogin = ref(false); // 控制是否显示手动登录表单
+const savedAccounts = ref<Array<{phone: string, password: string, lastUsed: number}>>([]);
+const selectedAccountIndex = ref(0); // 当前选中的账号索引
+
+// 计算属性：是否显示账号选择界面
+const shouldShowAccountSelector = computed(() => {
+  return savedAccounts.value.length >= 2 && !showManualLogin.value;
+});
+
+// 计算属性：当前显示的主要账号
+const selectedAccount = computed(() => {
+  return savedAccounts.value.length > 0 ? savedAccounts.value[selectedAccountIndex.value] : null;
+});
+
+// 计算属性：其他账号列表（排除当前选中的账号）
+const otherAccounts = computed(() => {
+  return savedAccounts.value.filter((_, index) => index !== selectedAccountIndex.value);
+});
+
 // 防抖优化
 let smsTimer: NodeJS.Timeout | null = null;
 
@@ -48,6 +69,172 @@ let smsTimer: NodeJS.Timeout | null = null;
 const validatePhone = (phone: string) => {
   const phoneRegex = /^1[3-9]\d{9}$/;
   return phoneRegex.test(phone);
+};
+
+// 多账号管理功能
+const loadSavedAccounts = () => {
+  try {
+    // 尝试从新的多账号存储加载
+    let accounts = localStorage.getItem('hg_accounts');
+    if (accounts) {
+      savedAccounts.value = JSON.parse(accounts).sort((a: any, b: any) => b.lastUsed - a.lastUsed);
+    } else {
+      // 尝试从旧的单一账号存储迁移
+      const oldPhone = localStorage.getItem('hg_phone');
+      const oldPassword = localStorage.getItem('hg_password');
+      if (oldPhone && oldPassword) {
+        const migratedAccount = {
+          phone: oldPhone,
+          password: oldPassword,
+          lastUsed: Date.now()
+        };
+        savedAccounts.value = [migratedAccount];
+
+        // 保存到新的多账号格式
+        localStorage.setItem('hg_accounts', JSON.stringify(savedAccounts.value));
+
+        console.log('已迁移旧账号数据到新的多账号格式');
+      }
+    }
+  } catch (error) {
+    console.error('加载保存的账号失败:', error);
+    savedAccounts.value = [];
+  }
+};
+
+const saveAccount = (phone: string, password: string) => {
+  try {
+    const accounts = [...savedAccounts.value];
+    const existingIndex = accounts.findIndex(acc => acc.phone === phone);
+
+    if (existingIndex >= 0) {
+      // 更新现有账号
+      accounts[existingIndex] = {
+        phone,
+        password,
+        lastUsed: Date.now()
+      };
+    } else {
+      // 添加新账号
+      accounts.push({
+        phone,
+        password,
+        lastUsed: Date.now()
+      });
+    }
+
+    // 限制最多保存5个账号
+    if (accounts.length > 5) {
+      accounts.sort((a, b) => b.lastUsed - a.lastUsed);
+      accounts.splice(5);
+    }
+
+    savedAccounts.value = accounts;
+    localStorage.setItem('hg_accounts', JSON.stringify(accounts));
+  } catch (error) {
+    console.error('保存账号失败:', error);
+  }
+};
+
+const quickLogin = (account: {phone: string, password: string}) => {
+  formData.phone = account.phone;
+  formData.password = account.password;
+  formData.saveInfo = true;
+
+  // 更新最后使用时间
+  saveAccount(account.phone, account.password);
+
+  // 触发验证
+  handlePhoneInput();
+  handlePasswordInput();
+
+  // 自动登录
+  setTimeout(() => {
+    handleSubmit();
+  }, 100);
+};
+
+const toggleDropdown = (event: Event) => {
+  event.stopPropagation();
+  showDropdown.value = !showDropdown.value;
+};
+
+const selectAccountFromDropdown = (account: {phone: string, password: string}) => {
+  // 找到选中账号的索引
+  const accountIndex = savedAccounts.value.findIndex(acc => acc.phone === account.phone);
+  if (accountIndex !== -1) {
+    selectedAccountIndex.value = accountIndex;
+
+    // 更新表单数据
+    formData.phone = account.phone;
+    formData.password = account.password;
+    formData.saveInfo = true;
+
+    // 更新最后使用时间
+    saveAccount(account.phone, account.password);
+
+    // 触发验证
+    handlePhoneInput();
+    handlePasswordInput();
+  }
+
+  // 关闭下拉菜单
+  showDropdown.value = false;
+};
+
+const switchToManualLogin = () => {
+  showManualLogin.value = true;
+  showDropdown.value = false;
+};
+
+const backToAccountSelector = () => {
+  showManualLogin.value = false;
+  showDropdown.value = false;
+};
+
+const deleteAccount = (phone: string, event: Event) => {
+  event.stopPropagation();
+
+  if (confirm('确定要删除这个账号吗？')) {
+    try {
+      const deletedIndex = savedAccounts.value.findIndex(acc => acc.phone === phone);
+      const accounts = savedAccounts.value.filter(acc => acc.phone !== phone);
+      savedAccounts.value = accounts;
+      localStorage.setItem('hg_accounts', JSON.stringify(accounts));
+
+      // 如果删除的是当前选中的账号，切换到第一个账号
+      if (deletedIndex === selectedAccountIndex.value && accounts.length > 0) {
+        selectedAccountIndex.value = 0;
+        formData.phone = accounts[0].phone;
+        formData.password = accounts[0].password;
+      }
+
+      // 如果删除后账号少于2个，回到传统登录界面
+      if (accounts.length < 2) {
+        showManualLogin.value = true;
+      }
+    } catch (error) {
+      console.error('删除账号失败:', error);
+    }
+  }
+};
+
+const formatLastUsed = (timestamp: number) => {
+  const now = Date.now();
+  const diff = now - timestamp;
+  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+  const hours = Math.floor(diff / (1000 * 60 * 60));
+  const minutes = Math.floor(diff / (1000 * 60));
+
+  if (days > 0) {
+    return `${days}天前`;
+  } else if (hours > 0) {
+    return `${hours}小时前`;
+  } else if (minutes > 0) {
+    return `${minutes}分钟前`;
+  } else {
+    return '刚刚';
+  }
 };
 
 // 实时验证手机号
@@ -149,8 +336,11 @@ const handleSubmit = async () => {
     }
 
     // 登录成功后的处理
-    // 如果选择保存，保存到localStorage
+    // 如果选择保存，保存到多账号列表
     if (formData.saveInfo) {
+      saveAccount(formData.phone, formData.password);
+
+      // 保持向后兼容
       localStorage.setItem('hg_phone', formData.phone);
       localStorage.setItem('hg_password', formData.password);
     }
@@ -176,29 +366,6 @@ const handleSubmit = async () => {
   }
 };
 
-// 注释：暂时隐藏清除保存的登录信息功能
-// const clearSavedInfo = () => {
-//   if (confirm('确定要清除保存的登录信息吗？')) {
-//     localStorage.removeItem('hg_phone');
-//     localStorage.removeItem('hg_password');
-//     
-//     // 清空表单
-//     formData.phone = '';
-//     formData.password = '';
-//     formData.saveInfo = false;
-//     
-//     // 重新验证
-//     handlePhoneInput();
-//     handlePasswordInput();
-//     
-//     // 聚焦到手机号输入框
-//     const phoneInput = document.getElementById('phone') as HTMLInputElement;
-//     if (phoneInput) {
-//       phoneInput.focus();
-//     }
-//   }
-// };
-
 // 优化关闭窗口函数
 const handleClose = () => {
   // 清除所有定时器
@@ -206,6 +373,10 @@ const handleClose = () => {
     clearInterval(smsTimer);
     smsTimer = null;
   }
+
+  // 关闭下拉菜单
+  showDropdown.value = false;
+
   emit('close');
 };
 
@@ -214,12 +385,22 @@ const handleKeydown = (event: KeyboardEvent) => {
   switch (event.key) {
     case 'Escape':
       event.preventDefault();
-      handleClose();
+      if (showDropdown.value) {
+        showDropdown.value = false;
+      } else {
+        handleClose();
+      }
       break;
     case 'Enter':
       if (!loading.value) {
         event.preventDefault();
         handleSubmit();
+      }
+      break;
+    case 'ArrowDown':
+      if (event.ctrlKey && savedAccounts.value.length > 0) {
+        event.preventDefault();
+        showDropdown.value = true;
       }
       break;
   }
@@ -232,20 +413,23 @@ onMounted(() => {
   document.addEventListener('keydown', handleKeydown);
   document.body.style.overflow = 'hidden';
 
+  // 加载保存的账号列表
+  loadSavedAccounts();
+
   // 自动聚焦到手机号输入框
   const phoneInput = document.getElementById('phone') as HTMLInputElement;
   if (phoneInput) {
     setTimeout(() => phoneInput.focus(), 100);
   }
 
-  // 预填充保存的登录信息
+  // 预填充保存的登录信息（向后兼容）
   const savedPhone = localStorage.getItem('hg_phone');
   const savedPassword = localStorage.getItem('hg_password');
   if (savedPhone && savedPassword) {
     formData.phone = savedPhone;
     formData.password = savedPassword;
     formData.saveInfo = true;
-    
+
     // 触发验证
     handlePhoneInput();
     handlePasswordInput();
@@ -268,38 +452,93 @@ onUnmounted(() => {
     <div class="login-window">
       <!-- 窗口标题栏 -->
       <div class="window-header">
+        <div class="header-left">
+          <!-- 回退按钮（当从账号选择界面进入时显示） -->
+          <img
+            v-if="savedAccounts.length >= 2 && showManualLogin"
+            src="@assets/exit.png"
+            alt="返回"
+            class="back-to-accounts"
+            @click="backToAccountSelector"
+            title="返回账号选择"
+          />
+        </div>
         <h3>鹰角通行证登录</h3>
-        <!-- 注释：暂时隐藏清除按钮功能 -->
-        <!-- <div class="header-buttons">
-          <button class="clear-btn" @click="clearSavedInfo" :disabled="loading" title="清除保存的登录信息">
-            清除
-          </button>
+        <div class="header-buttons">
           <button class="close-btn" @click="handleClose" :disabled="loading">×</button>
-        </div> -->
-        <button class="close-btn" @click="handleClose" :disabled="loading">×</button>
+        </div>
       </div>
 
       <!-- 窗口内容 -->
       <div class="window-content">
-        <!-- 登录类型切换标签 -->
-        <div class="login-type-tabs">
-          <button
-            :class="{ active: formData.loginType === 'password' }"
-            @click="formData.loginType = 'password'"
-            :disabled="loading"
-          >
-            密码登录
-          </button>
-          <button
-            :class="{ active: formData.loginType === 'sms' }"
-            @click="formData.loginType = 'sms'"
-            :disabled="loading"
-          >
-            验证码登录
-          </button>
+        <!-- 账号选择界面（当有多个账号且没有选择手动登录时显示） -->
+        <div v-if="shouldShowAccountSelector" class="account-selection-view">
+          <!-- 主要账号卡片 -->
+          <div class="primary-account-card">
+            <!-- 左侧区域：点击登录 -->
+            <div class="account-main-area" @click="quickLogin(selectedAccount!)">
+              <div class="account-phone-display">{{ selectedAccount!.phone }}</div>
+              <div class="account-time-display">{{ formatLastUsed(selectedAccount!.lastUsed) }}</div>
+            </div>
+            <!-- 右侧倒三角区域：点击展开下拉菜单 -->
+            <div
+              class="dropdown-arrow"
+              @click="toggleDropdown"
+            >
+              <span class="arrow-icon" :class="{ expanded: showDropdown }">▼</span>
+            </div>
+          </div>
+
+          <!-- 下拉菜单 -->
+          <div v-if="showDropdown && otherAccounts.length > 0" class="account-dropdown">
+            <div
+              v-for="account in otherAccounts"
+              :key="account.phone"
+              class="dropdown-account-item"
+              @click="selectAccountFromDropdown(account)"
+            >
+              <div class="dropdown-account-info">
+                <div class="dropdown-account-phone">{{ account.phone }}</div>
+                <div class="dropdown-account-time">{{ formatLastUsed(account.lastUsed) }}</div>
+              </div>
+              <button
+                class="dropdown-delete-btn"
+                @click="deleteAccount(account.phone, $event)"
+                title="删除账号"
+              >
+                ×
+              </button>
+            </div>
+          </div>
+
+          <!-- 登录其他账号链接 -->
+          <div class="login-other-link" @click="switchToManualLogin">
+            登录其他账号
+          </div>
         </div>
 
-        <form @submit.prevent="handleSubmit" novalidate>
+        <!-- 传统登录表单（当没有多个账号或选择手动输入时显示） -->
+        <form v-else @submit.prevent="handleSubmit" novalidate>
+          <!-- 登录类型切换标签 -->
+          <div class="login-type-tabs">
+            <button
+              type="button"
+              :class="{ active: formData.loginType === 'password' }"
+              @click="formData.loginType = 'password'"
+              :disabled="loading"
+            >
+              密码登录
+            </button>
+            <button
+              type="button"
+              :class="{ active: formData.loginType === 'sms' }"
+              @click="formData.loginType = 'sms'"
+              :disabled="loading"
+            >
+              验证码登录
+            </button>
+          </div>
+
           <div class="form-group">
             <label for="phone">手机号:</label>
             <input
@@ -426,6 +665,8 @@ onUnmounted(() => {
   transform: translateZ(0);
   will-change: transform, opacity;
   border: 1px solid #404040;
+  position: relative;
+  overflow: hidden;
 }
 
 /* 优化输入框样式 */
@@ -486,6 +727,211 @@ onUnmounted(() => {
   to {
     opacity: 1;
     transform: translateY(0) scale(1);
+  }
+}
+
+/* 账号选择界面样式 */
+.account-selection-view {
+  padding: 20px;
+  animation: fadeIn 0.3s ease-out;
+}
+
+/* 主要账号卡片 */
+.primary-account-card {
+  background: #2a2a2a;
+  border: 1px solid #404040;
+  border-radius: 8px;
+  padding: 0;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  justify-content: space-between;
+  align-items: stretch;
+  margin-bottom: 8px;
+  position: relative;
+  overflow: hidden;
+}
+
+.primary-account-card:hover {
+  background: #333;
+  border-color: #646cff;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(100, 108, 255, 0.2);
+}
+
+/* 左侧账号信息区域 */
+.account-main-area {
+  flex: 1;
+  padding: 16px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.account-phone-display {
+  color: #fff;
+  font-size: 16px;
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+
+.account-time-display {
+  color: #999;
+  font-size: 12px;
+}
+
+/* 右侧倒三角区域 */
+.dropdown-arrow {
+  color: #999;
+  padding: 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 50px;
+  border-left: 1px solid #404040;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.dropdown-arrow:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* 倒三角图标 */
+.arrow-icon {
+  font-size: 12px;
+  transition: transform 0.2s ease;
+  display: inline-block;
+}
+
+.arrow-icon.expanded {
+  transform: rotate(180deg);
+}
+
+/* 下拉菜单 */
+.account-dropdown {
+  background: #2a2a2a;
+  border: 1px solid #404040;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  overflow: hidden;
+  animation: slideDown 0.2s ease-out;
+  z-index: 10;
+  position: relative;
+}
+
+.dropdown-account-item {
+  padding: 12px 16px;
+  border-bottom: 1px solid #333;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.dropdown-account-item:last-child {
+  border-bottom: none;
+}
+
+.dropdown-account-item:hover {
+  background: #333;
+}
+
+.dropdown-account-info {
+  flex: 1;
+}
+
+.dropdown-account-phone {
+  color: #fff;
+  font-size: 14px;
+  font-weight: 500;
+  margin-bottom: 2px;
+}
+
+.dropdown-account-time {
+  color: #999;
+  font-size: 11px;
+}
+
+.dropdown-delete-btn {
+  background: none;
+  border: none;
+  color: #999;
+  font-size: 16px;
+  cursor: pointer;
+  padding: 4px;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  opacity: 0;
+}
+
+.dropdown-account-item:hover .dropdown-delete-btn {
+  opacity: 1;
+}
+
+.dropdown-delete-btn:hover {
+  background: #ff4444;
+  color: #fff;
+}
+
+/* 登录其他账号链接 */
+.login-other-link {
+  text-align: center;
+  color: #999;
+  font-size: 14px;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 4px;
+  transition: color 0.2s ease;
+}
+
+.login-other-link:hover {
+  color: #fff;
+}
+
+/* 回退按钮样式 */
+.back-to-accounts {
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  filter: brightness(0) invert(1);
+  transform: scaleX(-1);
+  transition: filter 0.2s ease;
+  flex-shrink: 0;
+}
+
+.back-to-accounts:hover {
+  filter: brightness(0) invert(0.4) sepia(1) hue-rotate(180deg) saturate(3);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+    max-height: 0;
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+    max-height: 300px;
   }
 }
 
@@ -577,40 +1023,22 @@ onUnmounted(() => {
   border-radius: 8px 8px 0 0;
 }
 
+.header-left {
+  display: flex;
+  align-items: center;
+  width: 24px;
+  height: 20px;
+}
+
 .window-header h3 {
   margin: 0;
   color: #fff;
   font-size: 16px;
   font-weight: 600;
+  flex: 1;
+  text-align: left;
+  line-height: 20px;
 }
-
-/* 注释：暂时隐藏清除按钮相关样式 */
-/* .header-buttons {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-}
-
-.clear-btn {
-  background: #ff6b6b;
-  border: none;
-  color: white;
-  padding: 6px 12px;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 12px;
-  font-weight: 500;
-  transition: all 0.3s ease;
-}
-
-.clear-btn:hover:not(:disabled) {
-  background: #ff5252;
-}
-
-.clear-btn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-} */
 
 .close-btn {
   background: none;
@@ -634,6 +1062,7 @@ onUnmounted(() => {
 
 .window-content {
   padding: 24px;
+  transition: opacity 0.3s ease;
 }
 
 .form-group {
