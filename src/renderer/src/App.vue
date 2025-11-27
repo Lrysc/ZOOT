@@ -83,6 +83,11 @@ const currentRefreshMethod = computed(() => {
       console.log('刷新材料计算数据');
       // 这里可以调用Material组件的刷新方法
     },
+    'HeadhuntingRecord': async () => {
+      // HeadhuntingRecord组件的刷新逻辑
+      console.log('刷新寻访记录数据');
+      // 这里可以调用HeadhuntingRecord组件的刷新方法
+    },
     'Setting': async () => {
       // Setting组件通常不需要刷新
       console.log('设置页面无需刷新');
@@ -108,6 +113,10 @@ const currentRefreshMessage = computed(() => {
     'Material': {
       loading: '更新材料数据中...',
       success: '材料数据更新完成！'
+    },
+    'HeadhuntingRecord': {
+      loading: '更新寻访记录中...',
+      success: '寻访记录更新完成！'
     },
     'Setting': {
       loading: '刷新设置中...',
@@ -457,12 +466,12 @@ const componentMap: Record<string, any> = {
               >
                 材料计算
               </li>
-<!--              <li-->
-<!--                :class="['nav-item', { 'nav-item-active': activeComponent === 'HeadhuntingRecord' }]"-->
-<!--                @click="switchComponent('HeadhuntingRecord')"-->
-<!--              >-->
-<!--                寻访记录-->
-<!--              </li>-->
+              <li
+                :class="['nav-item', { 'nav-item-active': activeComponent === 'HeadhuntingRecord' }]"
+                @click="switchComponent('HeadhuntingRecord')"
+              >
+                寻访记录
+              </li>
             </ul>
           </div>
         </nav>
@@ -470,7 +479,10 @@ const componentMap: Record<string, any> = {
 
       <!-- 主内容区 -->
       <main class="main-content">
-        <component :is="componentMap[activeComponent]" />
+        <component 
+          :is="componentMap[activeComponent]" 
+          @showLogin="showLogin = true"
+        />
       </main>
     </div>
 
