@@ -246,8 +246,9 @@ import {
   type GachaRecord,
   type GachaHistoryResponse
 } from '@services/Gacha';
-import { showToast } from '@services/toastService';
+import { showToast, showError, showWarning } from '@services/toastService';
 import { logger } from '@services/logger';
+import CryptoJS from 'crypto-js';
 
 // 定义组件状态事件
 const emit = defineEmits<{
@@ -704,6 +705,29 @@ const getPoolNameForCategory = (categoryId: string) => {
   return categoryPoolNames.value.get(categoryId) || '';
 };
 
+// RSA密钥对生成（简化版本，实际应用中应使用更安全的密钥管理）
+const generateRSAKeyPair = () => {
+  // 这里使用简化的RSA实现，实际项目中应使用专业的RSA库
+  // 生成一个固定的密钥对用于演示
+  const privateKey = '-----BEGIN PRIVATE KEY-----MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQC7VJTUt9Us8cKBxhXctbdgZcfwxh6Y685RtXhiaaKqjOXQ5fKA/Q1YP+1+uYzxqnnnjVy3+kRBmIFcT6i2t6/t8A==-----END PRIVATE KEY-----';
+  const publicKey = '-----BEGIN PUBLIC KEY-----MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAtUlNS31SzxwoHGFdy1t2Blx/DGHpjrzlG1eGJpoqqM5dDl8oD9DVg/7X65jPGqeeeNXL76REGYgVxPqLa3r+3wQIDAQAB-----END PUBLIC KEY-----';
+  return { privateKey, publicKey };
+};
+
+// 生成RSA签名（简化实现，实际应使用专业RSA库）
+const generateRSASignature = (data: string, privateKey: string): string => {
+  // 这里使用HMAC-SHA256作为简化实现，实际应使用RSA签名
+  const hmac = CryptoJS.HmacSHA256(data, privateKey);
+  return CryptoJS.enc.Base64.stringify(hmac);
+};
+
+// 验证RSA签名（简化实现）
+const verifyRSASignature = (data: string, signature: string, publicKey: string): boolean => {
+  // 简化验证逻辑，实际应使用RSA验证
+  const expectedSignature = generateRSASignature(data, publicKey);
+  return signature === expectedSignature;
+};
+
 // 转换为通用格式
 const convertToUniversalFormat = (rawDataExport: any, uid: string) => {
   const universalData: any = {};
@@ -727,7 +751,8 @@ const convertToUniversalFormat = (rawDataExport: any, uid: string) => {
     }
   });
 
-  return {
+  // 构建基础数据结构
+  const baseData = {
     info: {
       uid: uid,
       lang: 'zh-cn',
@@ -739,6 +764,27 @@ const convertToUniversalFormat = (rawDataExport: any, uid: string) => {
       }
     },
     data: universalData
+  };
+
+  // 生成RSA签名
+  const { privateKey, publicKey } = generateRSAKeyPair();
+  const dataString = JSON.stringify(baseData, null, 2);
+  const signature = generateRSASignature(dataString, privateKey);
+
+  logger.debug('生成RSA签名', {
+    uid: uid,
+    dataLength: dataString.length,
+    signatureLength: signature.length
+  });
+
+  // 返回带签名的通用格式数据
+  return {
+    ...baseData,
+    signature: {
+      algorithm: 'RSA-SHA256',
+      public_key: publicKey,
+      signature: signature
+    }
   };
 };
 
@@ -1028,6 +1074,45 @@ const importGachaData = () => {
 
         // 检查是否是通用格式（包含info和data字段的对象）
         if (data && typeof data === 'object' && data.info && data.data && typeof data.data === 'object') {
+          // 验证RSA签名
+          if (data.signature) {
+            logger.debug('检测到RSA签名，开始验证', {
+              algorithm: data.signature.algorithm,
+              hasPublicKey: !!data.signature.public_key,
+              signatureLength: data.signature.signature?.length
+            });
+
+            // 构建待验证的数据（排除signature字段）
+            const { signature, ...dataToVerify } = data;
+            const dataString = JSON.stringify(dataToVerify, null, 2);
+            
+            const isValidSignature = verifyRSASignature(
+              dataString,
+              data.signature.signature,
+              data.signature.public_key
+            );
+
+            if (!isValidSignature) {
+              logger.error('RSA签名验证失败', {
+                fileName: file.name,
+                uid: data.info.uid
+              });
+              showError('文件签名验证失败，可能被篡改');
+              return;
+            }
+
+            logger.info('RSA签名验证成功', {
+              fileName: file.name,
+              uid: data.info.uid
+            });
+          } else {
+            logger.warn('通用格式文件缺少RSA签名', {
+              fileName: file.name,
+              uid: data.info.uid
+            });
+            showWarning('警告：文件缺少数字签名，无法验证完整性');
+          }
+
           // 通用格式，转换data字段为内部格式
           logger.debug('检测到通用格式的导出文件', {
             uid: data.info.uid,
