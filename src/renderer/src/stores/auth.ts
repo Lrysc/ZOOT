@@ -235,49 +235,37 @@ export const useAuthStore = defineStore('auth', {
      * 实际获取森空岛凭证的流程
      */
     async fetchSklandCred(): Promise<{ cred: string; token: string }> {
-      return await logger.trackParams(
-        'fetchSklandCred',
-        {
-          hgToken: this.hgToken ? '[已设置]' : null,
-          isCredReady: this.isCredReady,
-          lastUpdated: this.lastUpdated
-        },
-        async (validParams) => {
-          if (!this.hgToken) {
-            throw new Error('hgToken不存在，请重新登录');
-          }
+      if (!this.hgToken) {
+        throw new Error('hgToken不存在，请重新登录');
+      }
 
-          logger.debug('开始获取森空岛临时凭证');
+      logger.debug('开始获取森空岛临时凭证');
 
-          try {
-            const grantCode = await AuthAPI.getGrantCode(this.hgToken);
-            logger.debug('获取授权码成功');
+      try {
+        const grantCode = await AuthAPI.getGrantCode(this.hgToken);
+        logger.debug('获取授权码成功');
 
-            const credResult = await AuthAPI.getSklandCred(grantCode);
-            const { cred, token: signToken, userId } = credResult;
-            logger.debug('获取森空岛凭证成功', { userId });
+        const credResult = await AuthAPI.getSklandCred(grantCode);
+        const { cred, token: signToken, userId } = credResult;
+        logger.debug('获取森空岛凭证成功', { userId });
 
-            this.sklandCred = cred;
-            this.sklandSignToken = signToken;
-            this.userId = userId;
-            this.lastUpdated = Date.now();
-            this.isCredReady = true;
-            this.authError = null;
+        this.sklandCred = cred;
+        this.sklandSignToken = signToken;
+        this.userId = userId;
+        this.lastUpdated = Date.now();
+        this.isCredReady = true;
+        this.authError = null;
 
-            return { cred, token: signToken };
-          } catch (error) {
-            const normalizedError = this.normalizeError(error);
-            logger.error('获取森空岛凭证失败', normalizedError);
+        return { cred, token: signToken };
+      } catch (error) {
+        const normalizedError = this.normalizeError(error);
+        logger.error('获取森空岛凭证失败', normalizedError);
 
-            if (this.isAuthError(normalizedError)) {
-              logger.warn('hgToken可能已失效');
-              this.authError = '登录已过期，请重新登录';
-              throw normalizedError;
-            }
-          }
+        if (this.isAuthError(normalizedError)) {
+          logger.warn('hgToken可能已失效');
+          this.authError = '登录已过期，请重新登录';
+          throw normalizedError;
         }
-      );
-    },
 
         throw normalizedError;
       }

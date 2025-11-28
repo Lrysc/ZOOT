@@ -342,10 +342,28 @@ app.whenReady().then(() => {
 
       const data = await response.json()
       console.log('代理成功响应:', data)
+
+      // 特殊处理角色登录接口，提取Set-Cookie中的ak-user-center
+      const headers = Object.fromEntries(response.headers.entries())
+      if (url.includes('/user/api/role/login') && headers['set-cookie']) {
+        const cookies = Array.isArray(headers['set-cookie']) ? headers['set-cookie'] : [headers['set-cookie']]
+        const akUserCenterCookie = cookies.find((cookie: string) => cookie.includes('ak-user-center='))
+        
+        if (akUserCenterCookie) {
+          const cookieValue = akUserCenterCookie.match(/ak-user-center=([^;]+)/)?.[1]
+          if (cookieValue) {
+            console.log('提取到ak-user-center cookie值:', cookieValue)
+            // 将cookie添加到响应数据中
+            data.data = data.data || {}
+            data.data.cookie = cookieValue
+          }
+        }
+      }
+
       return { 
         success: true, 
         data,
-        headers: Object.fromEntries(response.headers.entries())
+        headers
       }
     } catch (error) {
       console.error('API代理请求失败:', error)
