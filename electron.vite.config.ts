@@ -90,21 +90,24 @@ export default defineConfig({
             });
             proxy.on('proxyRes', (proxyRes, req, res) => {
               console.log('AK代理响应:', proxyRes.statusCode, proxyRes.headers);
-              console.log('AK代理Set-Cookie:', proxyRes.headers['set-cookie']);
               
               // 如果是角色登录接口且有Set-Cookie头，将cookie添加到响应体中
               if (req.url && req.url.includes('/user/api/role/login') && proxyRes.headers['set-cookie']) {
                 const cookies = proxyRes.headers['set-cookie'];
-                const akUserCenterCookie = cookies.find(cookie => cookie.includes('ak-user-center='));
+                console.log('AK代理Set-Cookie:', cookies);
                 
-                if (akUserCenterCookie) {
+                const akUserCenterCookie = Array.isArray(cookies) 
+                  ? cookies.find(cookie => cookie.includes('ak-user-center='))
+                  : cookies;
+                
+                if (akUserCenterCookie && typeof akUserCenterCookie === 'string') {
                   const cookieValue = akUserCenterCookie.match(/ak-user-center=([^;]+)/)?.[1];
                   if (cookieValue) {
                     console.log('提取到ak-user-center cookie值:', cookieValue);
                     
                     // 修改响应体，添加cookie信息
                     let body = '';
-                    proxyRes.on('data', chunk => {
+                    proxyRes.on('data', (chunk) => {
                       body += chunk.toString();
                     });
                     
@@ -115,7 +118,6 @@ export default defineConfig({
                         
                         // 设置新的响应体
                         const newBody = JSON.stringify(responseData);
-                        res.setHeader('Content-Length', Buffer.byteLength(newBody));
                         res.end(newBody);
                       } catch (error) {
                         console.error('处理响应体失败:', error);

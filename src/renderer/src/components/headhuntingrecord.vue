@@ -3,9 +3,15 @@
     <div class="header">
       <h2>寻访记录</h2>
       <div class="actions">
-        <button @click="exportGachaData" class="export-btn" title="导出寻访记录" :disabled="exportLoading">
-          {{ exportLoading ? '导出中...' : '导出记录' }}
-        </button>
+        <div class="export-group">
+          <select v-model="exportFormat" class="format-select" title="选择导出格式">
+            <option value="native">原生格式</option>
+            <option value="universal">通用格式</option>
+          </select>
+          <button @click="exportGachaData" class="export-btn" title="导出寻访记录" :disabled="exportLoading">
+            {{ exportLoading ? '导出中...' : '导出记录' }}
+          </button>
+        </div>
         <button @click="importGachaData" class="import-btn" title="导入寻访记录">
           导入记录
         </button>
@@ -235,6 +241,7 @@ const error = ref<string | null>(null);
 // 导出相关状态
 const exportLoading = ref(false);
 const exportProgress = ref('');
+const exportFormat = ref<'native' | 'universal'>('native');
 
 // 卡池相关状态
 const categories = ref<GachaCategory[]>([]);
@@ -643,7 +650,39 @@ const getPoolNameForCategory = (categoryId: string) => {
   return categoryPoolNames.value.get(categoryId) || '';
 };
 
-// 导出寻访记录（原始数据格式）
+// 转换为通用格式
+const convertToUniversalFormat = (rawDataExport: any, uid: string) => {
+  const universalData: any = {
+    info: {
+      uid: parseInt(uid),
+      lang: "zh-cn",
+      export_time: Math.floor(Date.now() / 1000),
+      export_timestamp: Math.floor(Date.now() / 1000),
+      export_app: "小黑盒"
+    },
+    data: {}
+  };
+
+  // 遍历所有卡池分类
+  rawDataExport.categories.forEach((category: any) => {
+    if (category.mergedData && category.mergedData.data && category.mergedData.data.list) {
+      category.mergedData.data.list.forEach((record: any) => {
+        const timestamp = record.gachaTs;
+        if (timestamp && !universalData.data[timestamp]) {
+          universalData.data[timestamp] = {
+            c: record.charName ? [[record.charName, record.rarity, record.isNew ? 1 : 0]] : [],
+            p: category.categoryInfo.name.replace('\
+', '')
+          };
+        }
+      });
+    }
+  });
+
+  return universalData;
+};
+
+// 导出寻访记录
 const exportGachaData = async () => {
   logger.info('开始导出寻访记录', {
     categoriesCount: categories.value.length,
@@ -825,16 +864,42 @@ const exportGachaData = async () => {
     
     exportProgress.value = '正在生成文件...';
     
-    // 创建并下载原始JSON文件
-    const dataStr = JSON.stringify(rawDataExport, null, 2);
+    let finalData: any;
+    let fileName: string;
+    let formatDescription: string;
+    
+    if (exportFormat.value === 'universal') {
+      // 通用格式导出
+      finalData = convertToUniversalFormat(rawDataExport, uid);
+      fileName = `寻访记录_通用格式_${new Date().toISOString().split('T')[0]}.json`;
+      formatDescription = '通用格式';
+      
+      logger.debug('生成通用格式文件', {
+        fileName: fileName,
+        dataKeysCount: Object.keys(finalData.data).length,
+        uid: finalData.info.uid
+      });
+    } else {
+      // 原生格式导出
+      finalData = rawDataExport;
+      fileName = `寻访记录_原生格式_${new Date().toISOString().split('T')[0]}.json`;
+      formatDescription = '原生格式';
+      
+      logger.debug('生成原生格式文件', {
+        fileName: fileName,
+        categoriesCount: rawDataExport.categories.length
+      });
+    }
+    
+    // 创建并下载JSON文件
+    const dataStr = JSON.stringify(finalData, null, 2);
     const dataBlob = new Blob([dataStr], { type: 'application/json' });
     const url = URL.createObjectURL(dataBlob);
     
-    const fileName = `寻访记录_原始数据_${new Date().toISOString().split('T')[0]}.json`;
     logger.debug('创建下载文件', {
       fileName: fileName,
       fileSize: dataStr.length,
-      categoriesCount: rawDataExport.categories.length
+      format: formatDescription
     });
     
     const link = document.createElement('a');
@@ -847,11 +912,12 @@ const exportGachaData = async () => {
     
     logger.info('寻访记录导出成功', {
       fileName: fileName,
+      format: formatDescription,
       totalDuration: totalDuration,
       totalCategories: successfulCategories,
       totalRecords: totalExportedRecords
     });
-    showToast('寻访记录（原始数据格式）导出成功');
+    showToast(`寻访记录（${formatDescription}）导出成功`);
   } catch (err: unknown) {
     const totalDuration = Date.now() - exportStartTime;
     const errorMessage = err instanceof Error ? err.message : '未知错误';
@@ -901,8 +967,54 @@ const importGachaData = () => {
         
         const data = JSON.parse(fileContent);
         
-        // 检查是否是新的导出格式（包含categories字段的对象）
-        if (data && typeof data === 'object' && data.categories && Array.isArray(data.categories)) {
+        // 检查是否是通用格式（包含info和data字段的对象）
+        if (data && typeof data === 'object' && data.info && data.data && typeof data.data === 'object') {
+          // 通用格式：转换data字段为导入格式
+          logger.debug('检测到通用格式导出文件', {
+            uid: data.info.uid,
+            lang: data.info.lang,
+            exportTime: data.info.export_time,
+            dataKeysCount: Object.keys(data.data).length
+          });
+          
+          // 将通用格式转换为内部格式
+          const categoryMap = new Map<string, { categoryName: string; categoryId?: string; records: any[] }>();
+          
+          Object.entries(data.data).forEach(([timestamp, recordInfo]: [string, any]) => {
+            if (recordInfo && recordInfo.c && recordInfo.p) {
+              const poolName = recordInfo.p;
+              if (!categoryMap.has(poolName)) {
+                categoryMap.set(poolName, {
+                  categoryName: poolName,
+                  categoryId: `imported_${poolName}`,
+                  records: []
+                });
+              }
+              
+              // 转换每条记录
+              recordInfo.c.forEach((charInfo: any[]) => {
+                const [charName, rarity, isNew] = charInfo;
+                categoryMap.get(poolName)!.records.push({
+                  charName: charName,
+                  rarity: rarity,
+                  isNew: isNew === 1,
+                  gachaTs: timestamp,
+                  poolId: '',
+                  poolName: poolName,
+                  pos: 0
+                });
+              });
+            }
+          });
+          
+          importedData.value = Array.from(categoryMap.values());
+          
+          const totalImportedRecords = importedData.value.reduce((sum, cat) => sum + cat.records.length, 0);
+          logger.info('通用格式文件解析成功', {
+            importedCategories: importedData.value.length,
+            totalImportedRecords: totalImportedRecords
+          });
+        } else if (data && typeof data === 'object' && data.categories && Array.isArray(data.categories)) {
           // 新格式：提取categories数组
           logger.debug('检测到新格式导出文件', {
             categoriesCount: data.categories.length,
@@ -1601,6 +1713,34 @@ onMounted(() => {
 }
 
 /* 导出导入按钮样式 */
+.export-group {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.format-select {
+  padding: 10px 12px;
+  border: 1px solid #404040;
+  border-radius: 6px;
+  background: #3a3a3a;
+  color: #ccc;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.format-select:hover {
+  border-color: #646cff;
+  background: #4a4a4a;
+}
+
+.format-select:focus {
+  outline: none;
+  border-color: #646cff;
+  box-shadow: 0 0 0 2px rgba(100, 108, 255, 0.2);
+}
+
 .export-btn, .import-btn, .clear-btn {
   padding: 10px 20px;
   border: 1px solid #404040;

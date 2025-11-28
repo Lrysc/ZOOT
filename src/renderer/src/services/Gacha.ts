@@ -225,21 +225,31 @@ export const roleLogin = async (token: string): Promise<string> => {
 
   const data = await handleApiResponse(response, '角色登录');
 
-  // 优先从响应体中获取cookie（通过代理处理）
+  // 主要方案：从响应体中获取cookie（IPC代理应该已经将cookie添加到响应体中）
   if (data.data && data.data.cookie) {
     console.log('从响应体获取到cookie:', data.data.cookie.substring(0, 50) + '...');
     return data.data.cookie;
   }
 
-  // 备用方案：尝试从响应头获取（可能由于CORS限制而失败）
+  // 备用方案：尝试从响应头获取
   const setCookieHeader = response.headers.get('set-cookie');
   if (setCookieHeader) {
-    console.log('从响应头获取到cookie');
+    console.log('从响应头获取到set-cookie:', setCookieHeader);
     const match = setCookieHeader.match(/ak-user-center=([^;]+)/);
     if (match) {
-      return decodeURIComponent(match[1]);
+      const cookie = decodeURIComponent(match[1]);
+      console.log('成功提取到ak-user-center cookie值:', cookie.substring(0, 50) + '...');
+      return cookie;
     }
   }
+
+  // 调试信息
+  console.error('无法获取认证cookie，响应详情:', {
+    status: response.status,
+    statusText: response.statusText,
+    headers: Object.fromEntries(response.headers.entries()),
+    data: data
+  });
 
   throw new Error('无法获取认证cookie');
 };
