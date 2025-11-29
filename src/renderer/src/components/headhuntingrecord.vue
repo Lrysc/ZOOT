@@ -200,7 +200,7 @@
             </h4>
             <div class="file-meta">
               <span class="file-size">{{ formatFileSize(file.fileSize) }}</span>
-              <span class="import-time">{{ formatTime(file.importTime) }}</span>
+              <span class="import-time">{{ new Date(file.importTime).toLocaleString('zh-CN') }}</span>
               <span class="toggle-icon">{{ expandedImportedFiles[fileIndex] ? '▲' : '▼' }}</span>
             </div>
           </div>
