@@ -3,26 +3,31 @@
     <div class="header">
       <h2>寻访记录</h2>
       <div class="actions">
-        <div class="export-group">
-          <select v-model="exportFormat" class="format-select" title="选择导出格式">
-            <option value="native">原始格式</option>
-            <option value="universal">通用格式</option>
-            <option value="official">官方兼容格式</option>
-          </select>
-          <button @click="exportGachaData" class="export-btn" title="导出寻访记录" :disabled="exportLoading">
+        <!-- 统一的格式选择 -->
+        <select v-model="exportFormat" class="format-select" title="选择导出格式">
+          <option value="native">原始格式</option>
+          <option value="official">通用格式</option>
+        </select>
+        
+        <!-- 导出按钮组 -->
+        <div class="export-buttons">
+          <button @click="exportGachaData" class="export-btn" title="导出当前账号记录" :disabled="exportLoading">
             {{ exportLoading ? '导出中...' : '导出记录' }}
           </button>
+          <button
+            v-if="importedData.length > 0 || categories.length > 0"
+            @click="exportMergedAllData"
+            class="export-merged-btn"
+            title="导出合并后的所有数据"
+            :disabled="exportLoading"
+          >
+            合并导出
+          </button>
         </div>
+        
+        <!-- 导入按钮 -->
         <button @click="importGachaData" class="import-btn" title="导入寻访记录">
           导入记录
-        </button>
-        <button
-          v-if="importedData.length > 0"
-          @click="exportMergedImportedData"
-          class="export-merged-btn"
-          title="导出合并后的导入数据"
-        >
-          合并导出
         </button>
       </div>
     </div>
@@ -42,7 +47,7 @@
         <img src="@assets/icon_user.svg" alt="用户图标" class="prompt-icon" />
         <h3>需要登录</h3>
         <p>请先登录鹰角网络通行证以查看寻访记录</p>
-        <button @click="$emit('showLogin')" class="login-btn">立即登录</button>
+        <button @click="handleShowLogin" class="login-btn">立即登录</button>
       </div>
     </div>
 
@@ -71,7 +76,7 @@
           class="category-card"
           @click="selectCategory(category)"
         >
-          <h4>{{ category.name.replace('\\n', ' ') }}</h4>
+          <h4>{{ category.name.replace('\n', ' ') }}</h4>
           <p class="category-poolname">{{ getPoolNameForCategory(category.id) }}</p>
         </div>
       </div>
@@ -85,7 +90,7 @@
       </button>
 
       <div class="records-header">
-        <h3>{{ selectedCategory.name.replace('\\n', ' ') }}</h3>
+        <h3>{{ selectedCategory.name.replace('\n', ' ') }}</h3>
       </div>
 
       <div class="table-container">
@@ -124,7 +129,7 @@
         </button>
 
         <span class="page-info">
-          第{{ currentPage }} 页
+          第{{ currentPage }}页
         </span>
 
         <button
@@ -164,59 +169,87 @@
         <div>
           <h3>已导入寻访记录</h3>
           <p class="imported-summary">
-            共{{ importedData.length }} 个卡池，{{ getTotalImportedRecords() }} 条记录
+            共{{ importedData.length }} 个文件，{{ getTotalImportedRecords() }} 条记录
           </p>
         </div>
         <div class="imported-actions">
-          <button @click="expandAllImportedCategories" class="expand-btn" title="展开全部">
+          <button @click="expandAllImportedFiles" class="expand-btn" title="展开全部">
             全部展开
           </button>
-          <button @click="collapseAllImportedCategories" class="expand-btn" title="折叠全部">
+          <button @click="collapseAllImportedFiles" class="expand-btn" title="折叠全部">
             全部折叠
           </button>
-          <button @click="clearImportedData" class="clear-btn" title="清除导入数据">
+          <button @click="clearAllImportedData" class="clear-btn" title="清除导入数据">
             清除数据
           </button>
         </div>
       </div>
 
-      <div class="imported-categories">
+      <div class="imported-files">
         <div
-          v-for="(category, index) in importedData"
-          :key="index"
-          class="imported-category"
+          v-for="(file, fileIndex) in importedData"
+          :key="fileIndex"
+          class="imported-file"
         >
-          <h4 @click="toggleImportedCategory(index)">
-            {{ category.categoryName }}
-            <span class="category-info">({{ category.records.length }} 条记录)</span>
-            <span class="toggle-icon">{{ expandedImportedCategories[index] ? '▲' : '▼' }}</span>
-          </h4>
+          <div class="file-header" @click="toggleImportedFile(fileIndex)">
+            <h4>
+              {{ file.fileName }}
+              <span class="file-info">
+                ({{ file.categories.length }}个卡池，{{ getFileTotalRecords(fileIndex) }}条记录)
+              </span>
+            </h4>
+            <div class="file-meta">
+              <span class="file-size">{{ formatFileSize(file.fileSize) }}</span>
+              <span class="import-time">{{ formatTime(file.importTime) }}</span>
+              <span class="toggle-icon">{{ expandedImportedFiles[fileIndex] ? '▲' : '▼' }}</span>
+            </div>
+          </div>
 
-          <div v-if="expandedImportedCategories[index]" class="imported-records-table">
-            <table class="gacha-table">
-              <thead>
-              <tr>
-                <th>序号</th>
-                <th>卡池名称</th>
-                <th>干员名称</th>
-                <th>星级</th>
-                <th>获取时间</th>
-              </tr>
-              </thead>
-              <tbody>
-              <tr v-for="(record, recordIndex) in category.records" :key="recordIndex">
-                <td>{{ recordIndex + 1 }}</td>
-                <td>{{ record.poolName }}</td>
-                <td>{{ record.charName }}</td>
-                <td>
-                    <span class="rarity-badge" :class="`rarity-${record.rarity}`">
-                      {{ getRarityText(record.rarity) }}
-                    </span>
-                </td>
-                <td>{{ formatTime(record.gachaTs) }}</td>
-              </tr>
-              </tbody>
-            </table>
+          <div v-if="expandedImportedFiles[fileIndex]" class="file-categories">
+            <div
+              v-for="(category, categoryIndex) in file.categories"
+              :key="categoryIndex"
+              class="imported-category"
+            >
+              <h5 @click="toggleImportedCategory(fileIndex, categoryIndex)">
+                {{ category.categoryName }}
+                <span class="category-info">({{ category.records.length }} 条记录)</span>
+                <span class="toggle-icon">{{ expandedImportedCategories[`${fileIndex}-${categoryIndex}`] ? '▲' : '▼' }}</span>
+              </h5>
+
+              <div v-if="expandedImportedCategories[`${fileIndex}-${categoryIndex}`]" class="imported-records-table">
+                <table class="gacha-table">
+                  <thead>
+                  <tr>
+                    <th>序号</th>
+                    <th>卡池名称</th>
+                    <th>干员名称</th>
+                    <th>星级</th>
+                    <th>获取时间</th>
+                  </tr>
+                  </thead>
+                  <tbody>
+                  <tr v-for="(record, recordIndex) in category.records" :key="recordIndex">
+                    <td>{{ recordIndex + 1 }}</td>
+                    <td>{{ record.poolName || '未知卡池' }}</td>
+                    <td>{{ record.charName }}</td>
+                    <td>
+                        <span class="rarity-badge" :class="`rarity-${record.rarity}`">
+                          {{ getRarityText(record.rarity) }}
+                        </span>
+                    </td>
+                    <td>{{ formatTime(record.gachaTs) }}</td>
+                  </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <div class="file-actions">
+            <button @click="clearImportedFile(fileIndex)" class="clear-file-btn" title="清除此文件">
+              清除此文件
+            </button>
           </div>
         </div>
       </div>
@@ -247,14 +280,8 @@ import {
   type GachaRecord,
   type GachaHistoryResponse
 } from '@services/Gacha';
-import { showToast, showError, showWarning } from '@services/toastService';
+import { showToast } from '@services/toastService';
 import { logger } from '@services/logger';
-import CryptoJS from 'crypto-js';
-
-// 定义组件状态事件
-const emit = defineEmits<{
-  showLogin: []
-}>();
 
 // 状态管理
 const authStore = useAuthStore();
@@ -267,7 +294,7 @@ const error = ref<string | null>(null);
 // 导出加载状态
 const exportLoading = ref(false);
 const exportProgress = ref('');
-const exportFormat = ref<'native' | 'universal' | 'official'>('native');
+const exportFormat = ref<'native' | 'official'>('native');
 
 // 数据状态变量
 const categories = ref<GachaCategory[]>([]);
@@ -275,13 +302,19 @@ const selectedCategory = ref<GachaCategory | null>(null);
 const gachaRecords = ref<GachaRecord[]>([]);
 const categoryPoolNames = ref<Map<string, string>>(new Map());
 
-// 导入数据状态变量
+// 导入数据状态变量 - 重构为支持多文件
 const importedData = ref<Array<{
-  categoryName: string;
-  categoryId?: string;
-  records: GachaRecord[];
+  fileName: string;
+  importTime: string;
+  fileSize: number;
+  categories: Array<{
+    categoryName: string;
+    categoryId?: string;
+    records: GachaRecord[];
+  }>;
 }>>([]);
-const expandedImportedCategories = ref<Record<number, boolean>>({});
+const expandedImportedCategories = ref<Record<string, boolean>>({});
+const expandedImportedFiles = ref<Record<number, boolean>>({});
 
 // 回到顶部按钮状态
 const showBackToTop = ref(false);
@@ -293,12 +326,18 @@ const hasNextPage = ref(false);
 const lastRecordPos = ref<number | null>(null);
 const lastRecordTs = ref<string | null>(null);
 
-// 计算属性
+// 计算属性 - 在模板中使用
 const currentPageRecords = computed(() => {
   const start = (currentPage.value - 1) * pageSize;
   const end = start + pageSize;
   return gachaRecords.value.slice(start, end);
 });
+
+// 登录处理 - 在模板中使用
+const handleShowLogin = () => {
+  logger.info('用户点击登录按钮');
+  showToast('请先登录鹰角网络通行证');
+};
 
 // 刷新
 const refreshGachaData = async () => {
@@ -313,6 +352,7 @@ const refreshGachaData = async () => {
       hasMainUid: !!authStore.mainUid,
       isLogin: authStore.isLogin
     });
+
     error.value = errorMsg;
     return;
   }
@@ -339,6 +379,7 @@ const refreshGachaData = async () => {
       categoriesCount: categories.value.length,
       firstCategory: categories.value[0]?.name
     });
+
   } catch (err: unknown) {
     const errorMessage = err instanceof Error ? err.message : '获取抽卡数据失败';
     logger.gachaError('获取抽卡数据失败', {
@@ -346,6 +387,7 @@ const refreshGachaData = async () => {
       stack: err instanceof Error ? err.stack : undefined,
       uid: authStore.mainUid?.substring(0, 8) + '...'
     });
+
     console.error('获取抽卡数据失败:', err);
     error.value = errorMessage;
   } finally {
@@ -368,7 +410,9 @@ const executeGachaFlow = async () => {
       hasMainUid: !!authStore.mainUid,
       isLogin: authStore.isLogin
     });
-    throw new Error(errorMsg);
+
+    error.value = errorMsg;
+    return;
   }
 
   const uid = authStore.mainUid;
@@ -383,6 +427,7 @@ const executeGachaFlow = async () => {
     tokenLength: token.length,
     tokenPrefix: token.substring(0, 20) + '...'
   });
+
   console.log('使用hgToken:', token.substring(0, 20) + '...');
   console.log('使用UID:', uid);
 
@@ -391,6 +436,7 @@ const executeGachaFlow = async () => {
   const oauthData = await logger.gachaPerformanceAsync('OAuth2授权', async () => {
     return await getOAuth2Grant(token);
   });
+
   logger.gachaDebug('OAuth2授权成功', {
     tokenLength: oauthData.token?.length,
     tokenPrefix: oauthData.token?.substring(0, 20) + '...'
@@ -401,6 +447,7 @@ const executeGachaFlow = async () => {
   const roleToken = await logger.gachaPerformanceAsync('获取x-role-token', async () => {
     return await getU8TokenByUid(oauthData.token, uid);
   });
+
   logger.gachaDebug('x-role-token获取成功', {
     tokenLength: roleToken?.length,
     tokenPrefix: roleToken?.substring(0, 20) + '...'
@@ -411,6 +458,7 @@ const executeGachaFlow = async () => {
   const cookie = await logger.gachaPerformanceAsync('角色登录获取cookie', async () => {
     return await roleLogin(roleToken);
   });
+
   logger.gachaDebug('角色登录成功', {
     cookieLength: cookie?.length,
     cookiePrefix: cookie?.substring(0, 30) + '...'
@@ -422,6 +470,7 @@ const executeGachaFlow = async () => {
   const categoryList = await logger.gachaPerformanceAsync('获取卡池分类列表', async () => {
     return await getGachaCategories(uid, cookie, roleToken, token);
   });
+
   categories.value = categoryList;
   logger.gacha('卡池分类获取成功', {
     categoriesCount: categoryList.length,
@@ -434,6 +483,7 @@ const executeGachaFlow = async () => {
   await logger.gachaPerformanceAsync('预获取卡池详细信息', async () => {
     await loadAllPoolNames(uid, cookie, roleToken, token, categoryList);
   });
+
   logger.gacha('卡池详细信息预获取完成', {
     poolNamesCount: categoryPoolNames.value.size
   });
@@ -454,6 +504,7 @@ const executeGachaFlow = async () => {
   logger.gacha('寻访记录验证流程执行完成');
 };
 
+// 选择卡池 - 在模板中使用
 const selectCategory = async (category: GachaCategory) => {
   logger.info('选择卡池', {
     categoryId: category.id,
@@ -484,6 +535,7 @@ const loadGachaRecords = async () => {
       hasSelectedCategory: !!selectedCategory.value,
       hasMainUid: !!authStore.mainUid
     });
+
     return;
   }
 
@@ -500,7 +552,9 @@ const loadGachaRecords = async () => {
         hasAuthData: false,
         categoryId: selectedCategory.value.id
       });
-      throw new Error(errorMsg);
+
+      error.value = errorMsg;
+      return;
     }
 
     const { uid, cookie, roleToken, accountToken } = JSON.parse(authData);
@@ -586,6 +640,7 @@ const loadGachaRecords = async () => {
       currentPage: currentPage.value,
       hasAuthData: !!localStorage.getItem('gacha_auth')
     });
+
     console.error('加载抽卡记录失败:', err);
     error.value = errorMessage;
   } finally {
@@ -594,6 +649,7 @@ const loadGachaRecords = async () => {
   }
 };
 
+// 上一页 - 在模板中使用
 const prevPage = () => {
   const oldPage = currentPage.value;
   if (currentPage.value > 1) {
@@ -610,6 +666,7 @@ const prevPage = () => {
   }
 };
 
+// 下一页 - 在模板中使用
 const nextPage = async () => {
   logger.info('用户点击下一页', {
     hasNextPage: hasNextPage.value,
@@ -635,6 +692,7 @@ const nextPage = async () => {
   }
 };
 
+// 返回卡池列表 - 在模板中使用
 const backToCategories = () => {
   logger.info('返回卡池列表', {
     hadSelectedCategory: !!selectedCategory.value,
@@ -653,17 +711,19 @@ const getRecordIndex = (index: number) => {
   return (currentPage.value - 1) * pageSize + index + 1;
 };
 
+// 获取星级文本 - 在模板中使用
 const getRarityText = (rarity: number) => {
   const rarityMap: { [key: number]: string } = {
-    1: '一星',
-    2: '二星',
-    3: '三星',
-    4: '四星',
-    5: '五星'
+    1: '二星',
+    2: '三星',
+    3: '四星',
+    4: '五星',
+    5: '六星'
   };
   return rarityMap[rarity] || `${rarity}星`;
 };
 
+// 格式化时间 - 在模板中使用
 const formatTime = (timestamp: string | number) => {
   // 调试信息
   logger.debug('格式化时间戳', {
@@ -713,7 +773,7 @@ const formatTime = (timestamp: string | number) => {
   // 检查日期是否合理（不能是未来时间，不能太早）
   const now = Date.now();
   const minDate = new Date('2020-01-01').getTime();
-  
+
   if (date.getTime() > now) {
     logger.warn('时间戳是未来时间', { timestamp, date: date.toISOString() });
   } else if (date.getTime() < minDate) {
@@ -733,37 +793,23 @@ const formatTime = (timestamp: string | number) => {
   return formatted;
 };
 
+// 格式化文件大小
+const formatFileSize = (bytes: number) => {
+  if (bytes === 0) return '0 B';
+  const k = 1024;
+  const sizes = ['B', 'KB', 'MB', 'GB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+};
+
 const getPoolNameForCategory = (categoryId: string) => {
   return categoryPoolNames.value.get(categoryId) || '';
-};
-
-// RSA密钥对生成（简化版本，实际应用中应使用更安全的密钥管理）
-const generateRSAKeyPair = () => {
-  // 这里使用简化的RSA实现，实际项目中应使用专业的RSA库
-  // 生成一个固定的密钥对用于演示
-  const privateKey = '-----BEGIN PRIVATE KEY-----MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQC7VJTUt9Us8cKBxhXctbdgZcfwxh6Y685RtXhiaaKqjOXQ5fKA/Q1YP+1+uYzxqnnnjVy3+kRBmIFcT6i2t6/t8A==-----END PRIVATE KEY-----';
-  const publicKey = '-----BEGIN PUBLIC KEY-----MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAtUlNS31SzxwoHGFdy1t2Blx/DGHpjrzlG1eGJpoqqM5dDl8oD9DVg/7X65jPGqeeeNXL76REGYgVxPqLa3r+3wQIDAQAB-----END PUBLIC KEY-----';
-  return { privateKey, publicKey };
-};
-
-// 生成RSA签名（简化实现，实际应使用专业RSA库）
-const generateRSASignature = (data: string, privateKey: string): string => {
-  // 这里使用HMAC-SHA256作为简化实现，实际应使用RSA签名
-  const hmac = CryptoJS.HmacSHA256(data, privateKey);
-  return CryptoJS.enc.Base64.stringify(hmac);
-};
-
-// 验证RSA签名（简化实现）
-const verifyRSASignature = (data: string, signature: string, publicKey: string): boolean => {
-  // 简化验证逻辑，实际应使用RSA验证
-  const expectedSignature = generateRSASignature(data, publicKey);
-  return signature === expectedSignature;
 };
 
 // 根据poolId映射到ci字段
 const mapPoolIdToCi = (poolId: string): string => {
   if (!poolId) return '';
-  
+
   if (poolId.startsWith('LINKAGE_')) {
     return 'mujica';
   } else if (poolId.startsWith('SINGLE_') || poolId.startsWith('NORM_') || poolId.startsWith('SPECIAL_')) {
@@ -775,7 +821,7 @@ const mapPoolIdToCi = (poolId: string): string => {
   } else if (poolId.startsWith('CLASSIC_DOUBLE_')) {
     return 'classic';
   }
-  
+
   // 默认返回poolId的前6个字符，或者直接返回poolId
   return poolId.length > 6 ? poolId.substring(0, 6) : poolId;
 };
@@ -784,12 +830,12 @@ const mapPoolIdToCi = (poolId: string): string => {
 const convertToOfficialFormat = (rawDataExport: any) => {
   const officialData: any = {};
 
-  // 处理所有卡池分类，生成与官方格式完全一致的数据
+  // 生成与官方格式完全一致的数据
   rawDataExport.categories.forEach((category: any) => {
     if (category.mergedData && category.mergedData.data && category.mergedData.data.list) {
       // 按时间戳分组，将同一时间戳的记录合并为一次抽卡
       const recordsByTimestamp = new Map<string, any[]>();
-      
+
       category.mergedData.data.list.forEach((record: any) => {
         const timestamp = record.gachaTs;
         if (!recordsByTimestamp.has(timestamp)) {
@@ -801,18 +847,18 @@ const convertToOfficialFormat = (rawDataExport: any) => {
       // 为每个时间戳创建官方格式的记录
       recordsByTimestamp.forEach((records, timestamp) => {
         let ts = parseFloat(timestamp);
-        
+
         // 如果时间戳是毫秒级，转换为秒级
         if (ts > 1000000000000) {
           ts = ts / 1000;
         }
-        
+
         // 转换回字符串以保持与官方格式一致，保留小数部分
         const timestampStr = ts.toString();
-        
+
         // 保持原始的换行符，与官方格式一致
         const poolName = category.categoryInfo.name;
-        
+
         // 构建角色数组
         const characters: any[][] = [];
         records.forEach(record => {
@@ -824,82 +870,20 @@ const convertToOfficialFormat = (rawDataExport: any) => {
         // 创建官方格式记录
         // 按官方顺序创建记录对象：p, pi, c, cn, ci, pos
         const record: any = {};
-        record.p = records[0]?.poolName || poolName.replace('\
-\
-', ''); // p字段使用实际的poolName
+        record.p = records[0]?.poolName || poolName.replace('\\n', ''); // p字段使用实际的poolName
         record.pi = records[0]?.poolId || category.categoryInfo.id || ''; // pi字段使用实际的poolId
         record.c = characters; // 包含所有角色的数组
         record.cn = poolName; // cn字段保持原始换行符
         // ci字段可能需要特殊映射，暂时使用categoryInfo.id
         record.ci = mapPoolIdToCi(records[0]?.poolId || category.categoryInfo.id || '');
         record.pos = records[0]?.pos || 0;
-        
+
         officialData[timestampStr] = record;
       });
     }
   });
 
   return officialData;
-};
-
-// 转换为通用格式
-const convertToUniversalFormat = (rawDataExport: any, uid: string) => {
-  const universalData: any = {};
-
-  // 处理所有卡池分类
-  rawDataExport.categories.forEach((category: any) => {
-    if (category.mergedData && category.mergedData.data && category.mergedData.data.list) {
-      category.mergedData.data.list.forEach((record: any) => {
-        const timestamp = record.gachaTs;
-        if (timestamp && !universalData[timestamp]) {
-          universalData[timestamp] = {
-            p: category.categoryInfo.name.replace('\r\n', ''),
-            pi: category.categoryInfo.id || '',
-            c: record.charName ? [[record.charName, record.rarity, record.isNew ? 1 : 0]] : [],
-            cn: category.categoryInfo.name.replace('\r\n', ''),
-            ci: category.categoryInfo.id || '',
-            pos: record.pos || 0
-          };
-        }
-      });
-    }
-  });
-
-  // 构建基础数据结构
-  const baseData = {
-    info: {
-      uid: uid,
-      lang: 'zh-cn',
-      export_time: rawDataExport.exportTime,
-      export_timestamp: new Date().getTime(),
-      tool: {
-        name: 'PRTS',
-        version: '1.0.0'
-      }
-    },
-    data: universalData
-  };
-
-  // 生成RSA签名
-  const { privateKey, publicKey } = generateRSAKeyPair();
-  const dataString = JSON.stringify(baseData, null, 2);
-  const signature = generateRSASignature(dataString, privateKey);
-
-  logger.debug('生成RSA签名', {
-    uid: uid,
-    dataLength: dataString.length,
-    signatureLength: signature.length
-  });
-
-  // 返回带签名的通用格式数据
-  return {
-    ...baseData,
-    signature: {
-      algorithm: 'RSA-SHA256',
-      public_key: publicKey,
-      signature: signature
-    }
-  };
 };
 
 const exportGachaData = async () => {
@@ -948,7 +932,7 @@ const exportGachaData = async () => {
       const categoryStartTime = Date.now();
 
       try {
-        exportProgress.value = `正在导出卡池 ${i + 1}/${totalCategories}: ${category.name.replace('\\n', ' ')}`;
+        exportProgress.value = `正在导出卡池 ${i + 1}/${totalCategories}: ${category.name.replace('\n', ' ')}`;
         logger.debug(`开始导出卡池 ${i + 1}/${totalCategories}`, {
           categoryId: category.id,
           categoryName: category.name
@@ -968,7 +952,7 @@ const exportGachaData = async () => {
 
         while (hasMore) {
           pageCount++;
-          exportProgress.value = `正在导出卡池 ${i + 1}/${totalCategories}: ${category.name.replace('\\n', ' ')} (第${pageCount}页)`;
+          exportProgress.value = `正在导出卡池 ${i + 1}/${totalCategories}: ${category.name.replace('\n', ' ')} (第${pageCount}页)`;
 
           const response = await logger.performanceAsync(`导出卡池${category.name}第${pageCount}页`, async () => {
             return await getGachaHistory(
@@ -1087,25 +1071,14 @@ const exportGachaData = async () => {
     let fileName: string;
     let formatDescription: string;
 
-    if (exportFormat.value === 'universal') {
+    if (exportFormat.value === 'official') {
       // 通用格式导出
-      finalData = convertToUniversalFormat(rawDataExport, uid);
-      fileName = `寻访记录_通用格式_${new Date().toISOString().split('T')[0]}.json`;
-      formatDescription = '通用格式';
-
-      logger.debug('生成通用格式文件', {
-        fileName: fileName,
-        dataKeysCount: Object.keys(finalData.data).length,
-        uid: finalData.info.uid
-      });
-    } else if (exportFormat.value === 'official') {
-      // 官方兼容格式导出
       finalData = convertToOfficialFormat(rawDataExport);
       // 使用与官方文件完全一致的命名格式：时间戳_official_UID前8位_gacha.json
       fileName = `${new Date().getTime()}_official_${uid.substring(0, 8)}_gacha.json`;
-      formatDescription = '官方兼容格式';
+      formatDescription = '通用格式';
 
-      logger.debug('生成官方兼容格式文件', {
+      logger.debug('生成通用格式文件', {
         fileName: fileName,
         dataKeysCount: Object.keys(finalData).length,
         uid: uid.substring(0, 8) + '...'
@@ -1123,9 +1096,9 @@ const exportGachaData = async () => {
     }
 
     // 创建并下载JSON文件
-    // 官方兼容格式使用紧凑JSON，其他格式使用格式化JSON
-    const dataStr = exportFormat.value === 'official' 
-      ? JSON.stringify(finalData) 
+    // 通用格式使用紧凑JSON，其他格式使用格式化JSON
+    const dataStr = exportFormat.value === 'official'
+      ? JSON.stringify(finalData)
       : JSON.stringify(finalData, null, 2);
     const dataBlob = new Blob([dataStr], { type: 'application/json' });
     const url = URL.createObjectURL(dataBlob);
@@ -1151,6 +1124,7 @@ const exportGachaData = async () => {
       totalCategories: successfulCategories,
       totalRecords: totalExportedRecords
     });
+
     showToast(`寻访记录${formatDescription}导出成功`);
   } catch (err: unknown) {
     const totalDuration = Date.now() - exportStartTime;
@@ -1160,6 +1134,7 @@ const exportGachaData = async () => {
       stack: err instanceof Error ? err.stack : undefined,
       totalDuration: totalDuration
     });
+
     console.error('导出失败:', err);
     showToast('导出失败，请重试');
   } finally {
@@ -1169,326 +1144,617 @@ const exportGachaData = async () => {
   }
 };
 
-// 导入寻访记录
+// 导入寻访记录 - 增强版，支持多文件格式和本地存储
 const importGachaData = () => {
   logger.info('开始导入寻访记录');
 
   const input = document.createElement('input');
   input.type = 'file';
   input.accept = '.json';
+  input.multiple = true; // 支持多文件选择
 
   input.onchange = (event) => {
-    const file = (event.target as HTMLInputElement).files?.[0];
-    if (!file) {
+    const files = (event.target as HTMLInputElement).files;
+    if (!files || files.length === 0) {
       logger.warn('用户未选择文件');
       return;
     }
 
     logger.info('用户选择文件进行导入', {
-      fileName: file.name,
-      fileSize: file.size,
-      fileType: file.type
+      fileCount: files.length,
+      fileNames: Array.from(files).map(f => f.name)
     });
 
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      try {
-        const fileContent = e.target?.result as string;
-        logger.debug('开始解析导入文件', {
-          fileName: file.name,
-          contentLength: fileContent.length
-        });
+    // 处理多个文件
+    Array.from(files).forEach(file => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const fileContent = e.target?.result as string;
+          logger.debug('开始解析导入文件', {
+            fileName: file.name,
+            contentLength: fileContent.length
+          });
 
-        const data = JSON.parse(fileContent);
+          const data = JSON.parse(fileContent);
 
-        // 调试：输出文件结构信息
-        logger.debug('解析的文件结构', {
-          dataType: typeof data,
-          hasInfo: !!(data && typeof data === 'object' && data.info),
-          hasData: !!(data && typeof data === 'object' && data.data),
-          hasCategories: !!(data && typeof data === 'object' && data.categories),
-          isArray: Array.isArray(data),
-          dataKeys: data && typeof data === 'object' ? Object.keys(data) : [],
-          infoKeys: data && typeof data === 'object' && data.info ? Object.keys(data.info) : [],
-          dataKeysCount: data && typeof data === 'object' && data.data ? Object.keys(data.data).length : 0
-        });
+          // 解析文件数据
+          const importedCategories = parseGachaFileData(data, file.name);
 
-        // 检查是否是通用格式（包含info和data字段的对象）
-        if (data && typeof data === 'object' && data.info && data.data && typeof data.data === 'object') {
-          // 验证RSA签名
-          if (data.signature) {
-            logger.debug('检测到RSA签名，开始验证', {
-              algorithm: data.signature.algorithm,
-              hasPublicKey: !!data.signature.public_key,
-              signatureLength: data.signature.signature?.length
-            });
-
-            // 构建待验证的数据（排除signature字段）
-            const { signature, ...dataToVerify } = data;
-            const dataString = JSON.stringify(dataToVerify, null, 2);
-            
-            const isValidSignature = verifyRSASignature(
-              dataString,
-              data.signature.signature,
-              data.signature.public_key
-            );
-
-            if (!isValidSignature) {
-              logger.error('RSA签名验证失败', {
-                fileName: file.name,
-                uid: data.info.uid
-              });
-              showError('文件签名验证失败，可能被篡改');
-              return;
-            }
-
-            logger.info('RSA签名验证成功', {
+          if (importedCategories.length > 0) {
+            // 添加到导入数据列表
+            importedData.value.push({
               fileName: file.name,
-              uid: data.info.uid
+              importTime: new Date().toISOString(),
+              fileSize: file.size,
+              categories: importedCategories
             });
+
+            // 保存到本地存储
+            saveImportedDataToLocalStorage();
+
+            const totalRecords = importedCategories.reduce((sum, cat) => sum + cat.records.length, 0);
+            logger.info('文件导入成功', {
+              fileName: file.name,
+              importedCategories: importedCategories.length,
+              totalRecords: totalRecords
+            });
+            showToast(`文件 ${file.name} 导入成功，共${importedCategories.length}个分类，${totalRecords}条记录`);
           } else {
-            logger.warn('通用格式文件缺少RSA签名', {
-              fileName: file.name,
-              uid: data.info.uid
-            });
-            showWarning('警告：文件缺少数字签名，无法验证完整性');
+            logger.warn('文件没有有效数据', { fileName: file.name });
+            showToast(`文件 ${file.name} 没有有效的寻访记录数据`);
           }
-
-          // 通用格式，转换data字段为内部格式
-          logger.debug('检测到通用格式的导出文件', {
-            uid: data.info.uid,
-            lang: data.info.lang,
-            exportTime: data.info.export_time,
-            exportApp: data.info.export_app,
-            dataKeysCount: Object.keys(data.data).length
+        } catch (error) {
+          const errorMessage = error instanceof Error ? error.message : '未知错误';
+          logger.error('导入文件解析失败', {
+            error: errorMessage,
+            stack: error instanceof Error ? error.stack : undefined,
+            fileName: file.name,
+            fileSize: file.size
           });
-
-          // 将通用格式转换为内部格式
-          const categoryMap = new Map<string, { categoryName: string; categoryId?: string; records: any[] }>();
-
-          Object.entries(data.data).forEach(([timestamp, recordInfo]: [string, any]) => {
-            if (recordInfo && recordInfo.c && recordInfo.p) {
-              const poolName = recordInfo.p;
-              if (!categoryMap.has(poolName)) {
-                categoryMap.set(poolName, {
-                  categoryName: poolName,
-                  categoryId: recordInfo.ci || `imported_${poolName}`,
-                  records: []
-                });
-              }
-
-              // 转换每条记录
-              recordInfo.c.forEach((charInfo: any[]) => {
-                const [charName, rarity, isNew] = charInfo;
-                categoryMap.get(poolName)!.records.push({
-                  charName: charName,
-                  rarity: rarity,
-                  isNew: isNew === 1,
-                  gachaTs: timestamp, // 保持字符串格式，与API一致
-                  poolId: recordInfo.pi || '',
-                  poolName: poolName,
-                  pos: recordInfo.pos || 0
-                });
-              });
-            }
-          });
-
-          importedData.value = Array.from(categoryMap.values());
-
-          const totalImportedRecords = importedData.value.reduce((sum, cat) => sum + cat.records.length, 0);
-          logger.info('通用格式文件导入成功', {
-            importedCategories: importedData.value.length,
-            totalImportedRecords: totalImportedRecords
-          });
-        } else if (data && typeof data === 'object' && data.categories && Array.isArray(data.categories)) {
-          // 新格式，直接提取categories数组
-          logger.debug('检测到新格式的导出文件', {
-            categoriesCount: data.categories.length,
-            hasExportTime: !!data.exportTime,
-            uid: data.uid?.substring(0, 8) + '...'
-          });
-
-          importedData.value = data.categories.map((category: any) => ({
-            categoryName: category.categoryInfo.name.replace('\\n', ' '),
-            categoryId: category.categoryInfo.id,
-            records: category.mergedData ? category.mergedData.data.list : []
-          }));
-
-          const totalImportedRecords = importedData.value.reduce((sum, cat) => sum + cat.records.length, 0);
-          logger.info('新格式文件导入成功', {
-            importedCategories: importedData.value.length,
-            totalImportedRecords: totalImportedRecords
-          });
-        } else if (Array.isArray(data)) {
-          // 旧格式，直接使用数组
-          logger.debug('检测到旧格式的导出文件', {
-            arrayLength: data.length
-          });
-
-          importedData.value = data;
-
-          const totalImportedRecords = importedData.value.reduce((sum, cat) => sum + cat.records.length, 0);
-          logger.info('旧格式文件导入成功', {
-            importedCategories: importedData.value.length,
-            totalImportedRecords: totalImportedRecords
-          });
-        } else {
-          logger.error('文件格式错误', {
-            dataType: typeof data,
-            hasCategories: !!(data && typeof data === 'object' && data.categories),
-            isArray: Array.isArray(data)
-          });
-          showToast('文件格式错误');
-          return;
+          console.error('导入失败:', error);
+          showToast(`文件 ${file.name} 解析失败，请检查文件格式`);
         }
-        expandedImportedCategories.value = {};
+      };
 
-        logger.info('寻访记录导入成功', {
+      reader.onerror = (error) => {
+        logger.error('文件读取失败', {
           fileName: file.name,
-          importedCategories: importedData.value.length,
-          totalRecords: importedData.value.reduce((sum, cat) => sum + cat.records.length, 0)
+          error: error
         });
-        showToast('寻访记录导入成功');
-      } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : '未知错误';
-        logger.error('导入文件解析失败', {
-          error: errorMessage,
-          stack: error instanceof Error ? error.stack : undefined,
-          fileName: file.name,
-          fileSize: file.size
-        });
-        console.error('导入失败:', error);
-        showToast('文件解析失败，请检查文件格式');
-      }
-    };
+        showToast(`文件 ${file.name} 读取失败`);
+      };
 
-    reader.onerror = (error) => {
-      logger.error('文件读取失败', {
-        fileName: file.name,
-        error: error
-      });
-      showToast('文件读取失败');
-    };
-
-    reader.readAsText(file);
+      reader.readAsText(file);
+    });
   };
 
   input.click();
 };
 
-// 切换导入卡池的展开/折叠状态
-const toggleImportedCategory = (index: number) => {
-  expandedImportedCategories.value[index] = !expandedImportedCategories.value[index];
+// 解析寻访记录文件数据的通用函数
+const parseGachaFileData = (data: any, fileName: string) => {
+  const importedCategories: Array<{
+    categoryName: string;
+    categoryId?: string;
+    records: any[];
+  }> = [];
+
+  // 调试：输出文件结构信息
+  logger.debug('解析的文件结构', {
+    fileName: fileName,
+    dataType: typeof data,
+    hasInfo: !!(data && typeof data === 'object' && data.info),
+    hasData: !!(data && typeof data === 'object' && data.data),
+    hasCategories: !!(data && typeof data === 'object' && data.categories),
+    hasExportType: !!(data && typeof data === 'object' && data.exportType),
+    exportType: data && typeof data === 'object' ? data.exportType : undefined,
+    isArray: Array.isArray(data),
+    dataKeys: data && typeof data === 'object' ? Object.keys(data) : [],
+    infoKeys: data && typeof data === 'object' && data.info ? Object.keys(data.info) : [],
+    dataKeysCount: data && typeof data === 'object' && data.data ? Object.keys(data.data).length : 0
+  });
+
+  // 检测并处理官方格式（时间戳为键的对象）- 第一个文件格式
+  if (data && typeof data === 'object' && !data.info && !data.categories && !Array.isArray(data)) {
+    // 官方兼容格式，直接处理数据对象
+    logger.debug('检测到官方兼容格式的导出文件', {
+      fileName: fileName,
+      dataKeysCount: Object.keys(data).length
+    });
+
+    // 将官方兼容格式转换为内部格式
+    const categoryMap = new Map<string, { categoryName: string; categoryId?: string; records: any[] }>();
+
+    Object.entries(data).forEach(([timestamp, recordInfo]: [string, any]) => {
+      if (recordInfo && recordInfo.c && recordInfo.p) {
+        const poolName = recordInfo.p;
+        const poolId = recordInfo.pi || '';
+        const categoryName = recordInfo.cn || poolName;
+
+        // 使用poolId作为分类ID，如果没有poolId则使用poolName
+        const categoryKey = poolId || poolName;
+
+        if (!categoryMap.has(categoryKey)) {
+          categoryMap.set(categoryKey, {
+            categoryName: categoryName,
+            categoryId: poolId,
+            records: []
+          });
+        }
+
+        // 转换每条记录 - 处理单抽和十连
+        const characterRecords = recordInfo.c;
+        if (Array.isArray(characterRecords)) {
+          characterRecords.forEach((charInfo: any[], index: number) => {
+            if (Array.isArray(charInfo) && charInfo.length >= 2) {
+              const [charName, rarity, isNew = 0] = charInfo;
+              categoryMap.get(categoryKey)!.records.push({
+                charName: charName,
+                rarity: rarity,
+                isNew: isNew === 1,
+                gachaTs: timestamp, // 保持字符串格式，与API一致
+                poolId: poolId,
+                poolName: poolName,
+                pos: recordInfo.pos || index
+              });
+            }
+          });
+        }
+      }
+    });
+
+    importedCategories.push(...Array.from(categoryMap.values()));
+  }
+  // 检测并处理第二个文件格式（包含info和data字段）
+  else if (data && typeof data === 'object' && data.info && data.data) {
+    logger.debug('检测到第二种格式的导出文件', {
+      fileName: fileName,
+      hasInfo: true,
+      hasData: true,
+      dataKeysCount: Object.keys(data.data).length
+    });
+
+    // 处理第二种格式：包含info和data字段
+    const categoryMap = new Map<string, { categoryName: string; categoryId?: string; records: any[] }>();
+
+    Object.entries(data.data).forEach(([timestamp, recordInfo]: [string, any]) => {
+      if (recordInfo && recordInfo.c && Array.isArray(recordInfo.c)) {
+        const poolName = recordInfo.p || '未知卡池';
+        const poolId = recordInfo.pi || '';
+        const categoryName = recordInfo.cn || poolName;
+
+        // 使用poolId作为分类ID，如果没有poolId则使用poolName
+        const categoryKey = poolId || poolName;
+
+        if (!categoryMap.has(categoryKey)) {
+          categoryMap.set(categoryKey, {
+            categoryName: categoryName,
+            categoryId: poolId,
+            records: []
+          });
+        }
+
+        // 转换每条记录
+        recordInfo.c.forEach((charInfo: any[], index: number) => {
+          if (Array.isArray(charInfo) && charInfo.length >= 2) {
+            const [charName, rarity, isNew = 0] = charInfo;
+            categoryMap.get(categoryKey)!.records.push({
+              charName: charName,
+              rarity: rarity,
+              isNew: isNew === 1,
+              gachaTs: timestamp,
+              poolId: poolId,
+              poolName: poolName,
+              pos: recordInfo.pos || index
+            });
+          }
+        });
+      }
+    });
+
+    importedCategories.push(...Array.from(categoryMap.values()));
+  }
+  // 检测并处理合并格式（包含exportType为merged_all_data）
+  else if (data && typeof data === 'object' && data.exportType === 'merged_all_data') {
+    // 合并格式，处理accountData和importedData
+    logger.debug('检测到合并格式的导出文件', {
+      fileName: fileName,
+      exportType: data.exportType,
+      hasAccountData: !!data.accountData,
+      hasImportedData: !!(data.importedData && data.importedData.length > 0)
+    });
+
+    // 处理账号数据
+    if (data.accountData && data.accountData.categories && Array.isArray(data.accountData.categories)) {
+      data.accountData.categories.forEach((category: any) => {
+        if (category.categoryInfo && category.records && Array.isArray(category.records)) {
+          importedCategories.push({
+            categoryName: category.categoryInfo.name?.replace('\
+', ' ') || '未知分类',
+            categoryId: category.categoryInfo.id,
+            records: category.records
+          });
+        }
+      });
+    }
+
+    // 处理导入数据
+    if (data.importedData && Array.isArray(data.importedData)) {
+      data.importedData.forEach((fileData: any) => {
+        if (fileData.categories && Array.isArray(fileData.categories)) {
+          fileData.categories.forEach((category: any) => {
+            if (category.records && Array.isArray(category.records)) {
+              importedCategories.push({
+                categoryName: category.categoryName || '未知分类',
+                categoryId: category.categoryId,
+                records: category.records
+              });
+            }
+          });
+        }
+      });
+    }
+  }
+  // 检测并处理新格式（包含categories数组）
+  else if (data && typeof data === 'object' && data.categories && Array.isArray(data.categories)) {
+    // 新格式，直接提取categories数组
+    logger.debug('检测到新格式的导出文件', {
+      fileName: fileName,
+      categoriesCount: data.categories.length,
+      hasExportTime: !!data.exportTime,
+      uid: data.uid?.substring(0, 8) + '...'
+    });
+
+    data.categories.forEach((category: any) => {
+      if (category.mergedData?.data?.list || category.records) {
+        importedCategories.push({
+          categoryName: category.categoryInfo?.name?.replace('\n', ' ') || category.categoryName || '未知分类',
+          categoryId: category.categoryInfo?.id || category.categoryId,
+          records: category.mergedData ? category.mergedData.data.list : (category.records || [])
+        });
+      }
+    });
+  }
+  // 检测并处理旧格式（直接是数组）
+  else if (Array.isArray(data)) {
+    // 旧格式，直接使用数组
+    logger.debug('检测到旧格式的导出文件', {
+      fileName: fileName,
+      arrayLength: data.length
+    });
+
+    importedCategories.push(...data);
+  } else {
+    logger.error('文件格式错误', {
+      fileName: fileName,
+      dataType: typeof data,
+      hasCategories: !!(data && typeof data === 'object' && data.categories),
+      isArray: Array.isArray(data)
+    });
+  }
+
+  // 过滤掉没有记录的分类
+  return importedCategories.filter(category => category.records && category.records.length > 0);
 };
 
-// 展开所有的导入卡池
-const expandAllImportedCategories = () => {
+// 保存导入数据到本地存储
+const saveImportedDataToLocalStorage = () => {
+  try {
+    const dataToSave = {
+      importedData: importedData.value,
+      saveTime: new Date().toISOString()
+    };
+    localStorage.setItem('gacha_imported_data', JSON.stringify(dataToSave));
+    logger.debug('导入数据已保存到本地存储', {
+      fileCount: importedData.value.length,
+      totalRecords: getTotalImportedRecords()
+    });
+  } catch (error) {
+    logger.error('保存导入数据到本地存储失败', { error });
+    console.error('保存导入数据失败:', error);
+  }
+};
+
+// 从本地存储加载导入数据
+const loadImportedDataFromLocalStorage = () => {
+  try {
+    const savedData = localStorage.getItem('gacha_imported_data');
+    if (savedData) {
+      const parsedData = JSON.parse(savedData);
+      if (parsedData.importedData && Array.isArray(parsedData.importedData)) {
+        importedData.value = parsedData.importedData;
+        logger.info('从本地存储加载导入数据成功', {
+          fileCount: importedData.value.length,
+          totalRecords: getTotalImportedRecords(),
+          saveTime: parsedData.saveTime
+        });
+      }
+    }
+  } catch (error) {
+    logger.error('从本地存储加载导入数据失败', { error });
+    console.error('加载导入数据失败:', error);
+  }
+};
+
+// 切换导入文件的展开/折叠状态 - 在模板中使用
+const toggleImportedFile = (index: number) => {
+  expandedImportedFiles.value[index] = !expandedImportedFiles.value[index];
+};
+
+// 切换导入卡池的展开/折叠状态 - 在模板中使用
+const toggleImportedCategory = (fileIndex: number, categoryIndex: number) => {
+  const key = `${fileIndex}-${categoryIndex}`;
+  expandedImportedCategories.value[key] = !expandedImportedCategories.value[key];
+};
+
+// 展开所有的导入文件 - 在模板中使用
+const expandAllImportedFiles = () => {
   importedData.value.forEach((_, index) => {
-    expandedImportedCategories.value[index] = true;
+    expandedImportedFiles.value[index] = true;
   });
-  logger.debug('用户展开所有的导入卡池', {
-    totalCategories: importedData.value.length
+
+  logger.debug('用户展开所有的导入文件', {
+    totalFiles: importedData.value.length
   });
 };
 
-// 折叠所有的导入卡池
-const collapseAllImportedCategories = () => {
+// 折叠所有的导入文件
+const collapseAllImportedFiles = () => {
+  expandedImportedFiles.value = {};
   expandedImportedCategories.value = {};
-  logger.debug('用户折叠所有的导入卡池', {
-    totalCategories: importedData.value.length
+  logger.debug('用户折叠所有的导入文件', {
+    totalFiles: importedData.value.length
   });
 };
 
 // 获取导入记录总数
 const getTotalImportedRecords = () => {
-  return importedData.value.reduce((sum, category) => sum + category.records.length, 0);
+  return importedData.value.reduce((sum, file) =>
+    sum + file.categories.reduce((catSum, category) => catSum + category.records.length, 0), 0);
 };
 
-// 清除导入数据
-const clearImportedData = () => {
-  const previousDataCount = importedData.value.length;
-  const previousRecordsCount = importedData.value.reduce((sum, cat) => sum + cat.records.length, 0);
+// 获取单个文件的记录总数
+const getFileTotalRecords = (fileIndex: number) => {
+  if (importedData.value[fileIndex]) {
+    return importedData.value[fileIndex].categories.reduce((sum, category) => sum + category.records.length, 0);
+  }
+  return 0;
+};
 
-  logger.info('用户清除导入数据', {
-    previousCategories: previousDataCount,
+// 清除单个导入文件
+const clearImportedFile = (fileIndex: number) => {
+  if (importedData.value[fileIndex]) {
+    const removedFile = importedData.value.splice(fileIndex, 1)[0];
+    saveImportedDataToLocalStorage();
+
+    logger.info('用户清除单个导入文件', {
+      fileName: removedFile.fileName,
+      fileCategories: removedFile.categories.length,
+      fileRecords: removedFile.categories.reduce((sum, cat) => sum + cat.records.length, 0)
+    });
+
+    showToast(`文件 ${removedFile.fileName} 已清除`);
+  }
+};
+
+// 清除所有导入数据
+const clearAllImportedData = () => {
+  const previousFileCount = importedData.value.length;
+  const previousRecordsCount = getTotalImportedRecords();
+
+  logger.info('用户清除所有导入数据', {
+    previousFiles: previousFileCount,
     previousRecords: previousRecordsCount
   });
 
   importedData.value = [];
+  expandedImportedFiles.value = {};
   expandedImportedCategories.value = {};
-  showToast('导入数据已清除');
+  saveImportedDataToLocalStorage();
+  showToast('所有导入数据已清除');
 };
 
-// 导出合并后的导入数据
-const exportMergedImportedData = () => {
-  if (importedData.value.length === 0) {
-    showToast('没有可导出的导入记录数据');
+// 导出合并后的所有数据（包括账号数据和导入数据）
+const exportMergedAllData = async () => {
+  logger.info('开始导出合并所有数据', {
+    hasAccountData: categories.value.length > 0,
+    hasImportedData: importedData.value.length > 0
+  });
+
+  if (categories.value.length === 0 && importedData.value.length === 0) {
+    showToast('没有可导出的记录数据');
     return;
   }
 
+  exportLoading.value = true;
+  exportProgress.value = '准备导出合并数据...';
+  const exportStartTime = Date.now();
+
   try {
-    // 按分类ID合并数据
-    const mergedCategories = new Map();
+    const mergedData = {
+      exportTime: new Date().toISOString(),
+      exportType: 'merged_all_data',
+      accountData: null as any,
+      importedData: [] as any[],
+      summary: {
+        totalFiles: importedData.value.length,
+        totalCategories: 0,
+        totalRecords: 0
+      }
+    };
 
-    for (const category of importedData.value) {
-      const categoryId = category.categoryId || category.categoryName;
+    // 导出账号数据（如果已登录且有数据）
+    if (categories.value.length > 0 && authStore.mainUid) {
+      exportProgress.value = '正在导出账号数据...';
 
-      if (!mergedCategories.has(categoryId)) {
-        // 如果该分类还没有数据，创建新项目
-        mergedCategories.set(categoryId, {
-          categoryName: category.categoryName,
-          categoryId: category.categoryId || categoryId,
-          records: []
+      const authData = localStorage.getItem('gacha_auth');
+      if (authData) {
+        const { uid, cookie, roleToken, accountToken } = JSON.parse(authData);
+
+        const accountCategories: Array<{
+          categoryInfo: GachaCategory;
+          records: GachaRecord[];
+        }> = [];
+        for (const category of categories.value) {
+          exportProgress.value = `正在导出账号卡池: ${category.name.replace('\n', ' ')}`;
+
+          const allRecords: GachaRecord[] = [];
+          let currentPos: number | undefined = 0;
+          let currentTs: string | undefined;
+          let hasMore = true;
+
+          while (hasMore) {
+            const response = await getGachaHistory(
+              uid,
+              cookie,
+              roleToken,
+              accountToken,
+              category.id,
+              10,
+              currentPos,
+              currentTs
+            );
+
+            if (response && response.list && Array.isArray(response.list)) {
+              hasMore = response.hasMore;
+              allRecords.push(...response.list);
+
+              if (response.list.length > 0) {
+                const lastRecord = response.list[response.list.length - 1];
+                currentPos = lastRecord.pos;
+                currentTs = lastRecord.gachaTs;
+              } else {
+                hasMore = false;
+              }
+            } else {
+              hasMore = false;
+            }
+          }
+
+          if (allRecords.length > 0) {
+            accountCategories.push({
+              categoryInfo: category,
+              records: allRecords
+            });
+          }
+        }
+
+        mergedData.accountData = {
+          uid: uid,
+          categories: accountCategories
+        };
+        mergedData.summary.totalCategories += accountCategories.length;
+        mergedData.summary.totalRecords += accountCategories.reduce((sum, cat) => sum + cat.records.length, 0);
+      }
+    }
+
+    // 导出导入数据
+    exportProgress.value = '正在整理导入数据...';
+    mergedData.importedData = importedData.value;
+    mergedData.summary.totalCategories += importedData.value.reduce((sum, file) => sum + file.categories.length, 0);
+    mergedData.summary.totalRecords += getTotalImportedRecords();
+
+    exportProgress.value = '正在生成下载文件...';
+
+    let finalData: any;
+    let fileName: string;
+    let formatDescription: string;
+
+    if (exportFormat.value === 'official') {
+      // 合并通用格式导出 - 需要将所有数据转换为官方格式
+      finalData = {};
+      
+      // 处理账号数据
+      if (mergedData.accountData && mergedData.accountData.categories) {
+        mergedData.accountData.categories.forEach((category: any) => {
+          if (category.categoryInfo && category.records) {
+            const categoryForExport = {
+              categoryInfo: category.categoryInfo,
+              mergedData: {
+                data: {
+                  list: category.records,
+                  hasMore: false
+                },
+                msg: ''
+              }
+            };
+            const officialCategoryData = convertToOfficialFormat({ categories: [categoryForExport] });
+            Object.assign(finalData, officialCategoryData);
+          }
         });
       }
 
-      // 合并记录
-      const existingCategory = mergedCategories.get(categoryId);
-      existingCategory.records.push(...category.records);
-    }
-
-    // 去重并排序记录（按时间戳）
-    for (const category of mergedCategories.values()) {
-      // 按gachaTs去重，保留最新的记录
-      const uniqueRecords = new Map();
-      for (const record of category.records) {
-        const key = `${record.charId}_${record.gachaTs}`;
-        if (!uniqueRecords.has(key) || record.gachaTs > uniqueRecords.get(key).gachaTs) {
-          uniqueRecords.set(key, record);
+      // 处理导入数据
+      mergedData.importedData.forEach((fileData: any) => {
+        if (fileData.categories) {
+          fileData.categories.forEach((category: any) => {
+            if (category.categoryName && category.records) {
+              const categoryForExport = {
+                categoryInfo: {
+                  id: category.categoryId || '',
+                  name: category.categoryName
+                },
+                mergedData: {
+                  data: {
+                    list: category.records,
+                    hasMore: false
+                  },
+                  msg: ''
+                }
+              };
+              const officialCategoryData = convertToOfficialFormat({ categories: [categoryForExport] });
+              Object.assign(finalData, officialCategoryData);
+            }
+          });
         }
-      }
+      });
 
-      // 转换为数组并按时间倒序排序（最新的在前）
-      category.records = Array.from(uniqueRecords.values())
-        .sort((a, b) => new Date(b.gachaTs).getTime() - new Date(a.gachaTs).getTime());
+      fileName = `${new Date().getTime()}_merged_official_${authStore.mainUid?.substring(0, 8) || 'unknown'}_gacha.json`;
+      formatDescription = '合并通用格式';
+    } else {
+      // 合并原始格式导出
+      finalData = mergedData;
+      fileName = `合并所有寻访记录_${new Date().toISOString().split('T')[0]}.json`;
+      formatDescription = '合并原始格式';
     }
-
-    // 构建导出数据
-    const mergedData = Array.from(mergedCategories.values());
 
     // 创建并下载JSON文件
-    const dataStr = JSON.stringify({
-      exportTime: new Date().toISOString(),
-      exportType: 'merged_imported_data',
-      totalCategories: mergedData.length,
-      categories: mergedData
-    }, null, 2);
-
+    const dataStr = exportFormat.value === 'official'
+      ? JSON.stringify(finalData)
+      : JSON.stringify(finalData, null, 2);
     const dataBlob = new Blob([dataStr], { type: 'application/json' });
     const url = URL.createObjectURL(dataBlob);
 
     const link = document.createElement('a');
     link.href = url;
-    link.download = `合并寻访记录_${new Date().toISOString().split('T')[0]}.json`;
+    link.download = fileName;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
 
-    showToast(`合并寻访记录导出成功，共${mergedData.length}个分类`);
+    const totalDuration = Date.now() - exportStartTime;
+    logger.info('合并所有数据导出成功', {
+      totalDuration: totalDuration,
+      format: formatDescription,
+      accountCategories: mergedData.accountData?.categories?.length || 0,
+      importedFiles: mergedData.importedData.length,
+      totalRecords: mergedData.summary.totalRecords
+    });
+
+    showToast(`合并${formatDescription}导出成功，共${mergedData.summary.totalRecords}条记录`);
   } catch (err: unknown) {
-    console.error('导出合并数据失败:', err);
-    showToast('导出合并数据失败，请重试');
+    const errorMessage = err instanceof Error ? err.message : '未知错误';
+    logger.error('合并导出失败', {
+      error: errorMessage,
+      stack: err instanceof Error ? err.stack : undefined
+    });
+    console.error('合并导出失败:', err);
+    showToast('合并导出失败，请重试');
+  } finally {
+    exportLoading.value = false;
+    exportProgress.value = '';
   }
 };
 
@@ -1544,6 +1810,7 @@ const loadAllPoolNames = async (
         categoryId: category.id,
         categoryName: category.name
       });
+
       console.warn(`获取卡池 ${category.id} 的poolName失败:`, error);
     }
   });
@@ -1566,6 +1833,7 @@ const scrollToTop = () => {
     top: 0,
     behavior: 'smooth'
   });
+
   logger.debug('用户点击回到顶部按钮');
 };
 
@@ -1581,6 +1849,9 @@ onMounted(() => {
     hasMainUid: !!authStore.mainUid,
     hasHgToken: !!authStore.hgToken
   });
+
+  // 从本地存储加载导入数据
+  loadImportedDataFromLocalStorage();
 
   if (authStore.isLogin) {
     refreshGachaData();
@@ -1599,6 +1870,7 @@ onMounted(() => {
 </script>
 
 <style scoped>
+/* 样式部分保持不变，但需要添加新的样式类 */
 .headhunting-record {
   padding: 20px;
   max-width: 1200px;
@@ -1628,6 +1900,8 @@ onMounted(() => {
 .actions {
   display: flex;
   gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
 }
 
 .refresh-btn {
@@ -2042,7 +2316,7 @@ onMounted(() => {
 }
 
 /* 导出导入按钮样式 */
-.export-group {
+.export-buttons {
   display: flex;
   gap: 8px;
   align-items: center;
@@ -2137,24 +2411,76 @@ onMounted(() => {
   font-weight: 600;
 }
 
-.imported-categories {
+.imported-files {
   display: flex;
   flex-direction: column;
   gap: 16px;
 }
 
-.imported-category {
+.imported-file {
   background: #3a3a3a;
   border: 1px solid #404040;
   border-radius: 8px;
   overflow: hidden;
 }
 
-.imported-category h4 {
-  margin: 0;
+.file-header {
   padding: 16px 20px;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: background 0.2s;
+}
+
+.file-header:hover {
+  background: #4a4a4a;
+}
+
+.file-header h4 {
+  margin: 0;
   color: #ffffff;
   font-size: 16px;
+  font-weight: 600;
+}
+
+.file-meta {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  font-size: 12px;
+  color: #999;
+}
+
+.file-size, .import-time {
+  font-size: 12px;
+  color: #999;
+}
+
+.file-info {
+  font-size: 12px;
+  color: #999;
+  font-weight: normal;
+  margin-left: 8px;
+}
+
+.file-categories {
+  border-top: 1px solid #404040;
+}
+
+.imported-category {
+  border-bottom: 1px solid #404040;
+}
+
+.imported-category:last-child {
+  border-bottom: none;
+}
+
+.imported-category h5 {
+  margin: 0;
+  padding: 12px 20px;
+  color: #ffffff;
+  font-size: 14px;
   font-weight: 600;
   cursor: pointer;
   display: flex;
@@ -2163,7 +2489,7 @@ onMounted(() => {
   transition: background 0.2s;
 }
 
-.imported-category h4:hover {
+.imported-category h5:hover {
   background: #4a4a4a;
 }
 
@@ -2180,6 +2506,30 @@ onMounted(() => {
 
 .imported-records-table .gacha-table {
   margin: 0;
+}
+
+.file-actions {
+  padding: 12px 20px;
+  border-top: 1px solid #404040;
+  text-align: right;
+}
+
+.clear-file-btn {
+  padding: 6px 12px;
+  border: 1px solid #404040;
+  border-radius: 4px;
+  background: #3a3a3a;
+  color: #ff6b6b;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.clear-file-btn:hover {
+  background: #4a4a4a;
+  color: #ff6b6b;
+  border-color: #ff6b6b;
 }
 
 /* 回到顶部按钮样式 */
@@ -2300,6 +2650,17 @@ onMounted(() => {
     flex-direction: column;
     gap: 12px;
     align-items: flex-start;
+  }
+
+  .file-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .file-meta {
+    width: 100%;
+    justify-content: space-between;
   }
 }
 </style>

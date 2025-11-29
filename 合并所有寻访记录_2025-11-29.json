@@ -1,0 +1,4311 @@
+{
+  "exportTime": "2025-11-29T15:06:12.537Z",
+  "exportType": "merged_all_data",
+  "accountData": {
+    "uid": "19371587",
+    "categories": [
+      {
+        "categoryInfo": {
+          "id": "anniver_fest",
+          "name": "限定寻访\n庆典"
+        },
+        "records": [
+          {
+            "poolId": "LIMITED_67_0_1",
+            "poolName": "以风雪为誓",
+            "charId": "char_4208_wintim",
+            "charName": "冬时",
+            "rarity": 3,
+            "isNew": false,
+            "gachaTs": "1763084693480",
+            "pos": 0
+          },
+          {
+            "poolId": "LIMITED_67_0_1",
+            "poolName": "以风雪为誓",
+            "charId": "char_284_spot",
+            "charName": "斑点",
+            "rarity": 2,
+            "isNew": false,
+            "gachaTs": "1762994150801",
+            "pos": 0
+          },
+          {
+            "poolId": "LIMITED_67_0_1",
+            "poolName": "以风雪为誓",
+            "charId": "char_283_midn",
+            "charName": "月见夜",
+            "rarity": 2,
+            "isNew": false,
+            "gachaTs": "1762908264595",
+            "pos": 0
+          },
+          {
+            "poolId": "LIMITED_67_0_1",
+            "poolName": "以风雪为誓",
+            "charId": "char_236_rope",
+            "charName": "暗索",
+            "rarity": 3,
+            "isNew": false,
+            "gachaTs": "1762826618863",
+            "pos": 0
+          },
+          {
+            "poolId": "LIMITED_67_0_1",
+            "poolName": "以风雪为誓",
+            "charId": "char_440_pinecn",
+            "charName": "松果",
+            "rarity": 3,
+            "isNew": false,
+            "gachaTs": "1762736055718",
+            "pos": 0
+          },
+          {
+            "poolId": "LIMITED_67_0_1",
+            "poolName": "以风雪为誓",
+            "charId": "char_192_falco",
+            "charName": "翎羽",
+            "rarity": 2,
+            "isNew": false,
+            "gachaTs": "1762643934984",
+            "pos": 0
+          },
+          {
+            "poolId": "LIMITED_67_0_1",
+            "poolName": "以风雪为誓",
+            "charId": "char_209_ardign",
+            "charName": "卡缇",
+            "rarity": 2,
+            "isNew": false,
+            "gachaTs": "1762619099671",
+            "pos": 0
+          },
+          {
+            "poolId": "LIMITED_67_0_1",
+            "poolName": "以风雪为誓",
+            "charId": "char_1038_whitw2",
+            "charName": "荒芜拉普兰德",
+            "rarity": 5,
+            "isNew": false,
+            "gachaTs": "1762619092082",
+            "pos": 0
+          },
+          {
+            "poolId": "LIMITED_67_0_1",
+            "poolName": "以风雪为誓",
+            "charId": "char_212_ansel",
+            "charName": "安赛尔",
+            "rarity": 2,
+            "isNew": false,
+            "gachaTs": "1762619088619",
+            "pos": 0
+          },
+          {
+            "poolId": "LIMITED_67_0_1",
+            "poolName": "以风雪为誓",
+            "charId": "char_4207_branch",
+            "charName": "折桠",
+            "rarity": 4,
+            "isNew": false,
+            "gachaTs": "1762619084686",
+            "pos": 0
+          },
+          {
+            "poolId": "LIMITED_67_0_1",
+            "poolName": "以风雪为誓",
+            "charId": "char_240_wyvern",
+            "charName": "香草",
+            "rarity": 2,
+            "isNew": false,
+            "gachaTs": "1762619081206",
+            "pos": 0
+          },
+          {
+            "poolId": "LIMITED_67_0_1",
+            "poolName": "以风雪为誓",
+            "charId": "char_258_podego",
+            "charName": "波登可",
+            "rarity": 3,
+            "isNew": false,
+            "gachaTs": "1762619077828",
+            "pos": 0
+          },
+          {
+            "poolId": "LIMITED_67_0_1",
+            "poolName": "以风雪为誓",
+            "charId": "char_212_ansel",
+            "charName": "安赛尔",
+            "rarity": 2,
+            "isNew": false,
+            "gachaTs": "1762619074133",
+            "pos": 0
+          },
+          {
+            "poolId": "LIMITED_67_0_1",
+            "poolName": "以风雪为誓",
+            "charId": "char_150_snakek",
+            "charName": "蛇屠箱",
+            "rarity": 3,
+            "isNew": false,
+            "gachaTs": "1762619071258",
+            "pos": 0
+          },
+          {
+            "poolId": "LIMITED_67_0_1",
+            "poolName": "以风雪为誓",
+            "charId": "char_491_humus",
+            "charName": "休谟斯",
+            "rarity": 3,
+            "isNew": false,
+            "gachaTs": "1762619065954",
+            "pos": 0
+          },
+          {
+            "poolId": "LIMITED_67_0_1",
+            "poolName": "以风雪为誓",
+            "charId": "char_491_humus",
+            "charName": "休谟斯",
+            "rarity": 3,
+            "isNew": false,
+            "gachaTs": "1762619062155",
+            "pos": 0
+          },
+          {
+            "poolId": "LIMITED_67_0_1",
+            "poolName": "以风雪为誓",
+            "charId": "char_137_brownb",
+            "charName": "猎蜂",
+            "rarity": 3,
+            "isNew": false,
+            "gachaTs": "1762619056623",
+            "pos": 0
+          },
+          {
+            "poolId": "LIMITED_67_0_1",
+            "poolName": "以风雪为誓",
+            "charId": "char_151_myrtle",
+            "charName": "桃金娘",
+            "rarity": 3,
+            "isNew": false,
+            "gachaTs": "1762619051750",
+            "pos": 0
+          },
+          {
+            "poolId": "LIMITED_67_0_1",
+            "poolName": "以风雪为誓",
+            "charId": "char_301_cutter",
+            "charName": "刻刀",
+            "rarity": 3,
+            "isNew": false,
+            "gachaTs": "1762619040247",
+            "pos": 9
+          },
+          {
+            "poolId": "LIMITED_67_0_1",
+            "poolName": "以风雪为誓",
+            "charId": "char_126_shotst",
+            "charName": "流星",
+            "rarity": 3,
+            "isNew": false,
+            "gachaTs": "1762619040247",
+            "pos": 8
+          },
+          {
+            "poolId": "LIMITED_67_0_1",
+            "poolName": "以风雪为誓",
+            "charId": "char_118_yuki",
+            "charName": "白雪",
+            "rarity": 3,
+            "isNew": false,
+            "gachaTs": "1762619040247",
+            "pos": 7
+          },
+          {
+            "poolId": "LIMITED_67_0_1",
+            "poolName": "以风雪为誓",
+            "charId": "char_208_melan",
+            "charName": "玫兰莎",
+            "rarity": 2,
+            "isNew": false,
+            "gachaTs": "1762619040247",
+            "pos": 6
+          },
+          {
+            "poolId": "LIMITED_67_0_1",
+            "poolName": "以风雪为誓",
+            "charId": "char_122_beagle",
+            "charName": "米格鲁",
+            "rarity": 2,
+            "isNew": false,
+            "gachaTs": "1762619040247",
+            "pos": 5
+          },
+          {
+            "poolId": "LIMITED_67_0_1",
+            "poolName": "以风雪为誓",
+            "charId": "char_284_spot",
+            "charName": "斑点",
+            "rarity": 2,
+            "isNew": false,
+            "gachaTs": "1762619040247",
+            "pos": 4
+          },
+          {
+            "poolId": "LIMITED_67_0_1",
+            "poolName": "以风雪为誓",
+            "charId": "char_151_myrtle",
+            "charName": "桃金娘",
+            "rarity": 3,
+            "isNew": false,
+            "gachaTs": "1762619040247",
+            "pos": 3
+          },
+          {
+            "poolId": "LIMITED_67_0_1",
+            "poolName": "以风雪为誓",
+            "charId": "char_4208_wintim",
+            "charName": "冬时",
+            "rarity": 3,
+            "isNew": true,
+            "gachaTs": "1762619040247",
+            "pos": 2
+          },
+          {
+            "poolId": "LIMITED_67_0_1",
+            "poolName": "以风雪为誓",
+            "charId": "char_141_nights",
+            "charName": "夜烟",
+            "rarity": 3,
+            "isNew": false,
+            "gachaTs": "1762619040247",
+            "pos": 1
+          },
+          {
+            "poolId": "LIMITED_67_0_1",
+            "poolName": "以风雪为誓",
+            "charId": "char_120_hibisc",
+            "charName": "芙蓉",
+            "rarity": 2,
+            "isNew": false,
+            "gachaTs": "1762619040247",
+            "pos": 0
+          },
+          {
+            "poolId": "LIMITED_67_0_1",
+            "poolName": "以风雪为誓",
+            "charId": "char_253_greyy",
+            "charName": "格雷伊",
+            "rarity": 3,
+            "isNew": false,
+            "gachaTs": "1762619028409",
+            "pos": 9
+          },
+          {
+            "poolId": "LIMITED_67_0_1",
+            "poolName": "以风雪为誓",
+            "charId": "char_298_susuro",
+            "charName": "苏苏洛",
+            "rarity": 3,
+            "isNew": false,
+            "gachaTs": "1762619028409",
+            "pos": 8
+          },
+          {
+            "poolId": "LIMITED_67_0_1",
+            "poolName": "以风雪为誓",
+            "charId": "char_298_susuro",
+            "charName": "苏苏洛",
+            "rarity": 3,
+            "isNew": false,
+            "gachaTs": "1762619028409",
+            "pos": 7
+          },
+          {
+            "poolId": "LIMITED_67_0_1",
+            "poolName": "以风雪为誓",
+            "charId": "char_4211_snhunt",
+            "charName": "雪猎",
+            "rarity": 4,
+            "isNew": false,
+            "gachaTs": "1762619028409",
+            "pos": 6
+          },
+          {
+            "poolId": "LIMITED_67_0_1",
+            "poolName": "以风雪为誓",
+            "charId": "char_452_bstalk",
+            "charName": "豆苗",
+            "rarity": 3,
+            "isNew": false,
+            "gachaTs": "1762619028409",
+            "pos": 5
+          },
+          {
+            "poolId": "LIMITED_67_0_1",
+            "poolName": "以风雪为誓",
+            "charId": "char_284_spot",
+            "charName": "斑点",
+            "rarity": 2,
+            "isNew": false,
+            "gachaTs": "1762619028409",
+            "pos": 4
+          },
+          {
+            "poolId": "LIMITED_67_0_1",
+            "poolName": "以风雪为誓",
+            "charId": "char_181_flower",
+            "charName": "调香师",
+            "rarity": 3,
+            "isNew": false,
+            "gachaTs": "1762619028409",
+            "pos": 3
+          },
+          {
+            "poolId": "LIMITED_67_0_1",
+            "poolName": "以风雪为誓",
+            "charId": "char_469_indigo",
+            "charName": "深靛",
+            "rarity": 3,
+            "isNew": false,
+            "gachaTs": "1762619028409",
+            "pos": 2
+          },
+          {
+            "poolId": "LIMITED_67_0_1",
+            "poolName": "以风雪为誓",
+            "charId": "char_4211_snhunt",
+            "charName": "雪猎",
+            "rarity": 4,
+            "isNew": true,
+            "gachaTs": "1762619028409",
+            "pos": 1
+          },
+          {
+            "poolId": "LIMITED_67_0_1",
+            "poolName": "以风雪为誓",
+            "charId": "char_381_bubble",
+            "charName": "泡泡",
+            "rarity": 3,
+            "isNew": false,
+            "gachaTs": "1762619028409",
+            "pos": 0
+          },
+          {
+            "poolId": "LIMITED_67_0_1",
+            "poolName": "以风雪为誓",
+            "charId": "char_4107_vrdant",
+            "charName": "维荻",
+            "rarity": 3,
+            "isNew": false,
+            "gachaTs": "1762619022087",
+            "pos": 9
+          },
+          {
+            "poolId": "LIMITED_67_0_1",
+            "poolName": "以风雪为誓",
+            "charId": "char_133_mm",
+            "charName": "梅",
+            "rarity": 3,
+            "isNew": false,
+            "gachaTs": "1762619022087",
+            "pos": 8
+          },
+          {
+            "poolId": "LIMITED_67_0_1",
+            "poolName": "以风雪为誓",
+            "charId": "char_121_lava",
+            "charName": "炎熔",
+            "rarity": 2,
+            "isNew": false,
+            "gachaTs": "1762619022087",
+            "pos": 7
+          },
+          {
+            "poolId": "LIMITED_67_0_1",
+            "poolName": "以风雪为誓",
+            "charId": "char_328_cammou",
+            "charName": "卡达",
+            "rarity": 3,
+            "isNew": false,
+            "gachaTs": "1762619022087",
+            "pos": 6
+          },
+          {
+            "poolId": "LIMITED_67_0_1",
+            "poolName": "以风雪为誓",
+            "charId": "char_133_mm",
+            "charName": "梅",
+            "rarity": 3,
+            "isNew": false,
+            "gachaTs": "1762619022087",
+            "pos": 5
+          },
+          {
+            "poolId": "LIMITED_67_0_1",
+            "poolName": "以风雪为誓",
+            "charId": "char_240_wyvern",
+            "charName": "香草",
+            "rarity": 2,
+            "isNew": false,
+            "gachaTs": "1762619022087",
+            "pos": 4
+          },
+          {
+            "poolId": "LIMITED_67_0_1",
+            "poolName": "以风雪为誓",
+            "charId": "char_209_ardign",
+            "charName": "卡缇",
+            "rarity": 2,
+            "isNew": false,
+            "gachaTs": "1762619022087",
+            "pos": 3
+          },
+          {
+            "poolId": "LIMITED_67_0_1",
+            "poolName": "以风雪为誓",
+            "charId": "char_491_humus",
+            "charName": "休谟斯",
+            "rarity": 3,
+            "isNew": false,
+            "gachaTs": "1762619022087",
+            "pos": 2
+          },
+          {
+            "poolId": "LIMITED_67_0_1",
+            "poolName": "以风雪为誓",
+            "charId": "char_290_vigna",
+            "charName": "红豆",
+            "rarity": 3,
+            "isNew": false,
+            "gachaTs": "1762619022087",
+            "pos": 1
+          },
+          {
+            "poolId": "LIMITED_67_0_1",
+            "poolName": "以风雪为誓",
+            "charId": "char_110_deepcl",
+            "charName": "深海色",
+            "rarity": 3,
+            "isNew": false,
+            "gachaTs": "1762619022087",
+            "pos": 0
+          },
+          {
+            "poolId": "LIMITED_67_0_1",
+            "poolName": "以风雪为誓",
+            "charId": "char_121_lava",
+            "charName": "炎熔",
+            "rarity": 2,
+            "isNew": false,
+            "gachaTs": "1762557051490",
+            "pos": 0
+          },
+          {
+            "poolId": "LIMITED_67_0_1",
+            "poolName": "以风雪为誓",
+            "charId": "char_118_yuki",
+            "charName": "白雪",
+            "rarity": 3,
+            "isNew": false,
+            "gachaTs": "1762469622367",
+            "pos": 0
+          },
+          {
+            "poolId": "LIMITED_67_0_1",
+            "poolName": "以风雪为誓",
+            "charId": "char_452_bstalk",
+            "charName": "豆苗",
+            "rarity": 3,
+            "isNew": false,
+            "gachaTs": "1762383123300",
+            "pos": 0
+          },
+          {
+            "poolId": "LIMITED_67_0_1",
+            "poolName": "以风雪为誓",
+            "charId": "char_150_snakek",
+            "charName": "蛇屠箱",
+            "rarity": 3,
+            "isNew": false,
+            "gachaTs": "1762299385110",
+            "pos": 0
+          },
+          {
+            "poolId": "LIMITED_67_0_1",
+            "poolName": "以风雪为誓",
+            "charId": "char_122_beagle",
+            "charName": "米格鲁",
+            "rarity": 2,
+            "isNew": false,
+            "gachaTs": "1762230737081",
+            "pos": 0
+          },
+          {
+            "poolId": "LIMITED_67_0_1",
+            "poolName": "以风雪为誓",
+            "charId": "char_237_gravel",
+            "charName": "砾",
+            "rarity": 3,
+            "isNew": false,
+            "gachaTs": "1762154330510",
+            "pos": 0
+          },
+          {
+            "poolId": "LIMITED_67_0_1",
+            "poolName": "以风雪为誓",
+            "charId": "char_4041_chnut",
+            "charName": "褐果",
+            "rarity": 3,
+            "isNew": false,
+            "gachaTs": "1762060068841",
+            "pos": 0
+          },
+          {
+            "poolId": "LIMITED_67_0_1",
+            "poolName": "以风雪为誓",
+            "charId": "char_208_melan",
+            "charName": "玫兰莎",
+            "rarity": 2,
+            "isNew": false,
+            "gachaTs": "1761969717496",
+            "pos": 9
+          },
+          {
+            "poolId": "LIMITED_67_0_1",
+            "poolName": "以风雪为誓",
+            "charId": "char_236_rope",
+            "charName": "暗索",
+            "rarity": 3,
+            "isNew": false,
+            "gachaTs": "1761969717496",
+            "pos": 8
+          },
+          {
+            "poolId": "LIMITED_67_0_1",
+            "poolName": "以风雪为誓",
+            "charId": "char_185_frncat",
+            "charName": "慕斯",
+            "rarity": 3,
+            "isNew": false,
+            "gachaTs": "1761969717496",
+            "pos": 7
+          },
+          {
+            "poolId": "LIMITED_67_0_1",
+            "poolName": "以风雪为誓",
+            "charId": "char_130_doberm",
+            "charName": "杜宾",
+            "rarity": 3,
+            "isNew": false,
+            "gachaTs": "1761969717496",
+            "pos": 6
+          },
+          {
+            "poolId": "LIMITED_67_0_1",
+            "poolName": "以风雪为誓",
+            "charId": "char_381_bubble",
+            "charName": "泡泡",
+            "rarity": 3,
+            "isNew": false,
+            "gachaTs": "1761969717496",
+            "pos": 5
+          },
+          {
+            "poolId": "LIMITED_67_0_1",
+            "poolName": "以风雪为誓",
+            "charId": "char_236_rope",
+            "charName": "暗索",
+            "rarity": 3,
+            "isNew": false,
+            "gachaTs": "1761969717496",
+            "pos": 4
+          },
+          {
+            "poolId": "LIMITED_67_0_1",
+            "poolName": "以风雪为誓",
+            "charId": "char_185_frncat",
+            "charName": "慕斯",
+            "rarity": 3,
+            "isNew": false,
+            "gachaTs": "1761969717496",
+            "pos": 3
+          },
+          {
+            "poolId": "LIMITED_67_0_1",
+            "poolName": "以风雪为誓",
+            "charId": "char_212_ansel",
+            "charName": "安赛尔",
+            "rarity": 2,
+            "isNew": false,
+            "gachaTs": "1761969717496",
+            "pos": 2
+          },
+          {
+            "poolId": "LIMITED_67_0_1",
+            "poolName": "以风雪为誓",
+            "charId": "char_1046_sbell2",
+            "charName": "圣聆初雪",
+            "rarity": 5,
+            "isNew": false,
+            "gachaTs": "1761969717496",
+            "pos": 1
+          },
+          {
+            "poolId": "LIMITED_67_0_1",
+            "poolName": "以风雪为誓",
+            "charId": "char_1045_svash2",
+            "charName": "凛御银灰",
+            "rarity": 5,
+            "isNew": true,
+            "gachaTs": "1761969717496",
+            "pos": 0
+          },
+          {
+            "poolId": "LIMITED_67_0_1",
+            "poolName": "以风雪为誓",
+            "charId": "char_212_ansel",
+            "charName": "安赛尔",
+            "rarity": 2,
+            "isNew": false,
+            "gachaTs": "1761969541162",
+            "pos": 0
+          },
+          {
+            "poolId": "LIMITED_67_0_1",
+            "poolName": "以风雪为誓",
+            "charId": "char_212_ansel",
+            "charName": "安赛尔",
+            "rarity": 2,
+            "isNew": false,
+            "gachaTs": "1761969521905",
+            "pos": 9
+          },
+          {
+            "poolId": "LIMITED_67_0_1",
+            "poolName": "以风雪为誓",
+            "charId": "char_183_skgoat",
+            "charName": "地灵",
+            "rarity": 3,
+            "isNew": false,
+            "gachaTs": "1761969521905",
+            "pos": 8
+          },
+          {
+            "poolId": "LIMITED_67_0_1",
+            "poolName": "以风雪为誓",
+            "charId": "char_284_spot",
+            "charName": "斑点",
+            "rarity": 2,
+            "isNew": false,
+            "gachaTs": "1761969521905",
+            "pos": 7
+          },
+          {
+            "poolId": "LIMITED_67_0_1",
+            "poolName": "以风雪为誓",
+            "charId": "char_1035_wisdel",
+            "charName": "维什戴尔",
+            "rarity": 5,
+            "isNew": false,
+            "gachaTs": "1761969521905",
+            "pos": 6
+          },
+          {
+            "poolId": "LIMITED_67_0_1",
+            "poolName": "以风雪为誓",
+            "charId": "char_282_catap",
+            "charName": "空爆",
+            "rarity": 2,
+            "isNew": false,
+            "gachaTs": "1761969521905",
+            "pos": 5
+          },
+          {
+            "poolId": "LIMITED_67_0_1",
+            "poolName": "以风雪为誓",
+            "charId": "char_208_melan",
+            "charName": "玫兰莎",
+            "rarity": 2,
+            "isNew": false,
+            "gachaTs": "1761969521905",
+            "pos": 4
+          },
+          {
+            "poolId": "LIMITED_67_0_1",
+            "poolName": "以风雪为誓",
+            "charId": "char_1046_sbell2",
+            "charName": "圣聆初雪",
+            "rarity": 5,
+            "isNew": true,
+            "gachaTs": "1761969521905",
+            "pos": 3
+          },
+          {
+            "poolId": "LIMITED_67_0_1",
+            "poolName": "以风雪为誓",
+            "charId": "char_210_stward",
+            "charName": "史都华德",
+            "rarity": 2,
+            "isNew": false,
+            "gachaTs": "1761969521905",
+            "pos": 2
+          },
+          {
+            "poolId": "LIMITED_67_0_1",
+            "poolName": "以风雪为誓",
+            "charId": "char_328_cammou",
+            "charName": "卡达",
+            "rarity": 3,
+            "isNew": false,
+            "gachaTs": "1761969521905",
+            "pos": 1
+          },
+          {
+            "poolId": "LIMITED_67_0_1",
+            "poolName": "以风雪为誓",
+            "charId": "char_258_podego",
+            "charName": "波登可",
+            "rarity": 3,
+            "isNew": false,
+            "gachaTs": "1761969521905",
+            "pos": 0
+          }
+        ]
+      },
+      {
+        "categoryInfo": {
+          "id": "mujica",
+          "name": "梦中舞会\n人偶寻访"
+        },
+        "records": [
+          {
+            "poolId": "LINKAGE_65_0_1",
+            "poolName": "人偶的歌谣",
+            "charId": "char_281_popka",
+            "charName": "泡普卡",
+            "rarity": 2,
+            "isNew": false,
+            "gachaTs": "1757053899389",
+            "pos": 9
+          },
+          {
+            "poolId": "LINKAGE_65_0_1",
+            "poolName": "人偶的歌谣",
+            "charId": "char_208_melan",
+            "charName": "玫兰莎",
+            "rarity": 2,
+            "isNew": false,
+            "gachaTs": "1757053899389",
+            "pos": 8
+          },
+          {
+            "poolId": "LINKAGE_65_0_1",
+            "poolName": "人偶的歌谣",
+            "charId": "char_277_sqrrel",
+            "charName": "阿消",
+            "rarity": 3,
+            "isNew": false,
+            "gachaTs": "1757053899389",
+            "pos": 7
+          },
+          {
+            "poolId": "LINKAGE_65_0_1",
+            "poolName": "人偶的歌谣",
+            "charId": "char_258_podego",
+            "charName": "波登可",
+            "rarity": 3,
+            "isNew": false,
+            "gachaTs": "1757053899389",
+            "pos": 6
+          },
+          {
+            "poolId": "LINKAGE_65_0_1",
+            "poolName": "人偶的歌谣",
+            "charId": "char_283_midn",
+            "charName": "月见夜",
+            "rarity": 2,
+            "isNew": false,
+            "gachaTs": "1757053899389",
+            "pos": 5
+          },
+          {
+            "poolId": "LINKAGE_65_0_1",
+            "poolName": "人偶的歌谣",
+            "charId": "char_440_pinecn",
+            "charName": "松果",
+            "rarity": 3,
+            "isNew": false,
+            "gachaTs": "1757053899389",
+            "pos": 4
+          },
+          {
+            "poolId": "LINKAGE_65_0_1",
+            "poolName": "人偶的歌谣",
+            "charId": "char_123_fang",
+            "charName": "芬",
+            "rarity": 2,
+            "isNew": false,
+            "gachaTs": "1757053899389",
+            "pos": 3
+          },
+          {
+            "poolId": "LINKAGE_65_0_1",
+            "poolName": "人偶的歌谣",
+            "charId": "char_124_kroos",
+            "charName": "克洛丝",
+            "rarity": 2,
+            "isNew": false,
+            "gachaTs": "1757053899389",
+            "pos": 2
+          },
+          {
+            "poolId": "LINKAGE_65_0_1",
+            "poolName": "人偶的歌谣",
+            "charId": "char_281_popka",
+            "charName": "泡普卡",
+            "rarity": 2,
+            "isNew": false,
+            "gachaTs": "1757053899389",
+            "pos": 1
+          },
+          {
+            "poolId": "LINKAGE_65_0_1",
+            "poolName": "人偶的歌谣",
+            "charId": "char_4182_oblvns",
+            "charName": "丰川祥子",
+            "rarity": 5,
+            "isNew": true,
+            "gachaTs": "1757053899389",
+            "pos": 0
+          },
+          {
+            "poolId": "LINKAGE_65_0_1",
+            "poolName": "人偶的歌谣",
+            "charId": "char_290_vigna",
+            "charName": "红豆",
+            "rarity": 3,
+            "isNew": false,
+            "gachaTs": "1757053886802",
+            "pos": 9
+          },
+          {
+            "poolId": "LINKAGE_65_0_1",
+            "poolName": "人偶的歌谣",
+            "charId": "char_181_flower",
+            "charName": "调香师",
+            "rarity": 3,
+            "isNew": false,
+            "gachaTs": "1757053886802",
+            "pos": 8
+          },
+          {
+            "poolId": "LINKAGE_65_0_1",
+            "poolName": "人偶的歌谣",
+            "charId": "char_445_wscoot",
+            "charName": "骋风",
+            "rarity": 3,
+            "isNew": false,
+            "gachaTs": "1757053886802",
+            "pos": 7
+          },
+          {
+            "poolId": "LINKAGE_65_0_1",
+            "poolName": "人偶的歌谣",
+            "charId": "char_120_hibisc",
+            "charName": "芙蓉",
+            "rarity": 2,
+            "isNew": false,
+            "gachaTs": "1757053886802",
+            "pos": 6
+          },
+          {
+            "poolId": "LINKAGE_65_0_1",
+            "poolName": "人偶的歌谣",
+            "charId": "char_4014_lunacu",
+            "charName": "子月",
+            "rarity": 4,
+            "isNew": false,
+            "gachaTs": "1757053886802",
+            "pos": 5
+          },
+          {
+            "poolId": "LINKAGE_65_0_1",
+            "poolName": "人偶的歌谣",
+            "charId": "char_212_ansel",
+            "charName": "安赛尔",
+            "rarity": 2,
+            "isNew": false,
+            "gachaTs": "1757053886802",
+            "pos": 4
+          },
+          {
+            "poolId": "LINKAGE_65_0_1",
+            "poolName": "人偶的歌谣",
+            "charId": "char_302_glaze",
+            "charName": "安比尔",
+            "rarity": 3,
+            "isNew": false,
+            "gachaTs": "1757053886802",
+            "pos": 3
+          },
+          {
+            "poolId": "LINKAGE_65_0_1",
+            "poolName": "人偶的歌谣",
+            "charId": "char_210_stward",
+            "charName": "史都华德",
+            "rarity": 2,
+            "isNew": false,
+            "gachaTs": "1757053886802",
+            "pos": 2
+          },
+          {
+            "poolId": "LINKAGE_65_0_1",
+            "poolName": "人偶的歌谣",
+            "charId": "char_282_catap",
+            "charName": "空爆",
+            "rarity": 2,
+            "isNew": false,
+            "gachaTs": "1757053886802",
+            "pos": 1
+          },
+          {
+            "poolId": "LINKAGE_65_0_1",
+            "poolName": "人偶的歌谣",
+            "charId": "char_123_fang",
+            "charName": "芬",
+            "rarity": 2,
+            "isNew": false,
+            "gachaTs": "1757053886802",
+            "pos": 0
+          },
+          {
+            "poolId": "LINKAGE_65_0_1",
+            "poolName": "人偶的歌谣",
+            "charId": "char_109_fmout",
+            "charName": "远山",
+            "rarity": 3,
+            "isNew": false,
+            "gachaTs": "1757053850220",
+            "pos": 9
+          },
+          {
+            "poolId": "LINKAGE_65_0_1",
+            "poolName": "人偶的歌谣",
+            "charId": "char_301_cutter",
+            "charName": "刻刀",
+            "rarity": 3,
+            "isNew": false,
+            "gachaTs": "1757053850220",
+            "pos": 8
+          },
+          {
+            "poolId": "LINKAGE_65_0_1",
+            "poolName": "人偶的歌谣",
+            "charId": "char_347_jaksel",
+            "charName": "杰克",
+            "rarity": 3,
+            "isNew": false,
+            "gachaTs": "1757053850220",
+            "pos": 7
+          },
+          {
+            "poolId": "LINKAGE_65_0_1",
+            "poolName": "人偶的歌谣",
+            "charId": "char_192_falco",
+            "charName": "翎羽",
+            "rarity": 2,
+            "isNew": false,
+            "gachaTs": "1757053850220",
+            "pos": 6
+          },
+          {
+            "poolId": "LINKAGE_65_0_1",
+            "poolName": "人偶的歌谣",
+            "charId": "char_4183_mortis",
+            "charName": "若叶睦",
+            "rarity": 4,
+            "isNew": false,
+            "gachaTs": "1757053850220",
+            "pos": 5
+          },
+          {
+            "poolId": "LINKAGE_65_0_1",
+            "poolName": "人偶的歌谣",
+            "charId": "char_118_yuki",
+            "charName": "白雪",
+            "rarity": 3,
+            "isNew": false,
+            "gachaTs": "1757053850220",
+            "pos": 4
+          },
+          {
+            "poolId": "LINKAGE_65_0_1",
+            "poolName": "人偶的歌谣",
+            "charId": "char_290_vigna",
+            "charName": "红豆",
+            "rarity": 3,
+            "isNew": false,
+            "gachaTs": "1757053850220",
+            "pos": 3
+          },
+          {
+            "poolId": "LINKAGE_65_0_1",
+            "poolName": "人偶的歌谣",
+            "charId": "char_446_aroma",
+            "charName": "阿罗玛",
+            "rarity": 4,
+            "isNew": true,
+            "gachaTs": "1757053850220",
+            "pos": 2
+          },
+          {
+            "poolId": "LINKAGE_65_0_1",
+            "poolName": "人偶的歌谣",
+            "charId": "char_484_robrta",
+            "charName": "罗比菈塔",
+            "rarity": 3,
+            "isNew": false,
+            "gachaTs": "1757053850220",
+            "pos": 1
+          },
+          {
+            "poolId": "LINKAGE_65_0_1",
+            "poolName": "人偶的歌谣",
+            "charId": "char_133_mm",
+            "charName": "梅",
+            "rarity": 3,
+            "isNew": false,
+            "gachaTs": "1757053850220",
+            "pos": 0
+          },
+          {
+            "poolId": "LINKAGE_65_0_1",
+            "poolName": "人偶的歌谣",
+            "charId": "char_126_shotst",
+            "charName": "流星",
+            "rarity": 3,
+            "isNew": false,
+            "gachaTs": "1757053835026",
+            "pos": 9
+          },
+          {
+            "poolId": "LINKAGE_65_0_1",
+            "poolName": "人偶的歌谣",
+            "charId": "char_283_midn",
+            "charName": "月见夜",
+            "rarity": 2,
+            "isNew": false,
+            "gachaTs": "1757053835026",
+            "pos": 8
+          },
+          {
+            "poolId": "LINKAGE_65_0_1",
+            "poolName": "人偶的歌谣",
+            "charId": "char_235_jesica",
+            "charName": "杰西卡",
+            "rarity": 3,
+            "isNew": false,
+            "gachaTs": "1757053835026",
+            "pos": 7
+          },
+          {
+            "poolId": "LINKAGE_65_0_1",
+            "poolName": "人偶的歌谣",
+            "charId": "char_193_frostl",
+            "charName": "霜叶",
+            "rarity": 3,
+            "isNew": false,
+            "gachaTs": "1757053835026",
+            "pos": 6
+          },
+          {
+            "poolId": "LINKAGE_65_0_1",
+            "poolName": "人偶的歌谣",
+            "charId": "char_281_popka",
+            "charName": "泡普卡",
+            "rarity": 2,
+            "isNew": false,
+            "gachaTs": "1757053835026",
+            "pos": 5
+          },
+          {
+            "poolId": "LINKAGE_65_0_1",
+            "poolName": "人偶的歌谣",
+            "charId": "char_283_midn",
+            "charName": "月见夜",
+            "rarity": 2,
+            "isNew": false,
+            "gachaTs": "1757053835026",
+            "pos": 4
+          },
+          {
+            "poolId": "LINKAGE_65_0_1",
+            "poolName": "人偶的歌谣",
+            "charId": "char_212_ansel",
+            "charName": "安赛尔",
+            "rarity": 2,
+            "isNew": false,
+            "gachaTs": "1757053835026",
+            "pos": 3
+          },
+          {
+            "poolId": "LINKAGE_65_0_1",
+            "poolName": "人偶的歌谣",
+            "charId": "char_277_sqrrel",
+            "charName": "阿消",
+            "rarity": 3,
+            "isNew": false,
+            "gachaTs": "1757053835026",
+            "pos": 2
+          },
+          {
+            "poolId": "LINKAGE_65_0_1",
+            "poolName": "人偶的歌谣",
+            "charId": "char_120_hibisc",
+            "charName": "芙蓉",
+            "rarity": 2,
+            "isNew": false,
+            "gachaTs": "1757053835026",
+            "pos": 1
+          },
+          {
+            "poolId": "LINKAGE_65_0_1",
+            "poolName": "人偶的歌谣",
+            "charId": "char_281_popka",
+            "charName": "泡普卡",
+            "rarity": 2,
+            "isNew": false,
+            "gachaTs": "1757053835026",
+            "pos": 0
+          },
+          {
+            "poolId": "LINKAGE_65_0_1",
+            "poolName": "人偶的歌谣",
+            "charId": "char_192_falco",
+            "charName": "翎羽",
+            "rarity": 2,
+            "isNew": false,
+            "gachaTs": "1757053784875",
+            "pos": 9
+          },
+          {
+            "poolId": "LINKAGE_65_0_1",
+            "poolName": "人偶的歌谣",
+            "charId": "char_281_popka",
+            "charName": "泡普卡",
+            "rarity": 2,
+            "isNew": false,
+            "gachaTs": "1757053784875",
+            "pos": 8
+          },
+          {
+            "poolId": "LINKAGE_65_0_1",
+            "poolName": "人偶的歌谣",
+            "charId": "char_196_sunbr",
+            "charName": "古米",
+            "rarity": 3,
+            "isNew": false,
+            "gachaTs": "1757053784875",
+            "pos": 7
+          },
+          {
+            "poolId": "LINKAGE_65_0_1",
+            "poolName": "人偶的歌谣",
+            "charId": "char_4080_lin",
+            "charName": "林",
+            "rarity": 5,
+            "isNew": true,
+            "gachaTs": "1757053784875",
+            "pos": 6
+          },
+          {
+            "poolId": "LINKAGE_65_0_1",
+            "poolName": "人偶的歌谣",
+            "charId": "char_183_skgoat",
+            "charName": "地灵",
+            "rarity": 3,
+            "isNew": false,
+            "gachaTs": "1757053784875",
+            "pos": 5
+          },
+          {
+            "poolId": "LINKAGE_65_0_1",
+            "poolName": "人偶的歌谣",
+            "charId": "char_118_yuki",
+            "charName": "白雪",
+            "rarity": 3,
+            "isNew": false,
+            "gachaTs": "1757053784875",
+            "pos": 4
+          },
+          {
+            "poolId": "LINKAGE_65_0_1",
+            "poolName": "人偶的歌谣",
+            "charId": "char_209_ardign",
+            "charName": "卡缇",
+            "rarity": 2,
+            "isNew": false,
+            "gachaTs": "1757053784875",
+            "pos": 3
+          },
+          {
+            "poolId": "LINKAGE_65_0_1",
+            "poolName": "人偶的歌谣",
+            "charId": "char_124_kroos",
+            "charName": "克洛丝",
+            "rarity": 2,
+            "isNew": false,
+            "gachaTs": "1757053784875",
+            "pos": 2
+          },
+          {
+            "poolId": "LINKAGE_65_0_1",
+            "poolName": "人偶的歌谣",
+            "charId": "char_4130_luton",
+            "charName": "露托",
+            "rarity": 3,
+            "isNew": false,
+            "gachaTs": "1757053784875",
+            "pos": 1
+          },
+          {
+            "poolId": "LINKAGE_65_0_1",
+            "poolName": "人偶的歌谣",
+            "charId": "char_117_myrrh",
+            "charName": "末药",
+            "rarity": 3,
+            "isNew": false,
+            "gachaTs": "1757053784875",
+            "pos": 0
+          },
+          {
+            "poolId": "LINKAGE_65_0_1",
+            "poolName": "人偶的歌谣",
+            "charId": "char_120_hibisc",
+            "charName": "芙蓉",
+            "rarity": 2,
+            "isNew": false,
+            "gachaTs": "1757053766954",
+            "pos": 9
+          },
+          {
+            "poolId": "LINKAGE_65_0_1",
+            "poolName": "人偶的歌谣",
+            "charId": "char_121_lava",
+            "charName": "炎熔",
+            "rarity": 2,
+            "isNew": false,
+            "gachaTs": "1757053766954",
+            "pos": 8
+          },
+          {
+            "poolId": "LINKAGE_65_0_1",
+            "poolName": "人偶的歌谣",
+            "charId": "char_4032_provs",
+            "charName": "但书",
+            "rarity": 4,
+            "isNew": false,
+            "gachaTs": "1757053766954",
+            "pos": 7
+          },
+          {
+            "poolId": "LINKAGE_65_0_1",
+            "poolName": "人偶的歌谣",
+            "charId": "char_120_hibisc",
+            "charName": "芙蓉",
+            "rarity": 2,
+            "isNew": false,
+            "gachaTs": "1757053766954",
+            "pos": 6
+          },
+          {
+            "poolId": "LINKAGE_65_0_1",
+            "poolName": "人偶的歌谣",
+            "charId": "char_298_susuro",
+            "charName": "苏苏洛",
+            "rarity": 3,
+            "isNew": false,
+            "gachaTs": "1757053766954",
+            "pos": 5
+          },
+          {
+            "poolId": "LINKAGE_65_0_1",
+            "poolName": "人偶的歌谣",
+            "charId": "char_4183_mortis",
+            "charName": "若叶睦",
+            "rarity": 4,
+            "isNew": true,
+            "gachaTs": "1757053766954",
+            "pos": 4
+          },
+          {
+            "poolId": "LINKAGE_65_0_1",
+            "poolName": "人偶的歌谣",
+            "charId": "char_209_ardign",
+            "charName": "卡缇",
+            "rarity": 2,
+            "isNew": false,
+            "gachaTs": "1757053766954",
+            "pos": 3
+          },
+          {
+            "poolId": "LINKAGE_65_0_1",
+            "poolName": "人偶的歌谣",
+            "charId": "char_283_midn",
+            "charName": "月见夜",
+            "rarity": 2,
+            "isNew": false,
+            "gachaTs": "1757053766954",
+            "pos": 2
+          },
+          {
+            "poolId": "LINKAGE_65_0_1",
+            "poolName": "人偶的歌谣",
+            "charId": "char_123_fang",
+            "charName": "芬",
+            "rarity": 2,
+            "isNew": false,
+            "gachaTs": "1757053766954",
+            "pos": 1
+          },
+          {
+            "poolId": "LINKAGE_65_0_1",
+            "poolName": "人偶的歌谣",
+            "charId": "char_289_gyuki",
+            "charName": "缠丸",
+            "rarity": 3,
+            "isNew": false,
+            "gachaTs": "1757053766954",
+            "pos": 0
+          },
+          {
+            "poolId": "LINKAGE_65_0_1",
+            "poolName": "人偶的歌谣",
+            "charId": "char_122_beagle",
+            "charName": "米格鲁",
+            "rarity": 2,
+            "isNew": false,
+            "gachaTs": "1757053681497",
+            "pos": 9
+          },
+          {
+            "poolId": "LINKAGE_65_0_1",
+            "poolName": "人偶的歌谣",
+            "charId": "char_277_sqrrel",
+            "charName": "阿消",
+            "rarity": 3,
+            "isNew": false,
+            "gachaTs": "1757053681497",
+            "pos": 8
+          },
+          {
+            "poolId": "LINKAGE_65_0_1",
+            "poolName": "人偶的歌谣",
+            "charId": "char_124_kroos",
+            "charName": "克洛丝",
+            "rarity": 2,
+            "isNew": false,
+            "gachaTs": "1757053681497",
+            "pos": 7
+          },
+          {
+            "poolId": "LINKAGE_65_0_1",
+            "poolName": "人偶的歌谣",
+            "charId": "char_210_stward",
+            "charName": "史都华德",
+            "rarity": 2,
+            "isNew": false,
+            "gachaTs": "1757053681497",
+            "pos": 6
+          },
+          {
+            "poolId": "LINKAGE_65_0_1",
+            "poolName": "人偶的歌谣",
+            "charId": "char_440_pinecn",
+            "charName": "松果",
+            "rarity": 3,
+            "isNew": false,
+            "gachaTs": "1757053681497",
+            "pos": 5
+          },
+          {
+            "poolId": "LINKAGE_65_0_1",
+            "poolName": "人偶的歌谣",
+            "charId": "char_469_indigo",
+            "charName": "深靛",
+            "rarity": 3,
+            "isNew": false,
+            "gachaTs": "1757053681497",
+            "pos": 4
+          },
+          {
+            "poolId": "LINKAGE_65_0_1",
+            "poolName": "人偶的歌谣",
+            "charId": "char_120_hibisc",
+            "charName": "芙蓉",
+            "rarity": 2,
+            "isNew": false,
+            "gachaTs": "1757053681497",
+            "pos": 3
+          },
+          {
+            "poolId": "LINKAGE_65_0_1",
+            "poolName": "人偶的歌谣",
+            "charId": "char_4184_dolris",
+            "charName": "三角初华",
+            "rarity": 4,
+            "isNew": true,
+            "gachaTs": "1757053681497",
+            "pos": 2
+          },
+          {
+            "poolId": "LINKAGE_65_0_1",
+            "poolName": "人偶的歌谣",
+            "charId": "char_212_ansel",
+            "charName": "安赛尔",
+            "rarity": 2,
+            "isNew": false,
+            "gachaTs": "1757053681497",
+            "pos": 1
+          },
+          {
+            "poolId": "LINKAGE_65_0_1",
+            "poolName": "人偶的歌谣",
+            "charId": "char_240_wyvern",
+            "charName": "香草",
+            "rarity": 2,
+            "isNew": false,
+            "gachaTs": "1757053681497",
+            "pos": 0
+          }
+        ]
+      },
+      {
+        "categoryInfo": {
+          "id": "normal",
+          "name": "标准寻访"
+        },
+        "records": [
+          {
+            "poolId": "DOUBLE_67_0_4",
+            "poolName": "标准寻访",
+            "charId": "char_4014_lunacu",
+            "charName": "子月",
+            "rarity": 4,
+            "isNew": false,
+            "gachaTs": "1764409748013",
+            "pos": 0
+          },
+          {
+            "poolId": "DOUBLE_67_0_4",
+            "poolName": "标准寻访",
+            "charId": "char_209_ardign",
+            "charName": "卡缇",
+            "rarity": 2,
+            "isNew": false,
+            "gachaTs": "1764409743973",
+            "pos": 0
+          },
+          {
+            "poolId": "DOUBLE_67_0_4",
+            "poolName": "标准寻访",
+            "charId": "char_212_ansel",
+            "charName": "安赛尔",
+            "rarity": 2,
+            "isNew": false,
+            "gachaTs": "1764409691398",
+            "pos": 0
+          },
+          {
+            "poolId": "DOUBLE_67_0_4",
+            "poolName": "标准寻访",
+            "charId": "char_209_ardign",
+            "charName": "卡缇",
+            "rarity": 2,
+            "isNew": false,
+            "gachaTs": "1764409684188",
+            "pos": 0
+          },
+          {
+            "poolId": "DOUBLE_67_0_4",
+            "poolName": "标准寻访",
+            "charId": "char_281_popka",
+            "charName": "泡普卡",
+            "rarity": 2,
+            "isNew": false,
+            "gachaTs": "1764409679759",
+            "pos": 0
+          },
+          {
+            "poolId": "SPECIAL_67_0_3",
+            "poolName": "定向甄选",
+            "charId": "char_258_podego",
+            "charName": "波登可",
+            "rarity": 3,
+            "isNew": false,
+            "gachaTs": "1763268191847",
+            "pos": 9
+          },
+          {
+            "poolId": "SPECIAL_67_0_3",
+            "poolName": "定向甄选",
+            "charId": "char_183_skgoat",
+            "charName": "地灵",
+            "rarity": 3,
+            "isNew": false,
+            "gachaTs": "1763268191847",
+            "pos": 8
+          },
+          {
+            "poolId": "SPECIAL_67_0_3",
+            "poolName": "定向甄选",
+            "charId": "char_4015_spuria",
+            "charName": "空构",
+            "rarity": 4,
+            "isNew": false,
+            "gachaTs": "1763268191847",
+            "pos": 7
+          },
+          {
+            "poolId": "SPECIAL_67_0_3",
+            "poolName": "定向甄选",
+            "charId": "char_278_orchid",
+            "charName": "梓兰",
+            "rarity": 2,
+            "isNew": false,
+            "gachaTs": "1763268191847",
+            "pos": 6
+          },
+          {
+            "poolId": "SPECIAL_67_0_3",
+            "poolName": "定向甄选",
+            "charId": "char_209_ardign",
+            "charName": "卡缇",
+            "rarity": 2,
+            "isNew": false,
+            "gachaTs": "1763268191847",
+            "pos": 5
+          },
+          {
+            "poolId": "SPECIAL_67_0_3",
+            "poolName": "定向甄选",
+            "charId": "char_130_doberm",
+            "charName": "杜宾",
+            "rarity": 3,
+            "isNew": false,
+            "gachaTs": "1763268191847",
+            "pos": 4
+          },
+          {
+            "poolId": "SPECIAL_67_0_3",
+            "poolName": "定向甄选",
+            "charId": "char_488_buildr",
+            "charName": "青枳",
+            "rarity": 4,
+            "isNew": false,
+            "gachaTs": "1763268191847",
+            "pos": 3
+          },
+          {
+            "poolId": "SPECIAL_67_0_3",
+            "poolName": "定向甄选",
+            "charId": "char_289_gyuki",
+            "charName": "缠丸",
+            "rarity": 3,
+            "isNew": false,
+            "gachaTs": "1763268191847",
+            "pos": 2
+          },
+          {
+            "poolId": "SPECIAL_67_0_3",
+            "poolName": "定向甄选",
+            "charId": "char_122_beagle",
+            "charName": "米格鲁",
+            "rarity": 2,
+            "isNew": false,
+            "gachaTs": "1763268191847",
+            "pos": 1
+          },
+          {
+            "poolId": "SPECIAL_67_0_3",
+            "poolName": "定向甄选",
+            "charId": "char_289_gyuki",
+            "charName": "缠丸",
+            "rarity": 3,
+            "isNew": false,
+            "gachaTs": "1763268191847",
+            "pos": 0
+          },
+          {
+            "poolId": "SPECIAL_67_0_3",
+            "poolName": "定向甄选",
+            "charId": "char_4138_narant",
+            "charName": "娜仁图亚",
+            "rarity": 5,
+            "isNew": true,
+            "gachaTs": "1763118524655",
+            "pos": 9
+          },
+          {
+            "poolId": "SPECIAL_67_0_3",
+            "poolName": "定向甄选",
+            "charId": "char_253_greyy",
+            "charName": "格雷伊",
+            "rarity": 3,
+            "isNew": false,
+            "gachaTs": "1763118524655",
+            "pos": 8
+          },
+          {
+            "poolId": "SPECIAL_67_0_3",
+            "poolName": "定向甄选",
+            "charId": "char_123_fang",
+            "charName": "芬",
+            "rarity": 2,
+            "isNew": false,
+            "gachaTs": "1763118524655",
+            "pos": 7
+          },
+          {
+            "poolId": "SPECIAL_67_0_3",
+            "poolName": "定向甄选",
+            "charId": "char_4147_mitm",
+            "charName": "渡桥",
+            "rarity": 4,
+            "isNew": false,
+            "gachaTs": "1763118524655",
+            "pos": 6
+          },
+          {
+            "poolId": "SPECIAL_67_0_3",
+            "poolName": "定向甄选",
+            "charId": "char_210_stward",
+            "charName": "史都华德",
+            "rarity": 2,
+            "isNew": false,
+            "gachaTs": "1763118524655",
+            "pos": 5
+          },
+          {
+            "poolId": "SPECIAL_67_0_3",
+            "poolName": "定向甄选",
+            "charId": "char_120_hibisc",
+            "charName": "芙蓉",
+            "rarity": 2,
+            "isNew": false,
+            "gachaTs": "1763118524655",
+            "pos": 4
+          },
+          {
+            "poolId": "SPECIAL_67_0_3",
+            "poolName": "定向甄选",
+            "charId": "char_150_snakek",
+            "charName": "蛇屠箱",
+            "rarity": 3,
+            "isNew": false,
+            "gachaTs": "1763118524655",
+            "pos": 3
+          },
+          {
+            "poolId": "SPECIAL_67_0_3",
+            "poolName": "定向甄选",
+            "charId": "char_240_wyvern",
+            "charName": "香草",
+            "rarity": 2,
+            "isNew": false,
+            "gachaTs": "1763118524655",
+            "pos": 2
+          },
+          {
+            "poolId": "SPECIAL_67_0_3",
+            "poolName": "定向甄选",
+            "charId": "char_209_ardign",
+            "charName": "卡缇",
+            "rarity": 2,
+            "isNew": false,
+            "gachaTs": "1763118524655",
+            "pos": 1
+          },
+          {
+            "poolId": "SPECIAL_67_0_3",
+            "poolName": "定向甄选",
+            "charId": "char_1024_hbisc2",
+            "charName": "濯尘芙蓉",
+            "rarity": 4,
+            "isNew": false,
+            "gachaTs": "1763118524655",
+            "pos": 0
+          },
+          {
+            "poolId": "SPECIAL_67_0_3",
+            "poolName": "定向甄选",
+            "charId": "char_282_catap",
+            "charName": "空爆",
+            "rarity": 2,
+            "isNew": false,
+            "gachaTs": "1763118517986",
+            "pos": 9
+          },
+          {
+            "poolId": "SPECIAL_67_0_3",
+            "poolName": "定向甄选",
+            "charId": "char_469_indigo",
+            "charName": "深靛",
+            "rarity": 3,
+            "isNew": false,
+            "gachaTs": "1763118517986",
+            "pos": 8
+          },
+          {
+            "poolId": "SPECIAL_67_0_3",
+            "poolName": "定向甄选",
+            "charId": "char_192_falco",
+            "charName": "翎羽",
+            "rarity": 2,
+            "isNew": false,
+            "gachaTs": "1763118517986",
+            "pos": 7
+          },
+          {
+            "poolId": "SPECIAL_67_0_3",
+            "poolName": "定向甄选",
+            "charId": "char_137_brownb",
+            "charName": "猎蜂",
+            "rarity": 3,
+            "isNew": false,
+            "gachaTs": "1763118517986",
+            "pos": 6
+          },
+          {
+            "poolId": "SPECIAL_67_0_3",
+            "poolName": "定向甄选",
+            "charId": "char_491_humus",
+            "charName": "休谟斯",
+            "rarity": 3,
+            "isNew": false,
+            "gachaTs": "1763118517986",
+            "pos": 5
+          },
+          {
+            "poolId": "SPECIAL_67_0_3",
+            "poolName": "定向甄选",
+            "charId": "char_235_jesica",
+            "charName": "杰西卡",
+            "rarity": 3,
+            "isNew": false,
+            "gachaTs": "1763118517986",
+            "pos": 4
+          },
+          {
+            "poolId": "SPECIAL_67_0_3",
+            "poolName": "定向甄选",
+            "charId": "char_209_ardign",
+            "charName": "卡缇",
+            "rarity": 2,
+            "isNew": false,
+            "gachaTs": "1763118517986",
+            "pos": 3
+          },
+          {
+            "poolId": "SPECIAL_67_0_3",
+            "poolName": "定向甄选",
+            "charId": "char_118_yuki",
+            "charName": "白雪",
+            "rarity": 3,
+            "isNew": false,
+            "gachaTs": "1763118517986",
+            "pos": 2
+          },
+          {
+            "poolId": "SPECIAL_67_0_3",
+            "poolName": "定向甄选",
+            "charId": "char_196_sunbr",
+            "charName": "古米",
+            "rarity": 3,
+            "isNew": false,
+            "gachaTs": "1763118517986",
+            "pos": 1
+          },
+          {
+            "poolId": "SPECIAL_67_0_3",
+            "poolName": "定向甄选",
+            "charId": "char_277_sqrrel",
+            "charName": "阿消",
+            "rarity": 3,
+            "isNew": false,
+            "gachaTs": "1763118517986",
+            "pos": 0
+          },
+          {
+            "poolId": "SPECIAL_67_0_3",
+            "poolName": "定向甄选",
+            "charId": "char_484_robrta",
+            "charName": "罗比菈塔",
+            "rarity": 3,
+            "isNew": false,
+            "gachaTs": "1763118508987",
+            "pos": 9
+          },
+          {
+            "poolId": "SPECIAL_67_0_3",
+            "poolName": "定向甄选",
+            "charId": "char_212_ansel",
+            "charName": "安赛尔",
+            "rarity": 2,
+            "isNew": false,
+            "gachaTs": "1763118508987",
+            "pos": 8
+          },
+          {
+            "poolId": "SPECIAL_67_0_3",
+            "poolName": "定向甄选",
+            "charId": "char_281_popka",
+            "charName": "泡普卡",
+            "rarity": 2,
+            "isNew": false,
+            "gachaTs": "1763118508987",
+            "pos": 7
+          },
+          {
+            "poolId": "SPECIAL_67_0_3",
+            "poolName": "定向甄选",
+            "charId": "char_1024_hbisc2",
+            "charName": "濯尘芙蓉",
+            "rarity": 4,
+            "isNew": false,
+            "gachaTs": "1763118508987",
+            "pos": 6
+          },
+          {
+            "poolId": "SPECIAL_67_0_3",
+            "poolName": "定向甄选",
+            "charId": "char_209_ardign",
+            "charName": "卡缇",
+            "rarity": 2,
+            "isNew": false,
+            "gachaTs": "1763118508987",
+            "pos": 5
+          },
+          {
+            "poolId": "SPECIAL_67_0_3",
+            "poolName": "定向甄选",
+            "charId": "char_290_vigna",
+            "charName": "红豆",
+            "rarity": 3,
+            "isNew": false,
+            "gachaTs": "1763118508987",
+            "pos": 4
+          },
+          {
+            "poolId": "SPECIAL_67_0_3",
+            "poolName": "定向甄选",
+            "charId": "char_151_myrtle",
+            "charName": "桃金娘",
+            "rarity": 3,
+            "isNew": false,
+            "gachaTs": "1763118508987",
+            "pos": 3
+          },
+          {
+            "poolId": "SPECIAL_67_0_3",
+            "poolName": "定向甄选",
+            "charId": "char_4015_spuria",
+            "charName": "空构",
+            "rarity": 4,
+            "isNew": true,
+            "gachaTs": "1763118508987",
+            "pos": 2
+          },
+          {
+            "poolId": "SPECIAL_67_0_3",
+            "poolName": "定向甄选",
+            "charId": "char_484_robrta",
+            "charName": "罗比菈塔",
+            "rarity": 3,
+            "isNew": false,
+            "gachaTs": "1763118508987",
+            "pos": 1
+          },
+          {
+            "poolId": "SPECIAL_67_0_3",
+            "poolName": "定向甄选",
+            "charId": "char_278_orchid",
+            "charName": "梓兰",
+            "rarity": 2,
+            "isNew": false,
+            "gachaTs": "1763118508987",
+            "pos": 0
+          },
+          {
+            "poolId": "SPECIAL_67_0_3",
+            "poolName": "定向甄选",
+            "charId": "char_283_midn",
+            "charName": "月见夜",
+            "rarity": 2,
+            "isNew": false,
+            "gachaTs": "1763118499234",
+            "pos": 9
+          },
+          {
+            "poolId": "SPECIAL_67_0_3",
+            "poolName": "定向甄选",
+            "charId": "char_122_beagle",
+            "charName": "米格鲁",
+            "rarity": 2,
+            "isNew": false,
+            "gachaTs": "1763118499234",
+            "pos": 8
+          },
+          {
+            "poolId": "SPECIAL_67_0_3",
+            "poolName": "定向甄选",
+            "charId": "char_210_stward",
+            "charName": "史都华德",
+            "rarity": 2,
+            "isNew": false,
+            "gachaTs": "1763118499234",
+            "pos": 7
+          },
+          {
+            "poolId": "SPECIAL_67_0_3",
+            "poolName": "定向甄选",
+            "charId": "char_121_lava",
+            "charName": "炎熔",
+            "rarity": 2,
+            "isNew": false,
+            "gachaTs": "1763118499234",
+            "pos": 6
+          },
+          {
+            "poolId": "SPECIAL_67_0_3",
+            "poolName": "定向甄选",
+            "charId": "char_121_lava",
+            "charName": "炎熔",
+            "rarity": 2,
+            "isNew": false,
+            "gachaTs": "1763118499234",
+            "pos": 5
+          },
+          {
+            "poolId": "SPECIAL_67_0_3",
+            "poolName": "定向甄选",
+            "charId": "char_212_ansel",
+            "charName": "安赛尔",
+            "rarity": 2,
+            "isNew": false,
+            "gachaTs": "1763118499234",
+            "pos": 4
+          },
+          {
+            "poolId": "SPECIAL_67_0_3",
+            "poolName": "定向甄选",
+            "charId": "char_4130_luton",
+            "charName": "露托",
+            "rarity": 3,
+            "isNew": false,
+            "gachaTs": "1763118499234",
+            "pos": 3
+          },
+          {
+            "poolId": "SPECIAL_67_0_3",
+            "poolName": "定向甄选",
+            "charId": "char_281_popka",
+            "charName": "泡普卡",
+            "rarity": 2,
+            "isNew": false,
+            "gachaTs": "1763118499234",
+            "pos": 2
+          },
+          {
+            "poolId": "SPECIAL_67_0_3",
+            "poolName": "定向甄选",
+            "charId": "char_1024_hbisc2",
+            "charName": "濯尘芙蓉",
+            "rarity": 4,
+            "isNew": false,
+            "gachaTs": "1763118499234",
+            "pos": 1
+          },
+          {
+            "poolId": "SPECIAL_67_0_3",
+            "poolName": "定向甄选",
+            "charId": "char_208_melan",
+            "charName": "玫兰莎",
+            "rarity": 2,
+            "isNew": false,
+            "gachaTs": "1763118499234",
+            "pos": 0
+          },
+          {
+            "poolId": "NORM_66_0_2",
+            "poolName": "联合行动",
+            "charId": "char_1027_greyy2",
+            "charName": "承曦格雷伊",
+            "rarity": 4,
+            "isNew": false,
+            "gachaTs": "1761048694592",
+            "pos": 0
+          },
+          {
+            "poolId": "NORM_66_0_2",
+            "poolName": "联合行动",
+            "charId": "char_124_kroos",
+            "charName": "克洛丝",
+            "rarity": 2,
+            "isNew": false,
+            "gachaTs": "1761048691468",
+            "pos": 0
+          },
+          {
+            "poolId": "NORM_66_0_2",
+            "poolName": "联合行动",
+            "charId": "char_284_spot",
+            "charName": "斑点",
+            "rarity": 2,
+            "isNew": false,
+            "gachaTs": "1761048687377",
+            "pos": 0
+          },
+          {
+            "poolId": "NORM_66_0_2",
+            "poolName": "联合行动",
+            "charId": "char_210_stward",
+            "charName": "史都华德",
+            "rarity": 2,
+            "isNew": false,
+            "gachaTs": "1761048684396",
+            "pos": 0
+          },
+          {
+            "poolId": "SINGLE_66_0_1",
+            "poolName": "空白频段",
+            "charId": "char_4207_branch",
+            "charName": "折桠",
+            "rarity": 4,
+            "isNew": true,
+            "gachaTs": "1761044423562",
+            "pos": 0
+          },
+          {
+            "poolId": "SINGLE_66_0_1",
+            "poolName": "空白频段",
+            "charId": "char_122_beagle",
+            "charName": "米格鲁",
+            "rarity": 2,
+            "isNew": false,
+            "gachaTs": "1761044419692",
+            "pos": 0
+          }
+        ]
+      },
+      {
+        "categoryInfo": {
+          "id": "classic",
+          "name": "中坚寻访"
+        },
+        "records": [
+          {
+            "poolId": "CLASSIC_DOUBLE_67_0_2",
+            "poolName": "中坚寻访",
+            "charId": "char_218_cuttle",
+            "charName": "安哲拉",
+            "rarity": 4,
+            "isNew": false,
+            "gachaTs": "1764224173388",
+            "pos": 0
+          },
+          {
+            "poolId": "CLASSIC_DOUBLE_67_0_2",
+            "poolName": "中坚寻访",
+            "charId": "char_123_fang",
+            "charName": "芬",
+            "rarity": 2,
+            "isNew": false,
+            "gachaTs": "1764224169286",
+            "pos": 0
+          },
+          {
+            "poolId": "CLASSIC_DOUBLE_67_0_2",
+            "poolName": "中坚寻访",
+            "charId": "char_277_sqrrel",
+            "charName": "阿消",
+            "rarity": 3,
+            "isNew": false,
+            "gachaTs": "1764224165839",
+            "pos": 0
+          },
+          {
+            "poolId": "CLASSIC_DOUBLE_67_0_2",
+            "poolName": "中坚寻访",
+            "charId": "char_281_popka",
+            "charName": "泡普卡",
+            "rarity": 2,
+            "isNew": false,
+            "gachaTs": "1764224160567",
+            "pos": 0
+          },
+          {
+            "poolId": "FESCLASSIC_67_0_1",
+            "poolName": "中坚甄选",
+            "charId": "char_279_excu",
+            "charName": "送葬人",
+            "rarity": 4,
+            "isNew": false,
+            "gachaTs": "1763466624017",
+            "pos": 0
+          },
+          {
+            "poolId": "FESCLASSIC_67_0_1",
+            "poolName": "中坚甄选",
+            "charId": "char_117_myrrh",
+            "charName": "末药",
+            "rarity": 3,
+            "isNew": false,
+            "gachaTs": "1763466618680",
+            "pos": 0
+          },
+          {
+            "poolId": "CLASSIC_DOUBLE_66_0_2",
+            "poolName": "中坚寻访",
+            "charId": "char_121_lava",
+            "charName": "炎熔",
+            "rarity": 2,
+            "isNew": false,
+            "gachaTs": "1762871786825",
+            "pos": 0
+          },
+          {
+            "poolId": "CLASSIC_DOUBLE_66_0_2",
+            "poolName": "中坚寻访",
+            "charId": "char_328_cammou",
+            "charName": "卡达",
+            "rarity": 3,
+            "isNew": false,
+            "gachaTs": "1762871781897",
+            "pos": 0
+          }
+        ]
+      }
+    ]
+  },
+  "importedData": [
+    {
+      "fileName": "934728837.json",
+      "importTime": "2025-11-29T15:06:08.491Z",
+      "fileSize": 8665,
+      "categories": [
+        {
+          "categoryName": "青霆重明",
+          "categoryId": "",
+          "records": [
+            {
+              "charName": "青枳",
+              "rarity": 4,
+              "isNew": false,
+              "gachaTs": "1751965571",
+              "poolId": "",
+              "poolName": "青霆重明",
+              "pos": 0
+            },
+            {
+              "charName": "清道夫",
+              "rarity": 3,
+              "isNew": false,
+              "gachaTs": "1751965571",
+              "poolId": "",
+              "poolName": "青霆重明",
+              "pos": 1
+            },
+            {
+              "charName": "芙蓉",
+              "rarity": 2,
+              "isNew": false,
+              "gachaTs": "1751965571",
+              "poolId": "",
+              "poolName": "青霆重明",
+              "pos": 2
+            },
+            {
+              "charName": "历阵锐枪芬",
+              "rarity": 4,
+              "isNew": false,
+              "gachaTs": "1751965571",
+              "poolId": "",
+              "poolName": "青霆重明",
+              "pos": 3
+            },
+            {
+              "charName": "卡缇",
+              "rarity": 2,
+              "isNew": false,
+              "gachaTs": "1751965571",
+              "poolId": "",
+              "poolName": "青霆重明",
+              "pos": 4
+            },
+            {
+              "charName": "卡缇",
+              "rarity": 2,
+              "isNew": false,
+              "gachaTs": "1751965571",
+              "poolId": "",
+              "poolName": "青霆重明",
+              "pos": 5
+            },
+            {
+              "charName": "刻刀",
+              "rarity": 3,
+              "isNew": false,
+              "gachaTs": "1751965571",
+              "poolId": "",
+              "poolName": "青霆重明",
+              "pos": 6
+            },
+            {
+              "charName": "清道夫",
+              "rarity": 3,
+              "isNew": false,
+              "gachaTs": "1751965571",
+              "poolId": "",
+              "poolName": "青霆重明",
+              "pos": 7
+            },
+            {
+              "charName": "梓兰",
+              "rarity": 2,
+              "isNew": false,
+              "gachaTs": "1751965571",
+              "poolId": "",
+              "poolName": "青霆重明",
+              "pos": 8
+            },
+            {
+              "charName": "豆苗",
+              "rarity": 3,
+              "isNew": false,
+              "gachaTs": "1751965571",
+              "poolId": "",
+              "poolName": "青霆重明",
+              "pos": 9
+            },
+            {
+              "charName": "维娜·维多利亚",
+              "rarity": 5,
+              "isNew": false,
+              "gachaTs": "1751965582",
+              "poolId": "",
+              "poolName": "青霆重明",
+              "pos": 0
+            },
+            {
+              "charName": "伊内丝",
+              "rarity": 5,
+              "isNew": false,
+              "gachaTs": "1751965582",
+              "poolId": "",
+              "poolName": "青霆重明",
+              "pos": 1
+            },
+            {
+              "charName": "波登可",
+              "rarity": 3,
+              "isNew": false,
+              "gachaTs": "1751965582",
+              "poolId": "",
+              "poolName": "青霆重明",
+              "pos": 2
+            },
+            {
+              "charName": "洋灰",
+              "rarity": 4,
+              "isNew": false,
+              "gachaTs": "1751965582",
+              "poolId": "",
+              "poolName": "青霆重明",
+              "pos": 3
+            },
+            {
+              "charName": "豆苗",
+              "rarity": 3,
+              "isNew": false,
+              "gachaTs": "1751965582",
+              "poolId": "",
+              "poolName": "青霆重明",
+              "pos": 4
+            },
+            {
+              "charName": "空爆",
+              "rarity": 2,
+              "isNew": false,
+              "gachaTs": "1751965582",
+              "poolId": "",
+              "poolName": "青霆重明",
+              "pos": 5
+            },
+            {
+              "charName": "录武官",
+              "rarity": 4,
+              "isNew": true,
+              "gachaTs": "1751965582",
+              "poolId": "",
+              "poolName": "青霆重明",
+              "pos": 6
+            },
+            {
+              "charName": "火哨",
+              "rarity": 4,
+              "isNew": false,
+              "gachaTs": "1751965582",
+              "poolId": "",
+              "poolName": "青霆重明",
+              "pos": 7
+            },
+            {
+              "charName": "翎羽",
+              "rarity": 2,
+              "isNew": false,
+              "gachaTs": "1751965582",
+              "poolId": "",
+              "poolName": "青霆重明",
+              "pos": 8
+            },
+            {
+              "charName": "安比尔",
+              "rarity": 3,
+              "isNew": false,
+              "gachaTs": "1751965582",
+              "poolId": "",
+              "poolName": "青霆重明",
+              "pos": 9
+            },
+            {
+              "charName": "波登可",
+              "rarity": 3,
+              "isNew": false,
+              "gachaTs": "1751965737",
+              "poolId": "",
+              "poolName": "青霆重明",
+              "pos": 0
+            },
+            {
+              "charName": "卡缇",
+              "rarity": 2,
+              "isNew": false,
+              "gachaTs": "1751965737",
+              "poolId": "",
+              "poolName": "青霆重明",
+              "pos": 1
+            },
+            {
+              "charName": "古米",
+              "rarity": 3,
+              "isNew": false,
+              "gachaTs": "1751965737",
+              "poolId": "",
+              "poolName": "青霆重明",
+              "pos": 2
+            },
+            {
+              "charName": "白雪",
+              "rarity": 3,
+              "isNew": false,
+              "gachaTs": "1751965737",
+              "poolId": "",
+              "poolName": "青霆重明",
+              "pos": 3
+            },
+            {
+              "charName": "远山",
+              "rarity": 3,
+              "isNew": false,
+              "gachaTs": "1751965737",
+              "poolId": "",
+              "poolName": "青霆重明",
+              "pos": 4
+            },
+            {
+              "charName": "褐果",
+              "rarity": 3,
+              "isNew": false,
+              "gachaTs": "1751965737",
+              "poolId": "",
+              "poolName": "青霆重明",
+              "pos": 5
+            },
+            {
+              "charName": "维荻",
+              "rarity": 3,
+              "isNew": false,
+              "gachaTs": "1751965737",
+              "poolId": "",
+              "poolName": "青霆重明",
+              "pos": 6
+            },
+            {
+              "charName": "刻刀",
+              "rarity": 3,
+              "isNew": false,
+              "gachaTs": "1751965737",
+              "poolId": "",
+              "poolName": "青霆重明",
+              "pos": 7
+            },
+            {
+              "charName": "史都华德",
+              "rarity": 2,
+              "isNew": false,
+              "gachaTs": "1751965737",
+              "poolId": "",
+              "poolName": "青霆重明",
+              "pos": 8
+            },
+            {
+              "charName": "米格鲁",
+              "rarity": 2,
+              "isNew": false,
+              "gachaTs": "1751965737",
+              "poolId": "",
+              "poolName": "青霆重明",
+              "pos": 9
+            },
+            {
+              "charName": "梓兰",
+              "rarity": 2,
+              "isNew": false,
+              "gachaTs": "1751965747",
+              "poolId": "",
+              "poolName": "青霆重明",
+              "pos": 0
+            },
+            {
+              "charName": "杰克",
+              "rarity": 3,
+              "isNew": false,
+              "gachaTs": "1751965747",
+              "poolId": "",
+              "poolName": "青霆重明",
+              "pos": 1
+            },
+            {
+              "charName": "克洛丝",
+              "rarity": 2,
+              "isNew": false,
+              "gachaTs": "1751965747",
+              "poolId": "",
+              "poolName": "青霆重明",
+              "pos": 2
+            },
+            {
+              "charName": "斑点",
+              "rarity": 2,
+              "isNew": false,
+              "gachaTs": "1751965747",
+              "poolId": "",
+              "poolName": "青霆重明",
+              "pos": 3
+            },
+            {
+              "charName": "海霓",
+              "rarity": 4,
+              "isNew": false,
+              "gachaTs": "1751965747",
+              "poolId": "",
+              "poolName": "青霆重明",
+              "pos": 4
+            },
+            {
+              "charName": "翎羽",
+              "rarity": 2,
+              "isNew": false,
+              "gachaTs": "1751965747",
+              "poolId": "",
+              "poolName": "青霆重明",
+              "pos": 5
+            },
+            {
+              "charName": "苏苏洛",
+              "rarity": 3,
+              "isNew": false,
+              "gachaTs": "1751965747",
+              "poolId": "",
+              "poolName": "青霆重明",
+              "pos": 6
+            },
+            {
+              "charName": "调香师",
+              "rarity": 3,
+              "isNew": false,
+              "gachaTs": "1751965747",
+              "poolId": "",
+              "poolName": "青霆重明",
+              "pos": 7
+            },
+            {
+              "charName": "炎熔",
+              "rarity": 2,
+              "isNew": false,
+              "gachaTs": "1751965747",
+              "poolId": "",
+              "poolName": "青霆重明",
+              "pos": 8
+            },
+            {
+              "charName": "红豆",
+              "rarity": 3,
+              "isNew": false,
+              "gachaTs": "1751965747",
+              "poolId": "",
+              "poolName": "青霆重明",
+              "pos": 9
+            },
+            {
+              "charName": "泡泡",
+              "rarity": 3,
+              "isNew": false,
+              "gachaTs": "1751965762",
+              "poolId": "",
+              "poolName": "青霆重明",
+              "pos": 0
+            },
+            {
+              "charName": "豆苗",
+              "rarity": 3,
+              "isNew": false,
+              "gachaTs": "1751965762",
+              "poolId": "",
+              "poolName": "青霆重明",
+              "pos": 1
+            },
+            {
+              "charName": "暗索",
+              "rarity": 3,
+              "isNew": false,
+              "gachaTs": "1751965762",
+              "poolId": "",
+              "poolName": "青霆重明",
+              "pos": 2
+            },
+            {
+              "charName": "格雷伊",
+              "rarity": 3,
+              "isNew": false,
+              "gachaTs": "1751965762",
+              "poolId": "",
+              "poolName": "青霆重明",
+              "pos": 3
+            },
+            {
+              "charName": "翎羽",
+              "rarity": 2,
+              "isNew": false,
+              "gachaTs": "1751965762",
+              "poolId": "",
+              "poolName": "青霆重明",
+              "pos": 4
+            },
+            {
+              "charName": "翎羽",
+              "rarity": 2,
+              "isNew": false,
+              "gachaTs": "1751965762",
+              "poolId": "",
+              "poolName": "青霆重明",
+              "pos": 5
+            },
+            {
+              "charName": "香草",
+              "rarity": 2,
+              "isNew": false,
+              "gachaTs": "1751965762",
+              "poolId": "",
+              "poolName": "青霆重明",
+              "pos": 6
+            },
+            {
+              "charName": "历阵锐枪芬",
+              "rarity": 4,
+              "isNew": false,
+              "gachaTs": "1751965762",
+              "poolId": "",
+              "poolName": "青霆重明",
+              "pos": 7
+            },
+            {
+              "charName": "阿斯卡纶",
+              "rarity": 5,
+              "isNew": false,
+              "gachaTs": "1751965762",
+              "poolId": "",
+              "poolName": "青霆重明",
+              "pos": 8
+            },
+            {
+              "charName": "芙蓉",
+              "rarity": 2,
+              "isNew": false,
+              "gachaTs": "1751965762",
+              "poolId": "",
+              "poolName": "青霆重明",
+              "pos": 9
+            },
+            {
+              "charName": "历阵锐枪芬",
+              "rarity": 4,
+              "isNew": false,
+              "gachaTs": "1751965787",
+              "poolId": "",
+              "poolName": "青霆重明",
+              "pos": 0
+            },
+            {
+              "charName": "斑点",
+              "rarity": 2,
+              "isNew": false,
+              "gachaTs": "1751965787",
+              "poolId": "",
+              "poolName": "青霆重明",
+              "pos": 1
+            },
+            {
+              "charName": "松果",
+              "rarity": 3,
+              "isNew": false,
+              "gachaTs": "1751965787",
+              "poolId": "",
+              "poolName": "青霆重明",
+              "pos": 2
+            },
+            {
+              "charName": "孑",
+              "rarity": 3,
+              "isNew": false,
+              "gachaTs": "1751965787",
+              "poolId": "",
+              "poolName": "青霆重明",
+              "pos": 3
+            },
+            {
+              "charName": "白雪",
+              "rarity": 3,
+              "isNew": false,
+              "gachaTs": "1751965787",
+              "poolId": "",
+              "poolName": "青霆重明",
+              "pos": 4
+            },
+            {
+              "charName": "阿兰娜",
+              "rarity": 4,
+              "isNew": false,
+              "gachaTs": "1751965787",
+              "poolId": "",
+              "poolName": "青霆重明",
+              "pos": 5
+            },
+            {
+              "charName": "梓兰",
+              "rarity": 2,
+              "isNew": false,
+              "gachaTs": "1751965787",
+              "poolId": "",
+              "poolName": "青霆重明",
+              "pos": 6
+            },
+            {
+              "charName": "宴",
+              "rarity": 3,
+              "isNew": false,
+              "gachaTs": "1751965787",
+              "poolId": "",
+              "poolName": "青霆重明",
+              "pos": 7
+            },
+            {
+              "charName": "杰西卡",
+              "rarity": 3,
+              "isNew": false,
+              "gachaTs": "1751965787",
+              "poolId": "",
+              "poolName": "青霆重明",
+              "pos": 8
+            },
+            {
+              "charName": "刻刀",
+              "rarity": 3,
+              "isNew": false,
+              "gachaTs": "1751965787",
+              "poolId": "",
+              "poolName": "青霆重明",
+              "pos": 9
+            },
+            {
+              "charName": "录武官",
+              "rarity": 4,
+              "isNew": false,
+              "gachaTs": "1751965796",
+              "poolId": "",
+              "poolName": "青霆重明",
+              "pos": 0
+            },
+            {
+              "charName": "梅",
+              "rarity": 3,
+              "isNew": false,
+              "gachaTs": "1751965796",
+              "poolId": "",
+              "poolName": "青霆重明",
+              "pos": 1
+            },
+            {
+              "charName": "阿消",
+              "rarity": 3,
+              "isNew": false,
+              "gachaTs": "1751965796",
+              "poolId": "",
+              "poolName": "青霆重明",
+              "pos": 2
+            },
+            {
+              "charName": "宴",
+              "rarity": 3,
+              "isNew": false,
+              "gachaTs": "1751965796",
+              "poolId": "",
+              "poolName": "青霆重明",
+              "pos": 3
+            },
+            {
+              "charName": "露托",
+              "rarity": 3,
+              "isNew": false,
+              "gachaTs": "1751965796",
+              "poolId": "",
+              "poolName": "青霆重明",
+              "pos": 4
+            },
+            {
+              "charName": "深海色",
+              "rarity": 3,
+              "isNew": false,
+              "gachaTs": "1751965796",
+              "poolId": "",
+              "poolName": "青霆重明",
+              "pos": 5
+            },
+            {
+              "charName": "克洛丝",
+              "rarity": 2,
+              "isNew": false,
+              "gachaTs": "1751965796",
+              "poolId": "",
+              "poolName": "青霆重明",
+              "pos": 6
+            },
+            {
+              "charName": "缠丸",
+              "rarity": 3,
+              "isNew": false,
+              "gachaTs": "1751965796",
+              "poolId": "",
+              "poolName": "青霆重明",
+              "pos": 7
+            },
+            {
+              "charName": "豆苗",
+              "rarity": 3,
+              "isNew": false,
+              "gachaTs": "1751965796",
+              "poolId": "",
+              "poolName": "青霆重明",
+              "pos": 8
+            },
+            {
+              "charName": "桃金娘",
+              "rarity": 3,
+              "isNew": false,
+              "gachaTs": "1751965796",
+              "poolId": "",
+              "poolName": "青霆重明",
+              "pos": 9
+            },
+            {
+              "charName": "史都华德",
+              "rarity": 2,
+              "isNew": false,
+              "gachaTs": "1751965806",
+              "poolId": "",
+              "poolName": "青霆重明",
+              "pos": 0
+            },
+            {
+              "charName": "历阵锐枪芬",
+              "rarity": 4,
+              "isNew": false,
+              "gachaTs": "1751965806",
+              "poolId": "",
+              "poolName": "青霆重明",
+              "pos": 1
+            },
+            {
+              "charName": "斑点",
+              "rarity": 2,
+              "isNew": false,
+              "gachaTs": "1751965806",
+              "poolId": "",
+              "poolName": "青霆重明",
+              "pos": 2
+            },
+            {
+              "charName": "安赛尔",
+              "rarity": 2,
+              "isNew": false,
+              "gachaTs": "1751965806",
+              "poolId": "",
+              "poolName": "青霆重明",
+              "pos": 3
+            },
+            {
+              "charName": "斑点",
+              "rarity": 2,
+              "isNew": false,
+              "gachaTs": "1751965806",
+              "poolId": "",
+              "poolName": "青霆重明",
+              "pos": 4
+            },
+            {
+              "charName": "司霆惊蛰",
+              "rarity": 5,
+              "isNew": true,
+              "gachaTs": "1751965806",
+              "poolId": "",
+              "poolName": "青霆重明",
+              "pos": 5
+            },
+            {
+              "charName": "维荻",
+              "rarity": 3,
+              "isNew": false,
+              "gachaTs": "1751965806",
+              "poolId": "",
+              "poolName": "青霆重明",
+              "pos": 6
+            },
+            {
+              "charName": "阿消",
+              "rarity": 3,
+              "isNew": false,
+              "gachaTs": "1751965806",
+              "poolId": "",
+              "poolName": "青霆重明",
+              "pos": 7
+            },
+            {
+              "charName": "炎熔",
+              "rarity": 2,
+              "isNew": false,
+              "gachaTs": "1751965806",
+              "poolId": "",
+              "poolName": "青霆重明",
+              "pos": 8
+            },
+            {
+              "charName": "香草",
+              "rarity": 2,
+              "isNew": false,
+              "gachaTs": "1751965806",
+              "poolId": "",
+              "poolName": "青霆重明",
+              "pos": 9
+            }
+          ]
+        },
+        {
+          "categoryName": "不归花火",
+          "categoryId": "",
+          "records": [
+            {
+              "charName": "格雷伊",
+              "rarity": 3,
+              "isNew": false,
+              "gachaTs": "1754121608",
+              "poolId": "",
+              "poolName": "不归花火",
+              "pos": 0
+            },
+            {
+              "charName": "佩佩",
+              "rarity": 5,
+              "isNew": false,
+              "gachaTs": "1754121659",
+              "poolId": "",
+              "poolName": "不归花火",
+              "pos": 0
+            },
+            {
+              "charName": "梓兰",
+              "rarity": 2,
+              "isNew": false,
+              "gachaTs": "1754121659",
+              "poolId": "",
+              "poolName": "不归花火",
+              "pos": 1
+            },
+            {
+              "charName": "克洛丝",
+              "rarity": 2,
+              "isNew": false,
+              "gachaTs": "1754121659",
+              "poolId": "",
+              "poolName": "不归花火",
+              "pos": 2
+            },
+            {
+              "charName": "空爆",
+              "rarity": 2,
+              "isNew": false,
+              "gachaTs": "1754121659",
+              "poolId": "",
+              "poolName": "不归花火",
+              "pos": 3
+            },
+            {
+              "charName": "斑点",
+              "rarity": 2,
+              "isNew": false,
+              "gachaTs": "1754121659",
+              "poolId": "",
+              "poolName": "不归花火",
+              "pos": 4
+            },
+            {
+              "charName": "霜叶",
+              "rarity": 3,
+              "isNew": false,
+              "gachaTs": "1754121659",
+              "poolId": "",
+              "poolName": "不归花火",
+              "pos": 5
+            },
+            {
+              "charName": "深靛",
+              "rarity": 3,
+              "isNew": false,
+              "gachaTs": "1754121659",
+              "poolId": "",
+              "poolName": "不归花火",
+              "pos": 6
+            },
+            {
+              "charName": "宴",
+              "rarity": 3,
+              "isNew": false,
+              "gachaTs": "1754121659",
+              "poolId": "",
+              "poolName": "不归花火",
+              "pos": 7
+            },
+            {
+              "charName": "砾",
+              "rarity": 3,
+              "isNew": false,
+              "gachaTs": "1754121659",
+              "poolId": "",
+              "poolName": "不归花火",
+              "pos": 8
+            },
+            {
+              "charName": "安比尔",
+              "rarity": 3,
+              "isNew": false,
+              "gachaTs": "1754121659",
+              "poolId": "",
+              "poolName": "不归花火",
+              "pos": 9
+            },
+            {
+              "charName": "翎羽",
+              "rarity": 2,
+              "isNew": false,
+              "gachaTs": "1754121684",
+              "poolId": "",
+              "poolName": "不归花火",
+              "pos": 0
+            },
+            {
+              "charName": "月见夜",
+              "rarity": 2,
+              "isNew": false,
+              "gachaTs": "1754121684",
+              "poolId": "",
+              "poolName": "不归花火",
+              "pos": 1
+            },
+            {
+              "charName": "露托",
+              "rarity": 3,
+              "isNew": false,
+              "gachaTs": "1754121684",
+              "poolId": "",
+              "poolName": "不归花火",
+              "pos": 2
+            },
+            {
+              "charName": "安赛尔",
+              "rarity": 2,
+              "isNew": false,
+              "gachaTs": "1754121684",
+              "poolId": "",
+              "poolName": "不归花火",
+              "pos": 3
+            },
+            {
+              "charName": "杰西卡",
+              "rarity": 3,
+              "isNew": false,
+              "gachaTs": "1754121684",
+              "poolId": "",
+              "poolName": "不归花火",
+              "pos": 4
+            },
+            {
+              "charName": "百炼嘉维尔",
+              "rarity": 5,
+              "isNew": false,
+              "gachaTs": "1754121684",
+              "poolId": "",
+              "poolName": "不归花火",
+              "pos": 5
+            },
+            {
+              "charName": "褐果",
+              "rarity": 3,
+              "isNew": false,
+              "gachaTs": "1754121684",
+              "poolId": "",
+              "poolName": "不归花火",
+              "pos": 6
+            },
+            {
+              "charName": "史都华德",
+              "rarity": 2,
+              "isNew": false,
+              "gachaTs": "1754121684",
+              "poolId": "",
+              "poolName": "不归花火",
+              "pos": 7
+            },
+            {
+              "charName": "维荻",
+              "rarity": 3,
+              "isNew": false,
+              "gachaTs": "1754121684",
+              "poolId": "",
+              "poolName": "不归花火",
+              "pos": 8
+            },
+            {
+              "charName": "砾",
+              "rarity": 3,
+              "isNew": false,
+              "gachaTs": "1754121684",
+              "poolId": "",
+              "poolName": "不归花火",
+              "pos": 9
+            },
+            {
+              "charName": "斩业星熊",
+              "rarity": 5,
+              "isNew": true,
+              "gachaTs": "1754121693",
+              "poolId": "",
+              "poolName": "不归花火",
+              "pos": 0
+            },
+            {
+              "charName": "阿消",
+              "rarity": 3,
+              "isNew": false,
+              "gachaTs": "1754121693",
+              "poolId": "",
+              "poolName": "不归花火",
+              "pos": 1
+            },
+            {
+              "charName": "炎熔",
+              "rarity": 2,
+              "isNew": false,
+              "gachaTs": "1754121693",
+              "poolId": "",
+              "poolName": "不归花火",
+              "pos": 2
+            },
+            {
+              "charName": "泡泡",
+              "rarity": 3,
+              "isNew": false,
+              "gachaTs": "1754121693",
+              "poolId": "",
+              "poolName": "不归花火",
+              "pos": 3
+            },
+            {
+              "charName": "罗比菈塔",
+              "rarity": 3,
+              "isNew": false,
+              "gachaTs": "1754121693",
+              "poolId": "",
+              "poolName": "不归花火",
+              "pos": 4
+            },
+            {
+              "charName": "米格鲁",
+              "rarity": 2,
+              "isNew": false,
+              "gachaTs": "1754121693",
+              "poolId": "",
+              "poolName": "不归花火",
+              "pos": 5
+            },
+            {
+              "charName": "猎蜂",
+              "rarity": 3,
+              "isNew": false,
+              "gachaTs": "1754121693",
+              "poolId": "",
+              "poolName": "不归花火",
+              "pos": 6
+            },
+            {
+              "charName": "地灵",
+              "rarity": 3,
+              "isNew": false,
+              "gachaTs": "1754121693",
+              "poolId": "",
+              "poolName": "不归花火",
+              "pos": 7
+            },
+            {
+              "charName": "泡普卡",
+              "rarity": 2,
+              "isNew": false,
+              "gachaTs": "1754121693",
+              "poolId": "",
+              "poolName": "不归花火",
+              "pos": 8
+            },
+            {
+              "charName": "远山",
+              "rarity": 3,
+              "isNew": false,
+              "gachaTs": "1754121693",
+              "poolId": "",
+              "poolName": "不归花火",
+              "pos": 9
+            },
+            {
+              "charName": "调香师",
+              "rarity": 3,
+              "isNew": false,
+              "gachaTs": "1754121757",
+              "poolId": "",
+              "poolName": "不归花火",
+              "pos": 0
+            },
+            {
+              "charName": "克洛丝",
+              "rarity": 2,
+              "isNew": false,
+              "gachaTs": "1754121757",
+              "poolId": "",
+              "poolName": "不归花火",
+              "pos": 1
+            },
+            {
+              "charName": "褐果",
+              "rarity": 3,
+              "isNew": false,
+              "gachaTs": "1754121757",
+              "poolId": "",
+              "poolName": "不归花火",
+              "pos": 2
+            },
+            {
+              "charName": "蛇屠箱",
+              "rarity": 3,
+              "isNew": false,
+              "gachaTs": "1754121757",
+              "poolId": "",
+              "poolName": "不归花火",
+              "pos": 3
+            },
+            {
+              "charName": "桃金娘",
+              "rarity": 3,
+              "isNew": false,
+              "gachaTs": "1754121757",
+              "poolId": "",
+              "poolName": "不归花火",
+              "pos": 4
+            },
+            {
+              "charName": "豆苗",
+              "rarity": 3,
+              "isNew": false,
+              "gachaTs": "1754121757",
+              "poolId": "",
+              "poolName": "不归花火",
+              "pos": 5
+            },
+            {
+              "charName": "米格鲁",
+              "rarity": 2,
+              "isNew": false,
+              "gachaTs": "1754121757",
+              "poolId": "",
+              "poolName": "不归花火",
+              "pos": 6
+            },
+            {
+              "charName": "孑",
+              "rarity": 3,
+              "isNew": false,
+              "gachaTs": "1754121757",
+              "poolId": "",
+              "poolName": "不归花火",
+              "pos": 7
+            },
+            {
+              "charName": "角峰",
+              "rarity": 3,
+              "isNew": false,
+              "gachaTs": "1754121757",
+              "poolId": "",
+              "poolName": "不归花火",
+              "pos": 8
+            },
+            {
+              "charName": "香草",
+              "rarity": 2,
+              "isNew": false,
+              "gachaTs": "1754121757",
+              "poolId": "",
+              "poolName": "不归花火",
+              "pos": 9
+            },
+            {
+              "charName": "安赛尔",
+              "rarity": 2,
+              "isNew": false,
+              "gachaTs": "1754121764",
+              "poolId": "",
+              "poolName": "不归花火",
+              "pos": 0
+            },
+            {
+              "charName": "吉星",
+              "rarity": 4,
+              "isNew": true,
+              "gachaTs": "1754121769",
+              "poolId": "",
+              "poolName": "不归花火",
+              "pos": 0
+            },
+            {
+              "charName": "芬",
+              "rarity": 2,
+              "isNew": false,
+              "gachaTs": "1754121769",
+              "poolId": "",
+              "poolName": "不归花火",
+              "pos": 1
+            },
+            {
+              "charName": "清道夫",
+              "rarity": 3,
+              "isNew": false,
+              "gachaTs": "1754121769",
+              "poolId": "",
+              "poolName": "不归花火",
+              "pos": 2
+            },
+            {
+              "charName": "维荻",
+              "rarity": 3,
+              "isNew": false,
+              "gachaTs": "1754121769",
+              "poolId": "",
+              "poolName": "不归花火",
+              "pos": 3
+            },
+            {
+              "charName": "芙蓉",
+              "rarity": 2,
+              "isNew": false,
+              "gachaTs": "1754121769",
+              "poolId": "",
+              "poolName": "不归花火",
+              "pos": 4
+            },
+            {
+              "charName": "格雷伊",
+              "rarity": 3,
+              "isNew": false,
+              "gachaTs": "1754121769",
+              "poolId": "",
+              "poolName": "不归花火",
+              "pos": 5
+            },
+            {
+              "charName": "深靛",
+              "rarity": 3,
+              "isNew": false,
+              "gachaTs": "1754121769",
+              "poolId": "",
+              "poolName": "不归花火",
+              "pos": 6
+            },
+            {
+              "charName": "杜宾",
+              "rarity": 3,
+              "isNew": false,
+              "gachaTs": "1754121769",
+              "poolId": "",
+              "poolName": "不归花火",
+              "pos": 7
+            },
+            {
+              "charName": "录武官",
+              "rarity": 4,
+              "isNew": false,
+              "gachaTs": "1754121769",
+              "poolId": "",
+              "poolName": "不归花火",
+              "pos": 8
+            },
+            {
+              "charName": "卡缇",
+              "rarity": 2,
+              "isNew": false,
+              "gachaTs": "1754121769",
+              "poolId": "",
+              "poolName": "不归花火",
+              "pos": 9
+            },
+            {
+              "charName": "吉星",
+              "rarity": 4,
+              "isNew": false,
+              "gachaTs": "1754121775",
+              "poolId": "",
+              "poolName": "不归花火",
+              "pos": 0
+            },
+            {
+              "charName": "芙蓉",
+              "rarity": 2,
+              "isNew": false,
+              "gachaTs": "1754121775",
+              "poolId": "",
+              "poolName": "不归花火",
+              "pos": 1
+            },
+            {
+              "charName": "史都华德",
+              "rarity": 2,
+              "isNew": false,
+              "gachaTs": "1754121775",
+              "poolId": "",
+              "poolName": "不归花火",
+              "pos": 2
+            },
+            {
+              "charName": "卡达",
+              "rarity": 3,
+              "isNew": false,
+              "gachaTs": "1754121775",
+              "poolId": "",
+              "poolName": "不归花火",
+              "pos": 3
+            },
+            {
+              "charName": "刻刀",
+              "rarity": 3,
+              "isNew": false,
+              "gachaTs": "1754121775",
+              "poolId": "",
+              "poolName": "不归花火",
+              "pos": 4
+            },
+            {
+              "charName": "波登可",
+              "rarity": 3,
+              "isNew": false,
+              "gachaTs": "1754121775",
+              "poolId": "",
+              "poolName": "不归花火",
+              "pos": 5
+            },
+            {
+              "charName": "吉星",
+              "rarity": 4,
+              "isNew": false,
+              "gachaTs": "1754121775",
+              "poolId": "",
+              "poolName": "不归花火",
+              "pos": 6
+            },
+            {
+              "charName": "泡普卡",
+              "rarity": 2,
+              "isNew": false,
+              "gachaTs": "1754121775",
+              "poolId": "",
+              "poolName": "不归花火",
+              "pos": 7
+            },
+            {
+              "charName": "梓兰",
+              "rarity": 2,
+              "isNew": false,
+              "gachaTs": "1754121775",
+              "poolId": "",
+              "poolName": "不归花火",
+              "pos": 8
+            },
+            {
+              "charName": "卡缇",
+              "rarity": 2,
+              "isNew": false,
+              "gachaTs": "1754121775",
+              "poolId": "",
+              "poolName": "不归花火",
+              "pos": 9
+            },
+            {
+              "charName": "维荻",
+              "rarity": 3,
+              "isNew": false,
+              "gachaTs": "1754121781",
+              "poolId": "",
+              "poolName": "不归花火",
+              "pos": 0
+            },
+            {
+              "charName": "泡泡",
+              "rarity": 3,
+              "isNew": false,
+              "gachaTs": "1754121781",
+              "poolId": "",
+              "poolName": "不归花火",
+              "pos": 1
+            },
+            {
+              "charName": "泡泡",
+              "rarity": 3,
+              "isNew": false,
+              "gachaTs": "1754121781",
+              "poolId": "",
+              "poolName": "不归花火",
+              "pos": 2
+            },
+            {
+              "charName": "梓兰",
+              "rarity": 2,
+              "isNew": false,
+              "gachaTs": "1754121781",
+              "poolId": "",
+              "poolName": "不归花火",
+              "pos": 3
+            },
+            {
+              "charName": "夜烟",
+              "rarity": 3,
+              "isNew": false,
+              "gachaTs": "1754121781",
+              "poolId": "",
+              "poolName": "不归花火",
+              "pos": 4
+            },
+            {
+              "charName": "米格鲁",
+              "rarity": 2,
+              "isNew": false,
+              "gachaTs": "1754121781",
+              "poolId": "",
+              "poolName": "不归花火",
+              "pos": 5
+            },
+            {
+              "charName": "炎熔",
+              "rarity": 2,
+              "isNew": false,
+              "gachaTs": "1754121781",
+              "poolId": "",
+              "poolName": "不归花火",
+              "pos": 6
+            },
+            {
+              "charName": "霜叶",
+              "rarity": 3,
+              "isNew": false,
+              "gachaTs": "1754121781",
+              "poolId": "",
+              "poolName": "不归花火",
+              "pos": 7
+            },
+            {
+              "charName": "阿兰娜",
+              "rarity": 4,
+              "isNew": false,
+              "gachaTs": "1754121781",
+              "poolId": "",
+              "poolName": "不归花火",
+              "pos": 8
+            },
+            {
+              "charName": "豆苗",
+              "rarity": 3,
+              "isNew": false,
+              "gachaTs": "1754121781",
+              "poolId": "",
+              "poolName": "不归花火",
+              "pos": 9
+            },
+            {
+              "charName": "角峰",
+              "rarity": 3,
+              "isNew": false,
+              "gachaTs": "1754121800",
+              "poolId": "",
+              "poolName": "不归花火",
+              "pos": 0
+            },
+            {
+              "charName": "但书",
+              "rarity": 4,
+              "isNew": false,
+              "gachaTs": "1754121800",
+              "poolId": "",
+              "poolName": "不归花火",
+              "pos": 1
+            },
+            {
+              "charName": "桃金娘",
+              "rarity": 3,
+              "isNew": false,
+              "gachaTs": "1754121800",
+              "poolId": "",
+              "poolName": "不归花火",
+              "pos": 2
+            },
+            {
+              "charName": "苏苏洛",
+              "rarity": 3,
+              "isNew": false,
+              "gachaTs": "1754121800",
+              "poolId": "",
+              "poolName": "不归花火",
+              "pos": 3
+            },
+            {
+              "charName": "古米",
+              "rarity": 3,
+              "isNew": false,
+              "gachaTs": "1754121800",
+              "poolId": "",
+              "poolName": "不归花火",
+              "pos": 4
+            },
+            {
+              "charName": "杰克",
+              "rarity": 3,
+              "isNew": false,
+              "gachaTs": "1754121800",
+              "poolId": "",
+              "poolName": "不归花火",
+              "pos": 5
+            },
+            {
+              "charName": "斩业星熊",
+              "rarity": 5,
+              "isNew": false,
+              "gachaTs": "1754121800",
+              "poolId": "",
+              "poolName": "不归花火",
+              "pos": 6
+            },
+            {
+              "charName": "芙蓉",
+              "rarity": 2,
+              "isNew": false,
+              "gachaTs": "1754121800",
+              "poolId": "",
+              "poolName": "不归花火",
+              "pos": 7
+            },
+            {
+              "charName": "芬",
+              "rarity": 2,
+              "isNew": false,
+              "gachaTs": "1754121800",
+              "poolId": "",
+              "poolName": "不归花火",
+              "pos": 8
+            },
+            {
+              "charName": "晓歌",
+              "rarity": 4,
+              "isNew": false,
+              "gachaTs": "1754121800",
+              "poolId": "",
+              "poolName": "不归花火",
+              "pos": 9
+            },
+            {
+              "charName": "松果",
+              "rarity": 3,
+              "isNew": false,
+              "gachaTs": "1754121806",
+              "poolId": "",
+              "poolName": "不归花火",
+              "pos": 0
+            },
+            {
+              "charName": "阿消",
+              "rarity": 3,
+              "isNew": false,
+              "gachaTs": "1754121806",
+              "poolId": "",
+              "poolName": "不归花火",
+              "pos": 1
+            },
+            {
+              "charName": "芬",
+              "rarity": 2,
+              "isNew": false,
+              "gachaTs": "1754121806",
+              "poolId": "",
+              "poolName": "不归花火",
+              "pos": 2
+            },
+            {
+              "charName": "阿消",
+              "rarity": 3,
+              "isNew": false,
+              "gachaTs": "1754121806",
+              "poolId": "",
+              "poolName": "不归花火",
+              "pos": 3
+            },
+            {
+              "charName": "史都华德",
+              "rarity": 2,
+              "isNew": false,
+              "gachaTs": "1754121806",
+              "poolId": "",
+              "poolName": "不归花火",
+              "pos": 4
+            },
+            {
+              "charName": "翎羽",
+              "rarity": 2,
+              "isNew": false,
+              "gachaTs": "1754121806",
+              "poolId": "",
+              "poolName": "不归花火",
+              "pos": 5
+            },
+            {
+              "charName": "斑点",
+              "rarity": 2,
+              "isNew": false,
+              "gachaTs": "1754121806",
+              "poolId": "",
+              "poolName": "不归花火",
+              "pos": 6
+            },
+            {
+              "charName": "翎羽",
+              "rarity": 2,
+              "isNew": false,
+              "gachaTs": "1754121806",
+              "poolId": "",
+              "poolName": "不归花火",
+              "pos": 7
+            },
+            {
+              "charName": "泡泡",
+              "rarity": 3,
+              "isNew": false,
+              "gachaTs": "1754121806",
+              "poolId": "",
+              "poolName": "不归花火",
+              "pos": 8
+            },
+            {
+              "charName": "褐果",
+              "rarity": 3,
+              "isNew": false,
+              "gachaTs": "1754121806",
+              "poolId": "",
+              "poolName": "不归花火",
+              "pos": 9
+            },
+            {
+              "charName": "吉星",
+              "rarity": 4,
+              "isNew": false,
+              "gachaTs": "1754121812",
+              "poolId": "",
+              "poolName": "不归花火",
+              "pos": 0
+            },
+            {
+              "charName": "炎熔",
+              "rarity": 2,
+              "isNew": false,
+              "gachaTs": "1754121812",
+              "poolId": "",
+              "poolName": "不归花火",
+              "pos": 1
+            },
+            {
+              "charName": "慕斯",
+              "rarity": 3,
+              "isNew": false,
+              "gachaTs": "1754121812",
+              "poolId": "",
+              "poolName": "不归花火",
+              "pos": 2
+            },
+            {
+              "charName": "卡缇",
+              "rarity": 2,
+              "isNew": false,
+              "gachaTs": "1754121812",
+              "poolId": "",
+              "poolName": "不归花火",
+              "pos": 3
+            },
+            {
+              "charName": "月见夜",
+              "rarity": 2,
+              "isNew": false,
+              "gachaTs": "1754121812",
+              "poolId": "",
+              "poolName": "不归花火",
+              "pos": 4
+            },
+            {
+              "charName": "安赛尔",
+              "rarity": 2,
+              "isNew": false,
+              "gachaTs": "1754121812",
+              "poolId": "",
+              "poolName": "不归花火",
+              "pos": 5
+            },
+            {
+              "charName": "吉星",
+              "rarity": 4,
+              "isNew": false,
+              "gachaTs": "1754121812",
+              "poolId": "",
+              "poolName": "不归花火",
+              "pos": 6
+            },
+            {
+              "charName": "米格鲁",
+              "rarity": 2,
+              "isNew": false,
+              "gachaTs": "1754121812",
+              "poolId": "",
+              "poolName": "不归花火",
+              "pos": 7
+            },
+            {
+              "charName": "米格鲁",
+              "rarity": 2,
+              "isNew": false,
+              "gachaTs": "1754121812",
+              "poolId": "",
+              "poolName": "不归花火",
+              "pos": 8
+            },
+            {
+              "charName": "香草",
+              "rarity": 2,
+              "isNew": false,
+              "gachaTs": "1754121812",
+              "poolId": "",
+              "poolName": "不归花火",
+              "pos": 9
+            },
+            {
+              "charName": "空爆",
+              "rarity": 2,
+              "isNew": false,
+              "gachaTs": "1754121817",
+              "poolId": "",
+              "poolName": "不归花火",
+              "pos": 0
+            },
+            {
+              "charName": "芬",
+              "rarity": 2,
+              "isNew": false,
+              "gachaTs": "1754121817",
+              "poolId": "",
+              "poolName": "不归花火",
+              "pos": 1
+            },
+            {
+              "charName": "调香师",
+              "rarity": 3,
+              "isNew": false,
+              "gachaTs": "1754121817",
+              "poolId": "",
+              "poolName": "不归花火",
+              "pos": 2
+            },
+            {
+              "charName": "缠丸",
+              "rarity": 3,
+              "isNew": false,
+              "gachaTs": "1754121817",
+              "poolId": "",
+              "poolName": "不归花火",
+              "pos": 3
+            },
+            {
+              "charName": "卡缇",
+              "rarity": 2,
+              "isNew": false,
+              "gachaTs": "1754121817",
+              "poolId": "",
+              "poolName": "不归花火",
+              "pos": 4
+            },
+            {
+              "charName": "刻刀",
+              "rarity": 3,
+              "isNew": false,
+              "gachaTs": "1754121817",
+              "poolId": "",
+              "poolName": "不归花火",
+              "pos": 5
+            },
+            {
+              "charName": "杰西卡",
+              "rarity": 3,
+              "isNew": false,
+              "gachaTs": "1754121817",
+              "poolId": "",
+              "poolName": "不归花火",
+              "pos": 6
+            },
+            {
+              "charName": "芬",
+              "rarity": 2,
+              "isNew": false,
+              "gachaTs": "1754121817",
+              "poolId": "",
+              "poolName": "不归花火",
+              "pos": 7
+            },
+            {
+              "charName": "波登可",
+              "rarity": 3,
+              "isNew": false,
+              "gachaTs": "1754121817",
+              "poolId": "",
+              "poolName": "不归花火",
+              "pos": 8
+            },
+            {
+              "charName": "宴",
+              "rarity": 3,
+              "isNew": false,
+              "gachaTs": "1754121817",
+              "poolId": "",
+              "poolName": "不归花火",
+              "pos": 9
+            },
+            {
+              "charName": "梓兰",
+              "rarity": 2,
+              "isNew": false,
+              "gachaTs": "1754121835",
+              "poolId": "",
+              "poolName": "不归花火",
+              "pos": 0
+            },
+            {
+              "charName": "斑点",
+              "rarity": 2,
+              "isNew": false,
+              "gachaTs": "1754121835",
+              "poolId": "",
+              "poolName": "不归花火",
+              "pos": 1
+            },
+            {
+              "charName": "芳汀",
+              "rarity": 3,
+              "isNew": false,
+              "gachaTs": "1754121835",
+              "poolId": "",
+              "poolName": "不归花火",
+              "pos": 2
+            },
+            {
+              "charName": "休谟斯",
+              "rarity": 3,
+              "isNew": false,
+              "gachaTs": "1754121835",
+              "poolId": "",
+              "poolName": "不归花火",
+              "pos": 3
+            },
+            {
+              "charName": "吉星",
+              "rarity": 4,
+              "isNew": false,
+              "gachaTs": "1754121835",
+              "poolId": "",
+              "poolName": "不归花火",
+              "pos": 4
+            },
+            {
+              "charName": "孑",
+              "rarity": 3,
+              "isNew": false,
+              "gachaTs": "1754121835",
+              "poolId": "",
+              "poolName": "不归花火",
+              "pos": 5
+            },
+            {
+              "charName": "月见夜",
+              "rarity": 2,
+              "isNew": false,
+              "gachaTs": "1754121835",
+              "poolId": "",
+              "poolName": "不归花火",
+              "pos": 6
+            },
+            {
+              "charName": "梓兰",
+              "rarity": 2,
+              "isNew": false,
+              "gachaTs": "1754121835",
+              "poolId": "",
+              "poolName": "不归花火",
+              "pos": 7
+            },
+            {
+              "charName": "杰西卡",
+              "rarity": 3,
+              "isNew": false,
+              "gachaTs": "1754121835",
+              "poolId": "",
+              "poolName": "不归花火",
+              "pos": 8
+            },
+            {
+              "charName": "杰克",
+              "rarity": 3,
+              "isNew": false,
+              "gachaTs": "1754121835",
+              "poolId": "",
+              "poolName": "不归花火",
+              "pos": 9
+            },
+            {
+              "charName": "芙蓉",
+              "rarity": 2,
+              "isNew": false,
+              "gachaTs": "1754121842",
+              "poolId": "",
+              "poolName": "不归花火",
+              "pos": 0
+            },
+            {
+              "charName": "红豆",
+              "rarity": 3,
+              "isNew": false,
+              "gachaTs": "1754121842",
+              "poolId": "",
+              "poolName": "不归花火",
+              "pos": 1
+            },
+            {
+              "charName": "缠丸",
+              "rarity": 3,
+              "isNew": false,
+              "gachaTs": "1754121842",
+              "poolId": "",
+              "poolName": "不归花火",
+              "pos": 2
+            },
+            {
+              "charName": "维荻",
+              "rarity": 3,
+              "isNew": false,
+              "gachaTs": "1754121842",
+              "poolId": "",
+              "poolName": "不归花火",
+              "pos": 3
+            },
+            {
+              "charName": "安比尔",
+              "rarity": 3,
+              "isNew": false,
+              "gachaTs": "1754121842",
+              "poolId": "",
+              "poolName": "不归花火",
+              "pos": 4
+            },
+            {
+              "charName": "吉星",
+              "rarity": 4,
+              "isNew": false,
+              "gachaTs": "1754121842",
+              "poolId": "",
+              "poolName": "不归花火",
+              "pos": 5
+            },
+            {
+              "charName": "铅踝",
+              "rarity": 3,
+              "isNew": false,
+              "gachaTs": "1754121842",
+              "poolId": "",
+              "poolName": "不归花火",
+              "pos": 6
+            },
+            {
+              "charName": "克洛丝",
+              "rarity": 2,
+              "isNew": false,
+              "gachaTs": "1754121842",
+              "poolId": "",
+              "poolName": "不归花火",
+              "pos": 7
+            },
+            {
+              "charName": "安赛尔",
+              "rarity": 2,
+              "isNew": false,
+              "gachaTs": "1754121842",
+              "poolId": "",
+              "poolName": "不归花火",
+              "pos": 8
+            },
+            {
+              "charName": "格雷伊",
+              "rarity": 3,
+              "isNew": false,
+              "gachaTs": "1754121842",
+              "poolId": "",
+              "poolName": "不归花火",
+              "pos": 9
+            },
+            {
+              "charName": "遥",
+              "rarity": 5,
+              "isNew": true,
+              "gachaTs": "1754121868",
+              "poolId": "",
+              "poolName": "不归花火",
+              "pos": 0
+            },
+            {
+              "charName": "吉星",
+              "rarity": 4,
+              "isNew": false,
+              "gachaTs": "1754182327",
+              "poolId": "",
+              "poolName": "不归花火",
+              "pos": 0
+            },
+            {
+              "charName": "香草",
+              "rarity": 2,
+              "isNew": false,
+              "gachaTs": "1754272688",
+              "poolId": "",
+              "poolName": "不归花火",
+              "pos": 0
+            },
+            {
+              "charName": "克洛丝",
+              "rarity": 2,
+              "isNew": false,
+              "gachaTs": "1754274773",
+              "poolId": "",
+              "poolName": "不归花火",
+              "pos": 0
+            },
+            {
+              "charName": "罗比菈塔",
+              "rarity": 3,
+              "isNew": false,
+              "gachaTs": "1754350595",
+              "poolId": "",
+              "poolName": "不归花火",
+              "pos": 0
+            },
+            {
+              "charName": "蛇屠箱",
+              "rarity": 3,
+              "isNew": false,
+              "gachaTs": "1754441881",
+              "poolId": "",
+              "poolName": "不归花火",
+              "pos": 0
+            },
+            {
+              "charName": "克洛丝",
+              "rarity": 2,
+              "isNew": false,
+              "gachaTs": "1754528733",
+              "poolId": "",
+              "poolName": "不归花火",
+              "pos": 0
+            },
+            {
+              "charName": "泡普卡",
+              "rarity": 2,
+              "isNew": false,
+              "gachaTs": "1754633072",
+              "poolId": "",
+              "poolName": "不归花火",
+              "pos": 0
+            },
+            {
+              "charName": "玫兰莎",
+              "rarity": 2,
+              "isNew": false,
+              "gachaTs": "1754634489",
+              "poolId": "",
+              "poolName": "不归花火",
+              "pos": 0
+            },
+            {
+              "charName": "斑点",
+              "rarity": 2,
+              "isNew": false,
+              "gachaTs": "1754634493",
+              "poolId": "",
+              "poolName": "不归花火",
+              "pos": 0
+            },
+            {
+              "charName": "香草",
+              "rarity": 2,
+              "isNew": false,
+              "gachaTs": "1754634498",
+              "poolId": "",
+              "poolName": "不归花火",
+              "pos": 0
+            },
+            {
+              "charName": "休谟斯",
+              "rarity": 3,
+              "isNew": false,
+              "gachaTs": "1754697498",
+              "poolId": "",
+              "poolName": "不归花火",
+              "pos": 0
+            },
+            {
+              "charName": "芳汀",
+              "rarity": 3,
+              "isNew": false,
+              "gachaTs": "1754784203",
+              "poolId": "",
+              "poolName": "不归花火",
+              "pos": 0
+            },
+            {
+              "charName": "苏苏洛",
+              "rarity": 3,
+              "isNew": false,
+              "gachaTs": "1754877914",
+              "poolId": "",
+              "poolName": "不归花火",
+              "pos": 0
+            },
+            {
+              "charName": "玫兰莎",
+              "rarity": 2,
+              "isNew": false,
+              "gachaTs": "1754966207",
+              "poolId": "",
+              "poolName": "不归花火",
+              "pos": 0
+            },
+            {
+              "charName": "砾",
+              "rarity": 3,
+              "isNew": false,
+              "gachaTs": "1754967745",
+              "poolId": "",
+              "poolName": "不归花火",
+              "pos": 0
+            },
+            {
+              "charName": "翎羽",
+              "rarity": 2,
+              "isNew": false,
+              "gachaTs": "1755052688",
+              "poolId": "",
+              "poolName": "不归花火",
+              "pos": 0
+            },
+            {
+              "charName": "翎羽",
+              "rarity": 2,
+              "isNew": false,
+              "gachaTs": "1755159632",
+              "poolId": "",
+              "poolName": "不归花火",
+              "pos": 0
+            },
+            {
+              "charName": "空构",
+              "rarity": 4,
+              "isNew": false,
+              "gachaTs": "1755219678",
+              "poolId": "",
+              "poolName": "不归花火",
+              "pos": 0
+            }
+          ]
+        },
+        {
+          "categoryName": "中坚寻访",
+          "categoryId": "",
+          "records": [
+            {
+              "charName": "宴",
+              "rarity": 3,
+              "isNew": false,
+              "gachaTs": "1754967755",
+              "poolId": "",
+              "poolName": "中坚寻访",
+              "pos": 0
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "summary": {
+    "totalFiles": 1,
+    "totalCategories": 7,
+    "totalRecords": 447
+  }
+}
