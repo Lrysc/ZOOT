@@ -86,35 +86,43 @@
             </div>
           </div>
           
-          <!-- 展开的记录表格 -->
+          <!-- 展开的记录显示 -->
           <div v-if="isCategoryExpanded(category.id)" class="category-records">
-            <div class="records-table-container">
-              <table class="gacha-table">
-                <thead>
-                <tr>
-                  <th>序号</th>
-                  <th>干员名称</th>
-                  <th>星级</th>
-                  <th>获取时间</th>
-                </tr>
-                </thead>
-                <tbody>
-                <tr v-for="(record, index) in getCategoryRecords(category.id)" :key="index">
-                  <td>{{ index + 1 }}</td>
-                  <td>{{ record.charName }}</td>
-                  <td>
-                    <span class="rarity-badge" :class="`rarity-${record.rarity}`">
-                      {{ getRarityText(record.rarity) }}
-                    </span>
-                  </td>
-                  <td>{{ formatTime(record.gachaTs) }}</td>
-                </tr>
-                </tbody>
-              </table>
+            <div class="highlights-container">
+              <div 
+                v-for="(processedRecord, index) in getProcessedRecords(category.id)" 
+                :key="index"
+                class="highlight-record"
+                :class="{ 'six-star': processedRecord.record.rarity === 5, 'five-star': processedRecord.record.rarity === 4 }"
+              >
+                <div class="record-info">
+                  <img 
+                    :src="processedRecord.avatarUrl" 
+                    :alt="processedRecord.record.charName"
+                    class="operator-avatar"
+                  />
+                  <div class="record-details">
+                    <h4 class="operator-name">{{ processedRecord.record.charName }}</h4>
+
+                    <div class="rarity-info">
+                      <span class="rarity-badge" :class="`rarity-${processedRecord.record.rarity}`">
+                        {{ getRarityText(processedRecord.record.rarity) }}
+                      </span>
+                    </div>
+                    <div class="pull-count">
+                      <span class="count-number">{{ processedRecord.pullCount }}</span>
+                      <span class="count-text">抽</span>
+                    </div>
+                    <div class="time-info">
+                      {{ formatTime(processedRecord.record.gachaTs) }}
+                    </div>
+                  </div>
+                </div>
+              </div>
               
-              <!-- 无数据提示 -->
-              <div v-if="getCategoryRecords(category.id).length === 0" class="no-records">
-                <p>该卡池暂无抽卡记录</p>
+              <!-- 无高光记录提示 -->
+              <div v-if="getProcessedRecords(category.id).length === 0" class="no-highlights">
+                <p>该卡池暂无数据</p>
               </div>
             </div>
           </div>
@@ -283,39 +291,6 @@
             <button @click="clearImportedFile(fileIndex)" class="clear-file-btn" title="清除此文件">
               清除此文件
             </button>
-          </div>
-          
-          <!-- 展开的记录表格 -->
-          <div v-if="isCategoryExpanded(category.id)" class="category-records">
-            <div class="records-table-container">
-              <table class="gacha-table">
-                <thead>
-                <tr>
-                  <th>序号</th>
-                  <th>干员名称</th>
-                  <th>星级</th>
-                  <th>获取时间</th>
-                </tr>
-                </thead>
-                <tbody>
-                <tr v-for="(record, index) in getCategoryRecords(category.id)" :key="index">
-                  <td>{{ index + 1 }}</td>
-                  <td>{{ record.charName }}</td>
-                  <td>
-                    <span class="rarity-badge" :class="`rarity-${record.rarity}`">
-                      {{ getRarityText(record.rarity) }}
-                    </span>
-                  </td>
-                  <td>{{ formatTime(record.gachaTs) }}</td>
-                </tr>
-                </tbody>
-              </table>
-              
-              <!-- 无数据提示 -->
-              <div v-if="getCategoryRecords(category.id).length === 0" class="no-records">
-                <p>该卡池暂无抽卡记录</p>
-              </div>
-            </div>
           </div>
         </div>
       </div>
@@ -964,7 +939,19 @@ const loadCategoryRecords = async (category: GachaCategory) => {
       }
     }
 
-    // 保存记录到Map中
+    // 按时间戳和位置排序记录（从早到晚，相同时间戳内按pos从小到大）
+    allRecords.sort((a, b) => {
+      // 先按时间戳排序
+      const timeA = parseFloat(a.gachaTs);
+      const timeB = parseFloat(b.gachaTs);
+      if (timeA !== timeB) {
+        return timeA - timeB; // 升序排列，最早的在前
+      }
+      // 相同时间戳内按pos排序（十连抽的顺序）
+      return a.pos - b.pos;
+    });
+
+    // 保存排序后的记录到Map中
     categoryRecords.value.set(category.id, allRecords);
     
     logger.info('卡池记录加载完成', {
@@ -999,6 +986,59 @@ const getCategoryRecords = (categoryId: string) => {
 const isCategoryExpanded = (categoryId: string) => {
   return expandedCategories.value.has(categoryId);
 };
+
+// 计算抽数并处理五星/六星显示
+const getProcessedRecords = (categoryId: string) => {
+  const records = getCategoryRecords(categoryId);
+  const processedRecords: Array<{
+    record: GachaRecord;
+    pullCount: number;
+    avatarUrl: string;
+    isHighlight: boolean;
+  }> = [];
+  
+  let pullCount = 0;
+  
+  // 按时间顺序遍历记录（从早到晚）
+  records.forEach((record) => {
+    pullCount++;
+    
+    // 如果是六星，添加记录并重置计数
+    if (record.rarity === 5) {
+      processedRecords.push({
+        record,
+        pullCount,
+        avatarUrl: getAvatarUrl(record.charId),
+        isHighlight: true
+      });
+      pullCount = 0; // 六星重置计数，开始新的计数周期
+    } 
+    // 如果是五星，添加记录但不重置计数
+    else if (record.rarity === 4) {
+      processedRecords.push({
+        record,
+        pullCount,
+        avatarUrl: getAvatarUrl(record.charId),
+        isHighlight: true
+      });
+      // 五星不重置计数，继续累计到下一个六星
+    }
+    // 三星和二星不显示，只累计计数
+  });
+  
+  return processedRecords;
+};
+
+// 获取干员头像URL
+const getAvatarUrl = (charId: string): string => {
+  if (!charId) return '';
+  
+  // 使用GitHub ArknightsGameResource项目的CDN来获取头像
+  // 明日方舟干员头像CDN格式
+  return `https://raw.githubusercontent.com/yuanyan3060/ArknightsGameResource/main/avatar/${charId}.png`;
+};
+
+
 
 // 根据poolId映射到ci字段
 const mapPoolIdToCi = (poolId: string): string => {
@@ -2463,6 +2503,113 @@ onMounted(() => {
   position: sticky;
   top: 0;
   z-index: 1;
+}
+
+/* 高光记录显示样式 */
+.highlights-container {
+  max-height: 300px;
+  overflow-y: auto;
+  padding: 6px;
+}
+
+.highlight-record {
+  display: flex;
+  align-items: center;
+  padding: 8px;
+  margin-bottom: 4px;
+  border-radius: 6px;
+  border: 1px solid #404040;
+  background: #2d2d2d;
+  transition: all 0.3s ease;
+  min-height: 66px; /* 头像50px + padding16px */
+}
+
+.highlight-record:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.highlight-record.six-star {
+  border-color: #ff6b6b;
+  background: linear-gradient(135deg, #2d2d2d 0%, #3d1a1a 100%);
+}
+
+.highlight-record.five-star {
+  border-color: #ffd93d;
+  background: linear-gradient(135deg, #2d2d2d 0%, #3d2d1a 100%);
+}
+
+.record-info {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  gap: 12px;
+}
+
+.operator-avatar {
+  width: 50px;
+  height: 50px;
+  border-radius: 6px;
+  object-fit: cover;
+  border: 2px solid #404040;
+  flex-shrink: 0;
+}
+
+.record-details {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.operator-name {
+  margin: 0;
+  font-size: 14px;
+  font-weight: bold;
+  color: #ffffff;
+  flex-shrink: 0;
+  min-width: 80px;
+}
+
+.pull-count {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.count-number {
+  font-size: 16px;
+  font-weight: bold;
+  color: #4ecdc4;
+}
+
+.count-text {
+  font-size: 12px;
+  color: #b0b0b0;
+}
+
+.rarity-info {
+  flex-shrink: 0;
+}
+
+.time-info {
+  font-size: 11px;
+  color: #888;
+  flex-shrink: 0;
+  margin-left: auto; /* 推到最右边 */
+}
+
+.no-highlights {
+  text-align: center;
+  padding: 40px 20px;
+  color: #888;
+}
+
+.no-highlights p {
+  margin: 0;
+  font-size: 14px;
 }
 
 .no-records {
