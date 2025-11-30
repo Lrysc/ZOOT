@@ -80,6 +80,11 @@
                 <div class="assist-char-item">
                   <!-- 半身像容器 -->
                   <div class="char-portrait-container">
+                    <!-- 等级标签 - 左上角白色圆圈 -->
+                    <div class="char-level-badge">
+                      {{ char.level }}
+                    </div>
+                    
                     <img
                       :src="char.portraitUrl"
                       :alt="char.name"
@@ -98,14 +103,13 @@
 
                     <div class="char-level-line">
                       <span v-if="char.evolvePhase > 0" class="char-elite">精{{ char.evolvePhase === 1 ? '一' : '二' }}</span>
-                      <span class="char-level">Lv.{{ char.level }}</span>
                       <span class="char-potential">{{ char.potentialRank === 5 ? '满' : char.potentialRank }}潜能</span>
                     </div>
 
                     <div class="char-skill-line">
-                      <span class="char-skill">{{ char.mainSkillLvl }}级{{ char.skillNumber}}技能</span>
+                      <span v-if="char.specializeLevel > 0" class="char-skill">{{ char.skillNumber}}技能</span>
+                      <span v-else class="char-skill">{{ char.mainSkillLvl }}级{{ char.skillNumber}}技能</span>
                       <span v-if="char.specializeLevel > 0" class="char-skill-level">专{{ char.specializeLevel }}</span>
-                      <span v-else class="char-skill-level">无专精</span>
                     </div>
 
                     <div class="char-module">
@@ -1300,6 +1304,55 @@ onMounted(() => {
   overflow: hidden;
   border-radius: 4px;
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* 等级标签 - 左上角白色圆环 */
+.char-level-badge {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  width: 26px;
+  height: 26px;
+  background: rgba(0, 0, 0, 0.7);
+  color: #ffffff;
+  border: 3px solid rgba(255, 255, 255, 1);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 900;
+  font-family: "Microsoft YaHei", "微软雅黑", "SimHei", "黑体", Arial, sans-serif;
+  z-index: 10;
+  box-shadow: 
+    0 0 20px rgba(255, 255, 255, 0.9),
+    0 0 12px rgba(255, 200, 100, 0.6),
+    0 3px 8px rgba(0, 0, 0, 0.6),
+    inset 0 0 6px rgba(255, 255, 255, 0.4);
+  text-shadow: 
+    0 0 8px rgba(255, 255, 255, 1),
+    0 0 4px rgba(255, 200, 100, 0.8),
+    0 2px 3px rgba(0, 0, 0, 1);
+  backdrop-filter: blur(3px);
+  animation: levelGlow 2s ease-in-out infinite alternate;
+}
+
+/* 等级标签呼吸动画 */
+@keyframes levelGlow {
+  0% {
+    box-shadow: 
+      0 0 20px rgba(255, 255, 255, 0.9),
+      0 0 12px rgba(255, 200, 100, 0.6),
+      0 3px 8px rgba(0, 0, 0, 0.6),
+      inset 0 0 6px rgba(255, 255, 255, 0.4);
+  }
+  100% {
+    box-shadow: 
+      0 0 25px rgba(255, 255, 255, 1),
+      0 0 18px rgba(255, 200, 100, 0.8),
+      0 3px 8px rgba(0, 0, 0, 0.6),
+      inset 0 0 8px rgba(255, 255, 255, 0.6);
+  }
 }
 
 /* 交叉淡化遮罩 */

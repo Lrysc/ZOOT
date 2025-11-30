@@ -51,7 +51,11 @@
         <ul class="data-grid">
           <li class="data-item">
             <span class="label">理智</span>
-            <span class="value">{{ gameDataStore.getActualApInfo?.current || '--' }}/{{ gameDataStore.getActualApInfo?.max || '--' }}</span>
+            <span class="ap-value">
+              <span class="current-ap">{{ gameDataStore.getActualApInfo?.current || '--' }}</span>
+              <span class="ap-separator">/</span>
+              <span class="max-ap">{{ gameDataStore.getActualApInfo?.max || '--' }}</span>
+            </span>
             <span class="sub-value" v-if="gameDataStore.getActualApInfo?.remainSecs > 0">
               {{ gameDataStore.formatRecoveryTime(gameDataStore.getActualApInfo?.recoverTime) }} 回满
             </span>
@@ -61,13 +65,17 @@
             <span class="label">剿灭作战</span>
             <span class="value">{{ gameDataStore.getCampaignReward || '--' }} 合成玉</span>
           </li>
-          <li class="data-item">
-            <span class="label">每日任务</span>
-            <span class="value">{{ gameDataStore.getDailyTaskProgress || '--' }}</span>
-          </li>
-          <li class="data-item">
-            <span class="label">每周任务</span>
-            <span class="value">{{ gameDataStore.getWeeklyTaskProgress || '--' }}</span>
+          <li class="data-item task-item">
+            <div class="task-container-horizontal">
+              <div class="task-item-horizontal">
+                <span class="task-label daily-label">每日</span>
+                <span class="task-value daily-value">{{ gameDataStore.getDailyTaskProgress || '--' }}</span>
+              </div>
+              <div class="task-item-horizontal">
+                <span class="task-label weekly-label">每周</span>
+                <span class="task-value weekly-value">{{ gameDataStore.getWeeklyTaskProgress || '--' }}</span>
+              </div>
+            </div>
           </li>
           <li class="data-item">
             <span class="label">数据增补仪</span>
@@ -78,12 +86,16 @@
             <span class="value">{{ gameDataStore.getTowerHigherItem || '--' }}</span>
           </li>
           <li class="data-item">
-            <span class="label">公开招募</span>
-            <span class="value">{{ gameDataStore.getHireSlotCount || '--' }}</span>
-          </li>
-          <li class="data-item">
-            <span class="label">公招刷新次数</span>
-            <span class="value">{{ gameDataStore.getHireRefreshCount || '--' }}</span>
+            <div class="task-container">
+              <div class="task-row">
+                <span class="task-label hire-label">公开招募</span>
+                <span class="task-value hire-value">{{ gameDataStore.getHireSlotCount || '--' }}</span>
+              </div>
+              <div class="task-row">
+                <span class="task-label refresh-label">刷新次数</span>
+                <span class="task-value refresh-value">{{ gameDataStore.getHireRefreshCount || '--' }}</span>
+              </div>
+            </div>
           </li>
         </ul>
       </div>
@@ -567,6 +579,134 @@ defineExpose({
   font-size: 16px;
   color: #ccc;
   font-weight: 600;
+}
+
+/* 理智特殊样式 */
+.ap-value {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.current-ap {
+  font-size: 20px;
+  font-weight: 700;
+  color: #9feaf9;
+}
+
+.ap-separator {
+  font-size: 16px;
+  color: #999;
+  margin: 0 2px;
+}
+
+.max-ap {
+  font-size: 14px;
+  color: #9feaf9;
+  opacity: 0.8;
+}
+
+/* 任务容器样式 */
+.task-item {
+  min-height: 60px;
+}
+
+.task-container {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+}
+
+.task-container-horizontal {
+  display: flex;
+  flex-direction: row;
+  gap: 12px;
+  width: 100%;
+  justify-content: space-between;
+}
+
+.task-item-horizontal {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 4px 8px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.05);
+  transition: background-color 0.2s ease;
+  flex: 1;
+}
+
+.task-item-horizontal:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.task-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 4px 8px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.05);
+  transition: background-color 0.2s ease;
+}
+
+.task-row:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.task-label {
+  font-size: 14px;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 3px;
+  min-width: 40px;
+  text-align: center;
+}
+
+.daily-label {
+  background: rgba(108, 194, 74, 0.3);
+  color: #6cc24a;
+  border: 1px solid rgba(108, 194, 74, 0.5);
+}
+
+.weekly-label {
+  background: rgba(70, 130, 180, 0.3);
+  color: #4682b4;
+  border: 1px solid rgba(70, 130, 180, 0.5);
+}
+
+.task-value {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.daily-value {
+  color: #6cc24a;
+}
+
+.weekly-value {
+  color: #4682b4;
+}
+
+.hire-label {
+  background: rgba(255, 165, 0, 0.3);
+  color: #ffa500;
+  border: 1px solid rgba(255, 165, 0, 0.5);
+}
+
+.refresh-label {
+  background: rgba(255, 255, 255, 0.3);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+}
+
+.hire-value {
+  color: #ffa500;
+}
+
+.refresh-value {
+  color: #ffffff;
 }
 
 /* 训练室特殊样式 */
