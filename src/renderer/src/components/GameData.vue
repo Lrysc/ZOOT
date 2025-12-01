@@ -138,11 +138,13 @@
               <div class="production-left">
                 <span class="production-label">贸易站</span>
                 <span class="production-value">{{ gameDataStore.getTradingOrderCount || '--' }}</span>
+                <span class="production-buff" v-if="getTradingBuff()">{{ getTradingBuff() }}</span>
               </div>
               <div class="production-divider"></div>
               <div class="production-right">
                 <span class="production-label">制造站</span>
                 <span class="production-value">{{ gameDataStore.getManufactureStatus || '--' }}</span>
+                <span class="production-buff" v-if="getManufactureBuff()">{{ getManufactureBuff() }}</span>
               </div>
             </div>
           </li>
@@ -494,6 +496,44 @@ const apProgress = computed(() => {
   const progress = (current / max) * circumference.value;
   return circumference.value - progress;
 });
+
+/**
+ * 获取贸易站效率加成
+ */
+const getTradingBuff = () => {
+  try {
+    const tradingsData = gameDataStore.playerData?.building?.tradings || [];
+    let totalBuff = 0;
+    
+    tradingsData.forEach(station => {
+      const { totalSpeedBuff } = gameDataStore.calculateBuildingEfficiency(station.chars, 'TRADING');
+      totalBuff = Math.max(totalBuff, totalSpeedBuff);
+    });
+    
+    return totalBuff > 0 ? `+${(totalBuff * 100).toFixed(1)}%` : '';
+  } catch (error) {
+    return '';
+  }
+};
+
+/**
+ * 获取制造站效率加成
+ */
+const getManufactureBuff = () => {
+  try {
+    const manufacturesData = gameDataStore.playerData?.building?.manufactures || [];
+    let totalBuff = 0;
+    
+    manufacturesData.forEach(station => {
+      const { totalSpeedBuff } = gameDataStore.calculateBuildingEfficiency(station.chars, 'MANUFACTURE');
+      totalBuff = Math.max(totalBuff, totalSpeedBuff);
+    });
+    
+    return totalBuff > 0 ? `+${(totalBuff * 100).toFixed(1)}%` : '';
+  } catch (error) {
+    return '';
+  }
+};
 
 // ==================== 暴露方法给模板 ====================
 /**
@@ -1107,6 +1147,17 @@ defineExpose({
 
 .production-right .production-value {
   color: #ffd700;
+}
+
+.production-buff {
+  font-size: 10px;
+  color: #4caf50;
+  background: rgba(76, 175, 80, 0.2);
+  padding: 2px 4px;
+  border-radius: 3px;
+  margin-top: 2px;
+  display: inline-block;
+  font-weight: 500;
 }
 
 /* 宿舍疲劳容器样式 */

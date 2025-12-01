@@ -45,24 +45,24 @@
 
         <!-- 基本信息卡片 -->
         <div class="basic-info-card">
-          <ul class="data-grid">
-            <li class="data-item">
+          <div class="basic-info-grid">
+            <div class="data-item">
               <span class="label">作战进度</span>
               <span class="value">{{ gameDataStore.getMainStageProgress || '--' }}</span>
-            </li>
-            <li class="data-item">
+            </div>
+            <div class="data-item">
               <span class="label">家具保有数</span>
               <span class="value">{{ gameDataStore.playerData?.building?.furniture?.total || '--' }}</span>
-            </li>
-            <li class="data-item">
+            </div>
+            <div class="data-item">
               <span class="label">雇佣干员数</span>
               <span class="value">{{ gameDataStore.getCharCount || '--' }}</span>
-            </li>
-            <li class="data-item">
+            </div>
+            <div class="data-item">
               <span class="label">时装数量</span>
               <span class="value">{{ gameDataStore.playerData?.skins?.length || '--' }}</span>
-            </li>
-          </ul>
+            </div>
+          </div>
         </div>
 
         <!-- 助战干员板块 - 居中横向排列 -->
@@ -1258,6 +1258,14 @@ onMounted(() => {
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   gap: 12px;
   list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.basic-info-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
   margin: 0;
   padding: 0;
 }
@@ -2864,6 +2872,10 @@ onMounted(() => {
 
   .data-grid {
     grid-template-columns: 1fr;
+  }
+  
+  .basic-info-grid {
+    grid-template-columns: repeat(2, 1fr);
   }
 
   /* 移动端助战干员布局调整 */
