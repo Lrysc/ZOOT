@@ -1631,6 +1631,8 @@ export const useGameDataStore = defineStore('gameData', () => {
 
         const portraitUrl = getOperatorPortraitUrl(char.charId, char.evolvePhase || 0);
         const avatarUrl = getOperatorAvatarUrl(char.charId);
+        const subProfessionId = charInfo?.subProfessionId || '';
+        const profession = charInfo?.profession || '';
 
         return {
           charId: char.charId,
@@ -1647,6 +1649,8 @@ export const useGameDataStore = defineStore('gameData', () => {
           specializeLevel: char.specializeLevel || 0,
           moduleText,
           skinId: char.skinId || '',
+          subProfessionId,
+          profession,
           portraitUrl,
           avatarUrl,
           originalData: char
@@ -1684,6 +1688,8 @@ export const useGameDataStore = defineStore('gameData', () => {
           avatarUrl: char.avatarUrl,
           charId: char.charId,
           evolvePhase: char.evolvePhase,
+          subProfessionId: char.subProfessionId,
+          profession: char.profession,
           rawData: char,
           potentialRank: char.potentialRank,
           specializeLevel: char.specializeLevel,

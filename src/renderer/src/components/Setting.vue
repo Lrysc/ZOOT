@@ -99,7 +99,17 @@
 
                   <!-- 干员信息 - 显示在半身像下方，带淡入效果 -->
                   <div class="char-details">
-                    <div class="char-name">{{ char.name }}</div>
+                    <div class="char-name">
+                      <img
+                        v-if="char.profession"
+                        :src="getProfessionIconUrl(char.profession)"
+                        :alt="char.profession"
+                        class="char-profession-icon"
+                        @error="(event) => { console.log('Icon load error:', char.profession, event.target.src); event.target.style.display = 'none'; }"
+                        @load="() => console.log('Icon loaded:', char.profession)"
+                      />
+                      {{ char.name }}
+                    </div>
 
                     <div class="char-level-line">
                       <span v-if="char.evolvePhase > 0" class="char-elite">精{{ char.evolvePhase === 1 ? '一' : '二' }}</span>
@@ -426,6 +436,32 @@ const lastLogTime = computed(() => {
   const lastTimestamp = logs.value[logs.value.length - 1].timestamp
   return new Date(lastTimestamp).toLocaleString('zh-CN')
 })
+
+// ==================== 职业图标方法 ====================
+
+/**
+ * 获取职业图标URL
+ * @param profession 职业名称
+ * @returns 图标URL
+ */
+const getProfessionIconUrl = (profession: string): string => {
+  if (!profession) return ''
+  
+  // 职业名称映射到文件名
+  const professionMap: { [key: string]: string } = {
+    'CASTER': 'caster',
+    'MEDIC': 'medic', 
+    'PIONEER': 'pioneer',
+    'SNIPER': 'sniper',
+    'SPECIAL': 'special',
+    'SUPPORT': 'support',
+    'TANK': 'tank',
+    'WARRIOR': 'warrior'
+  }
+  
+  const fileName = professionMap[profession] || profession.toLowerCase()
+  return new URL(`../assets/subProfession/${fileName}.svg`, import.meta.url).href
+}
 
 // ==================== 修复的复制功能 ====================
 
@@ -1128,6 +1164,9 @@ onMounted(() => {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  border: 4px solid #d0d0d0;
+  box-sizing: border-box;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
 .default-avatar {
@@ -1423,6 +1462,18 @@ onMounted(() => {
   overflow: hidden;
   text-overflow: ellipsis;
   transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  justify-content: center;
+}
+
+.char-profession-icon {
+  width: 20px;
+  height: 20px;
+  filter: brightness(0) saturate(100%) invert(100%) sepia(0%) saturate(0%) hue-rotate(0deg) brightness(100%) contrast(100%);
+  flex-shrink: 0;
+  min-width: 20px;
 }
 
 .assist-char-item:hover .char-name {

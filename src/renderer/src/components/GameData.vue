@@ -88,16 +88,16 @@
               <h4 class="weekly-title">周常</h4>
               <div class="weekly-content">
                 <div class="weekly-row">
-                  <span class="weekly-label">剿灭作战</span>
-                  <span class="weekly-value campaign-value">{{ gameDataStore.getCampaignReward || '--' }} 合成玉</span>
+                  <span class="weeklyrewards-label">剿灭作战</span>
+                  <span class="weeklyrewards-value campaign-value">{{ gameDataStore.getCampaignReward || '--' }} 合成玉</span>
                 </div>
                 <div class="weekly-row">
-                  <span class="weekly-label">数据增补仪</span>
-                  <span class="weekly-value supplement-value">{{ gameDataStore.getTowerLowerItem || '--' }}</span>
+                  <span class="weeklyrewards-label">数据增补仪</span>
+                  <span class="weeklyrewards-value supplement-value">{{ gameDataStore.getTowerLowerItem || '--' }}</span>
                 </div>
                 <div class="weekly-row">
-                  <span class="weekly-label">数据增补条</span>
-                  <span class="weekly-value supplement-value">{{ gameDataStore.getTowerHigherItem || '--' }}</span>
+                  <span class="weeklyrewards-label">数据增补条</span>
+                  <span class="weeklyrewards-value supplement-value">{{ gameDataStore.getTowerHigherItem || '--' }}</span>
                 </div>
               </div>
             </div>
@@ -878,12 +878,24 @@ defineExpose({
 }
 
 .weekly-label {
-  color: #ff9800;
+  color: #4682b4;
   font-size: 13px;
   font-weight: 500;
 }
 
 .weekly-value {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+/* 周常奖励样式 - 橙色系 */
+.weeklyrewards-label {
+  color: #ff9800;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.weeklyrewards-value {
   font-size: 14px;
   font-weight: 600;
 }
