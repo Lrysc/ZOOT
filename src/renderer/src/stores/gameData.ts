@@ -355,38 +355,49 @@ export const useGameDataStore = defineStore('gameData', () => {
 
   // ========== 基建效率计算工具 ==========
 
+  // 基于官方游戏数据的干员技能配置 - 移到函数外部以提高性能
+  const OPERATOR_BUFFS = {
+    // 制造站相关干员
+    'char_286_cast3': [
+      { level: 1, buffs: [{ buffType: 'power_rec_spd', buffValue: 0 }] },
+      { level: 30, buffs: [{ buffType: 'manu_formula_spd', buffValue: 0.10 }] }
+    ],
+    'char_500_noirc': [
+      { level: 1, buffs: [{ buffType: 'manu_prod_spd&limit', buffValue: 0.01 }] },
+      { level: 30, buffs: [{ buffType: 'trade_ord_spd&limit', buffValue: 0 }] }
+    ],
+    
+    // 贸易站相关干员
+    'char_009_12fce': [
+      { level: 1, buffs: [{ buffType: 'meet_spd', buffValue: 0.20 }] },
+      { level: 30, buffs: [{ buffType: 'workshop_formula_probability', buffValue: 300 }] }
+    ],
+    
+    // 通用基建干员
+    'char_285_medic2': [
+      { level: 1, buffs: [{ buffType: 'power_rec_spd', buffValue: 0 }] },
+      { level: 30, buffs: [{ buffType: 'dorm_rec_single', buffValue: 0 }] }
+    ],
+    'char_501_durin': [
+      { level: 1, buffs: [{ buffType: 'dorm_rec_all&oneself', buffValue: 0 }] },
+      { level: 30, buffs: [{ buffType: 'dorm_rec_all&oneself', buffValue: 0.01 }] }
+    ]
+  };
+
   /**
    * 基于官方数据的干员技能加成计算
    */
   const calculateOperatorBuff = (charId: string, roomType: string, level: number = 30): { buffType: string; buffValue: number }[] => {
-    // 基于官方游戏数据的干员技能配置
-    const OPERATOR_BUFFS = {
-      // 制造站相关干员
-      'char_286_cast3': [
-        { level: 1, buffs: [{ buffType: 'power_rec_spd', buffValue: 0 }] },
-        { level: 30, buffs: [{ buffType: 'manu_formula_spd', buffValue: 0.10 }] }
-      ],
-      'char_500_noirc': [
-        { level: 1, buffs: [{ buffType: 'manu_prod_spd&limit', buffValue: 0.01 }] },
-        { level: 30, buffs: [{ buffType: 'trade_ord_spd&limit', buffValue: 0 }] }
-      ],
-      
-      // 贸易站相关干员
-      'char_009_12fce': [
-        { level: 1, buffs: [{ buffType: 'meet_spd', buffValue: 0.20 }] },
-        { level: 30, buffs: [{ buffType: 'workshop_formula_probability', buffValue: 300 }] }
-      ],
-      
-      // 通用基建干员
-      'char_285_medic2': [
-        { level: 1, buffs: [{ buffType: 'power_rec_spd', buffValue: 0 }] },
-        { level: 30, buffs: [{ buffType: 'dorm_rec_single', buffValue: 0 }] }
-      ],
-      'char_501_durin': [
-        { level: 1, buffs: [{ buffType: 'dorm_rec_all&oneself', buffValue: 0 }] },
-        { level: 30, buffs: [{ buffType: 'dorm_rec_all&oneself', buffValue: 0.01 }] }
-      ]
-    };
+    // 数据验证
+    if (!charId || typeof charId !== 'string') {
+      logger.warn('无效的干员ID', { charId });
+      return [];
+    }
+
+    if (!roomType || typeof roomType !== 'string') {
+      logger.warn('无效的房间类型', { roomType });
+      return [];
+    }
 
     const operatorData = OPERATOR_BUFFS[charId];
     if (!operatorData) return [];
@@ -411,12 +422,37 @@ export const useGameDataStore = defineStore('gameData', () => {
   /**
    * 计算基建总效率加成
    */
+  // 基建效率计算缓存
+  const efficiencyCache = new Map<string, { totalSpeedBuff: number; totalLimitBuff: number }>();
+
   const calculateBuildingEfficiency = (chars: any[], roomType: string): { totalSpeedBuff: number; totalLimitBuff: number } => {
+    // 数据验证
+    if (!chars || !Array.isArray(chars) || chars.length === 0) {
+      return { totalSpeedBuff: 0, totalLimitBuff: 0 };
+    }
+
+    // 生成缓存键：基于干员ID、等级和房间类型
+    const cacheKey = chars
+      .map(char => `${char.charId || 'unknown'}_${char.level || 0}`)
+      .sort()
+      .join('|') + `_${roomType}`;
+
+    // 检查缓存
+    if (efficiencyCache.has(cacheKey)) {
+      return efficiencyCache.get(cacheKey)!;
+    }
+
     let totalSpeedBuff = 0;
     let totalLimitBuff = 0;
 
-    chars?.forEach(char => {
-      const buffs = calculateOperatorBuff(char.charId, roomType, char.level);
+    chars.forEach(char => {
+      // 验证干员数据
+      if (!char || !char.charId) {
+        logger.warn('跳过无效的干员数据', { char });
+        return;
+      }
+
+      const buffs = calculateOperatorBuff(char.charId, roomType, char.level || 30);
       buffs.forEach(buff => {
         if (buff.buffType.includes('spd')) {
           totalSpeedBuff += buff.buffValue;
@@ -427,7 +463,18 @@ export const useGameDataStore = defineStore('gameData', () => {
       });
     });
 
-    return { totalSpeedBuff, totalLimitBuff };
+    const result = { totalSpeedBuff, totalLimitBuff };
+    
+    // 缓存结果（限制缓存大小）- 改进缓存清理策略
+    if (efficiencyCache.size >= 100) {
+      const firstKey = efficiencyCache.keys().next().value;
+      if (firstKey) {
+        efficiencyCache.delete(firstKey);
+      }
+    }
+    efficiencyCache.set(cacheKey, result);
+
+    return result;
   };
 
   // ========== 工具函数 ==========
@@ -684,10 +731,12 @@ export const useGameDataStore = defineStore('gameData', () => {
           result.remainPoint = 1;
         } else {
           result.status = 1;
-          if (training.speed) {
-            result.remainPoint = Math.floor(training.remainSecs * training.speed);
+          if (training.speed && training.speed > 0) {
+            // 防止除零和负数速度
+            const safeSpeed = Math.max(0.01, training.speed);
+            result.remainPoint = Math.floor(training.remainSecs * safeSpeed);
             const totalPointCalc = Math.floor(
-              ((currentTs - (training.lastUpdateTime || currentTs)) * training.speed) + result.remainPoint
+              ((currentTs - (training.lastUpdateTime || currentTs)) * safeSpeed) + result.remainPoint
             );
             result.totalPoint = getTotalPoint(totalPointCalc);
 
@@ -695,16 +744,20 @@ export const useGameDataStore = defineStore('gameData', () => {
             const targetPointLogos = (result.profession === "CASTER" || result.profession === "SUPPORT") ? 24300 : 18900;
 
             if (result.remainPoint > targetPointIrene) {
-              const secs = (result.remainPoint - targetPointIrene) / training.speed;
+              const secs = (result.remainPoint - targetPointIrene) / safeSpeed;
               result.changeRemainSecsIrene = Math.floor(secs);
               result.changeTimeIrene = currentTs + Math.floor(secs);
             }
 
             if (result.remainPoint > targetPointLogos) {
-              const secs = (result.remainPoint - targetPointLogos) / training.speed;
+              const secs = (result.remainPoint - targetPointLogos) / safeSpeed;
               result.changeRemainSecsLogos = Math.floor(secs);
               result.changeTimeLogos = currentTs + Math.floor(secs);
             }
+          } else {
+            logger.warn('训练速度无效', { speed: training.speed });
+            result.remainPoint = 0;
+            result.totalPoint = 1;
           }
         }
       }
@@ -856,26 +909,56 @@ export const useGameDataStore = defineStore('gameData', () => {
 
       tradingsNode.forEach((node, stationIndex) => {
         try {
+          // 数据验证
+          if (!node || typeof node !== 'object') {
+            logger.warn('跳过无效的贸易站节点', { stationIndex, node });
+            return;
+          }
+
           const strategy = node.strategy || 'UNKNOWN';
           const max = node.stockLimit || TRADING_CONFIG.PHASES[0].orderLimit;
           
-          // 计算干员技能加成
-          const { totalSpeedBuff } = calculateBuildingEfficiency(node.chars, 'TRADING');
-          
-          // 根据订单类型确定生产时间，并应用加成
-          const baseTime = TRADING_CONFIG.ORDER_TIMES[strategy] || TRADING_CONFIG.ORDER_TIMES.DEFAULT;
-          const targetPoint = Math.floor(baseTime / (1 + totalSpeedBuff));
-          
-          // 计算当前库存，基于官方算法
-          const geneStock = Math.floor((node.completeWorkTime - node.lastUpdateTime) / targetPoint);
-          let stock = (node.stock?.length || 0) + geneStock;
+          // 验证时间戳
+          if (!node.completeWorkTime || !node.lastUpdateTime || 
+              node.completeWorkTime <= 0 || node.lastUpdateTime <= 0) {
+            logger.warn('贸易站时间戳无效', { stationIndex, completeWorkTime: node.completeWorkTime, lastUpdateTime: node.lastUpdateTime });
+            tradings.push({ strategy, max, current: 0, completeTime: -1, remainSecs: -1 });
+            return;
+          }
 
-          // 处理正在生产的订单
+          // 计算干员技能加成 - 添加数据验证
+          const chars = Array.isArray(node.chars) ? node.chars : [];
+          const { totalSpeedBuff } = calculateBuildingEfficiency(chars, 'TRADING');
+          
+          // 根据订单类型确定生产时间，并应用加成 - 防止除零
+          const baseTime = TRADING_CONFIG.ORDER_TIMES[strategy] || TRADING_CONFIG.ORDER_TIMES.DEFAULT;
+          const speedMultiplier = Math.max(0.1, 1 + totalSpeedBuff); // 防止除零和负数
+          const targetPoint = Math.floor(baseTime / speedMultiplier);
+          
+          // 验证计算结果
+          if (targetPoint <= 0) {
+            logger.warn('贸易站生产时间计算异常', { stationIndex, strategy, baseTime, totalSpeedBuff, targetPoint });
+            tradings.push({ strategy, max, current: 0, completeTime: -1, remainSecs: -1 });
+            return;
+          }
+          
+          // 计算当前库存，基于官方算法 - 添加边界检查
+          const timeDiff = node.completeWorkTime - node.lastUpdateTime;
+          if (timeDiff < 0) {
+            logger.warn('贸易站时间差为负数', { stationIndex, completeWorkTime: node.completeWorkTime, lastUpdateTime: node.lastUpdateTime });
+            tradings.push({ strategy, max, current: 0, completeTime: -1, remainSecs: -1 });
+            return;
+          }
+
+          const geneStock = Math.floor(timeDiff / targetPoint);
+          let stock = Math.max(0, (node.stock?.length || 0) + geneStock);
+
+          // 处理正在生产的订单 - 优化逻辑
           if (geneStock > 0 && currentTs < node.completeWorkTime) {
-            stock--;
-          } else {
-            const newStock = Math.floor((currentTs - node.completeWorkTime) / targetPoint);
-            stock += newStock;
+            stock = Math.max(0, stock - 1);
+          } else if (currentTs >= node.completeWorkTime) {
+            const additionalStock = Math.floor((currentTs - node.completeWorkTime) / targetPoint);
+            stock = Math.max(0, Math.min(stock + additionalStock, max));
           }
 
           // 不超过上限
@@ -887,11 +970,11 @@ export const useGameDataStore = defineStore('gameData', () => {
           if (stock < max) {
             const restStock = max - stock;
             if (currentTs < node.completeWorkTime) {
-              remainSecs = restStock * targetPoint + node.completeWorkTime - currentTs;
+              remainSecs = restStock * targetPoint + (node.completeWorkTime - currentTs);
               completeTime = currentTs + remainSecs;
             } else {
               completeTime = restStock * targetPoint + node.completeWorkTime;
-              remainSecs = completeTime - currentTs;
+              remainSecs = Math.max(0, completeTime - currentTs);
             }
           }
 
@@ -976,53 +1059,92 @@ export const useGameDataStore = defineStore('gameData', () => {
 
       manufacturesNode.forEach((node, index) => {
         try {
+          // 数据验证
+          if (!node || typeof node !== 'object') {
+            logger.warn('跳过无效的制造站节点', { index, node });
+            return;
+          }
+
           const formulaId = node.formulaId || 'UNKNOWN';
           const formulaInfo = formulaMap[formulaId];
           const weight = formulaInfo?.weight || 1;
           
+          // 验证基础数据
+          if (!node.capacity || node.capacity <= 0 || weight <= 0) {
+            logger.warn('制造站容量或权重无效', { index, capacity: node.capacity, weight });
+            manufactures.push({ 
+              formula: formulaId, 
+              max: 0, 
+              current: 0, 
+              completeTime: -1, 
+              remainSecs: -1 
+            });
+            return;
+          }
+          
           // 基于官方数据的库存上限计算
-          const stockLimit = Math.floor((node.capacity || 0) / weight);
-          const max = stockLimit;
+          const stockLimit = Math.floor(node.capacity / weight);
+          const max = Math.max(0, stockLimit);
 
-          let stock = node.complete || 0;
+          let stock = Math.max(0, node.complete || 0);
           let completeTime = -1;
           let remainSecs = -1;
 
+          // 验证时间戳
+          if (!node.completeWorkTime || !node.lastUpdateTime || 
+              node.completeWorkTime <= 0 || node.lastUpdateTime <= 0) {
+            logger.warn('制造站时间戳无效', { index, completeWorkTime: node.completeWorkTime, lastUpdateTime: node.lastUpdateTime });
+            manufactures.push({ 
+              formula: formulaId, 
+              max, 
+              current: stock, 
+              completeTime: -1, 
+              remainSecs: -1 
+            });
+            return;
+          }
+
           if (currentTs >= node.completeWorkTime) {
             // 已完成
-            stock = stockLimit;
+            stock = max;
           } else {
             // 进行中：基于官方生产时间计算
             const elapsedTime = currentTs - node.lastUpdateTime;
             const totalTime = node.completeWorkTime - node.lastUpdateTime;
 
             if (totalTime > 0) {
-              // 计算干员技能加成
-              const { totalSpeedBuff } = calculateBuildingEfficiency(node.chars, 'MANUFACTURE');
+              // 计算干员技能加成 - 添加数据验证
+              const chars = Array.isArray(node.chars) ? node.chars : [];
+              const { totalSpeedBuff } = calculateBuildingEfficiency(chars, 'MANUFACTURE');
               
               // 获取配方信息
               const formulaConfig = MANUFACTURE_CONFIG.FORMULAS[formulaId];
               const baseCostPoint = formulaConfig?.costPoint || 7200;
               
-              // 考虑生产速度和干员加成
-              const speed = node.speed || 1;
-              const totalBuff = 1 + totalSpeedBuff + (speed - 1); // 速度和干员加成叠加
+              // 考虑生产速度和干员加成 - 防止除零
+              const speed = Math.max(0.1, node.speed || 1);
+              const totalBuff = Math.max(0.1, 1 + totalSpeedBuff + (speed - 1)); // 防止除零和负数
               const adjustedCostPoint = Math.floor(baseCostPoint / totalBuff);
               
-              // 基于官方算法计算当前产量
-              const progressRatio = Math.min(1, elapsedTime / totalTime);
-              const currentProduction = Math.floor(progressRatio * stockLimit);
-              
-              // 考虑初始完成数量
-              stock = Math.min(node.complete + currentProduction, stockLimit);
+              // 验证计算结果
+              if (adjustedCostPoint <= 0) {
+                logger.warn('制造站生产时间计算异常', { index, formulaId, baseCostPoint, totalBuff, adjustedCostPoint });
+              } else {
+                // 基于官方算法计算当前产量
+                const progressRatio = Math.min(1, Math.max(0, elapsedTime / totalTime));
+                const currentProduction = Math.floor(progressRatio * max);
+                
+                // 考虑初始完成数量
+                stock = Math.min(Math.max(0, node.complete) + currentProduction, max);
+              }
             }
 
             completeTime = node.completeWorkTime;
             remainSecs = Math.max(0, node.completeWorkTime - currentTs);
           }
 
-          // 确保不超过上限
-          stock = Math.min(stock, stockLimit);
+          // 确保不超过上限且为非负数
+          stock = Math.min(Math.max(0, stock), max);
 
           manufactures.push({ 
             formula: formulaId, 
@@ -1161,9 +1283,14 @@ export const useGameDataStore = defineStore('gameData', () => {
       }
 
       charList.forEach(char => {
-        if (char.workTime !== 0 && char.workTime !== undefined) {
-          const speed = (8640000 - (char.ap || 0)) / char.workTime;
-          const restTime = (char.ap || 0) / speed;
+        if (char.workTime !== 0 && char.workTime !== undefined && char.workTime !== null) {
+          // 防止除零和负数工作时间
+          const safeWorkTime = Math.max(1, char.workTime);
+          const speed = (8640000 - (char.ap || 0)) / safeWorkTime;
+          
+          // 防止除零和负数速度
+          const safeSpeed = Math.max(0.01, speed);
+          const restTime = (char.ap || 0) / safeSpeed;
 
           if ((currentTs - (char.lastApAddTime || currentTs)) > restTime) {
             current++;
@@ -2147,7 +2274,8 @@ export const useGameDataStore = defineStore('gameData', () => {
 
   const clearCache = (): void => {
     dataCache.value = null;
-    logger.info('游戏数据缓存已清除');
+    efficiencyCache.clear();
+    logger.info('游戏数据缓存和效率缓存已清除');
   };
 
   // ========== 导出接口 ==========
