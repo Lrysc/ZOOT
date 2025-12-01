@@ -506,7 +506,7 @@ const getTradingBuff = () => {
     let totalBuff = 0;
     
     tradingsData.forEach(station => {
-      const { totalSpeedBuff } = gameDataStore.calculateBuildingEfficiency(station.chars, 'TRADING');
+      const { totalSpeedBuff } = gameDataStore.calculateBuildingEfficiency(station.chars || [], 'TRADING');
       totalBuff = Math.max(totalBuff, totalSpeedBuff);
     });
     
@@ -525,7 +525,7 @@ const getManufactureBuff = () => {
     let totalBuff = 0;
     
     manufacturesData.forEach(station => {
-      const { totalSpeedBuff } = gameDataStore.calculateBuildingEfficiency(station.chars, 'MANUFACTURE');
+      const { totalSpeedBuff } = gameDataStore.calculateBuildingEfficiency(station.chars || [], 'MANUFACTURE');
       totalBuff = Math.max(totalBuff, totalSpeedBuff);
     });
     
