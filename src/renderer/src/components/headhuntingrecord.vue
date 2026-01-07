@@ -2249,7 +2249,7 @@ onMounted(() => {
   margin-bottom: 24px;
   background: #2d2d2d;
   padding: 20px;
-  border-radius: 8px;
+
   border: 1px solid #404040;
 }
 
@@ -2270,7 +2270,7 @@ onMounted(() => {
 .refresh-btn {
   padding: 10px 20px;
   border: 1px solid #404040;
-  border-radius: 6px;
+
   background: #3a3a3a;
   color: #ccc;
   cursor: pointer;
@@ -2312,7 +2312,7 @@ onMounted(() => {
 .export-loading-content {
   background: #2d2d2d;
   border: 1px solid #404040;
-  border-radius: 12px;
+
   padding: 30px;
   text-align: center;
   max-width: 400px;
@@ -2351,7 +2351,7 @@ onMounted(() => {
 /* 登录提示样式 */
 .login-prompt {
   background: #2d2d2d;
-  border-radius: 8px;
+
   padding: 40px;
   text-align: center;
   border: 1px solid #404040;
@@ -2387,7 +2387,7 @@ onMounted(() => {
 .login-btn {
   padding: 12px 24px;
   border: 1px solid #404040;
-  border-radius: 6px;
+
   background: #3a3a3a;
   color: #ccc;
   cursor: pointer;
@@ -2405,7 +2405,7 @@ onMounted(() => {
 /* 加载和错误状态 */
 .loading, .error {
   background: #2d2d2d;
-  border-radius: 8px;
+
   padding: 40px;
   text-align: center;
   border: 1px solid #404040;
@@ -2435,7 +2435,7 @@ onMounted(() => {
 .retry-btn {
   padding: 10px 20px;
   border: 1px solid #404040;
-  border-radius: 6px;
+
   background: #3a3a3a;
   color: #ccc;
   cursor: pointer;
@@ -2460,7 +2460,7 @@ onMounted(() => {
   display: flex;
   align-items: center;
   background: linear-gradient(135deg, #2d2d2d 0%, #3a3a3a 100%);
-  border-radius: 12px;
+
   padding: 20px 24px;
   border: 1px solid #404040;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
@@ -2525,7 +2525,7 @@ onMounted(() => {
 /* 卡池列表样式 */
 .categories-list {
   background: #2d2d2d;
-  border-radius: 8px;
+
   padding: 24px;
   border: 1px solid #404040;
 }
@@ -2546,7 +2546,7 @@ onMounted(() => {
 .category-card {
   background: #3a3a3a;
   border: 1px solid #404040;
-  border-radius: 8px;
+
   padding: 20px;
   cursor: pointer;
   transition: all 0.2s;
@@ -2563,7 +2563,7 @@ onMounted(() => {
 .category-card-horizontal {
   background: #3a3a3a;
   border: 1px solid #404040;
-  border-radius: 8px;
+
   padding: 16px 20px;
   cursor: pointer;
   transition: all 0.2s;
@@ -2633,7 +2633,7 @@ onMounted(() => {
 .records-table-container {
   max-height: 300px;
   overflow-y: auto;
-  border-radius: 6px;
+
   border: 1px solid #404040;
 }
 
@@ -2644,12 +2644,12 @@ onMounted(() => {
 
 .records-table-container::-webkit-scrollbar-track {
   background: rgba(255, 255, 255, 0.1);
-  border-radius: 3px;
+
 }
 
 .records-table-container::-webkit-scrollbar-thumb {
   background: rgba(255, 255, 255, 0.3);
-  border-radius: 3px;
+
   transition: background 0.2s ease;
 }
 
@@ -2689,12 +2689,12 @@ onMounted(() => {
 
 .highlights-container::-webkit-scrollbar-track {
   background: rgba(255, 255, 255, 0.1);
-  border-radius: 3px;
+
 }
 
 .highlights-container::-webkit-scrollbar-thumb {
   background: rgba(255, 255, 255, 0.3);
-  border-radius: 3px;
+
   transition: background 0.2s ease;
 }
 
@@ -2707,7 +2707,7 @@ onMounted(() => {
   align-items: center;
   padding: 8px;
   margin-bottom: 4px;
-  border-radius: 6px;
+
   border: 1px solid #404040;
   background: #2d2d2d;
   transition: all 0.3s ease;
@@ -2739,7 +2739,7 @@ onMounted(() => {
 .operator-avatar {
   width: 50px;
   height: 50px;
-  border-radius: 6px;
+
   object-fit: cover;
   border: 2px solid #404040;
   flex-shrink: 0;
@@ -2833,7 +2833,7 @@ onMounted(() => {
 /* 记录详情样式 */
 .records-container {
   background: #2d2d2d;
-  border-radius: 8px;
+
   padding: 24px;
   border: 1px solid #404040;
   position: relative;
@@ -2858,7 +2858,7 @@ onMounted(() => {
   overflow-x: auto;
   margin-bottom: 20px;
   border: 1px solid #404040;
-  border-radius: 8px;
+
 }
 
 /* 自定义滚动条样式 - 表格容器 */
@@ -2869,12 +2869,12 @@ onMounted(() => {
 
 .table-container::-webkit-scrollbar-track {
   background: rgba(255, 255, 255, 0.1);
-  border-radius: 3px;
+
 }
 
 .table-container::-webkit-scrollbar-thumb {
   background: rgba(255, 255, 255, 0.3);
-  border-radius: 3px;
+
   transition: background 0.2s ease;
 }
 
@@ -2911,7 +2911,7 @@ onMounted(() => {
 
 .rarity-badge {
   padding: 4px 8px;
-  border-radius: 4px;
+
   font-size: 12px;
   font-weight: 500;
   display: inline-block;
@@ -2935,7 +2935,7 @@ onMounted(() => {
 .page-btn {
   padding: 8px 16px;
   border: 1px solid #404040;
-  border-radius: 6px;
+
   background: #3a3a3a;
   color: #ccc;
   cursor: pointer;
@@ -2963,7 +2963,7 @@ onMounted(() => {
 /* 无数据状态 */
 .no-data {
   background: #2d2d2d;
-  border-radius: 8px;
+
   padding: 40px;
   text-align: center;
   border: 1px solid #404040;
@@ -2990,7 +2990,7 @@ onMounted(() => {
   width: 40px;
   height: 40px;
   border: 1px solid #404040;
-  border-radius: 6px;
+
   background: #3a3a3a;
   cursor: pointer;
   display: flex;
@@ -3029,7 +3029,7 @@ onMounted(() => {
 .format-select {
   padding: 10px 12px;
   border: 1px solid #404040;
-  border-radius: 6px;
+
   background: #3a3a3a;
   color: #ccc;
   font-size: 14px;
@@ -3051,7 +3051,7 @@ onMounted(() => {
 .export-btn, .import-btn, .clear-btn {
   padding: 10px 20px;
   border: 1px solid #404040;
-  border-radius: 6px;
+
   background: #3a3a3a;
   color: #ccc;
   cursor: pointer;
@@ -3075,7 +3075,7 @@ onMounted(() => {
 .export-merged-btn {
   padding: 10px 20px;
   border: 1px solid #404040;
-  border-radius: 6px;
+
   background: #2a5a2a;
   color: #ccc;
   cursor: pointer;
@@ -3093,7 +3093,7 @@ onMounted(() => {
 /* 导入记录样式 */
 .imported-records {
   background: #2d2d2d;
-  border-radius: 8px;
+
   padding: 24px;
   border: 1px solid #404040;
   margin-top: 24px;
@@ -3124,7 +3124,7 @@ onMounted(() => {
 .imported-file {
   background: #3a3a3a;
   border: 1px solid #404040;
-  border-radius: 8px;
+
   overflow: hidden;
 }
 
@@ -3216,12 +3216,12 @@ onMounted(() => {
 
 .imported-records-table::-webkit-scrollbar-track {
   background: rgba(255, 255, 255, 0.1);
-  border-radius: 3px;
+
 }
 
 .imported-records-table::-webkit-scrollbar-thumb {
   background: rgba(255, 255, 255, 0.3);
-  border-radius: 3px;
+
   transition: background 0.2s ease;
 }
 
@@ -3252,12 +3252,12 @@ onMounted(() => {
 
 .imported-highlights-container::-webkit-scrollbar-track {
   background: rgba(255, 255, 255, 0.1);
-  border-radius: 3px;
+
 }
 
 .imported-highlights-container::-webkit-scrollbar-thumb {
   background: rgba(255, 255, 255, 0.3);
-  border-radius: 3px;
+
   transition: background 0.2s ease;
 }
 
@@ -3270,7 +3270,7 @@ onMounted(() => {
   align-items: center;
   padding: 8px;
   margin-bottom: 4px;
-  border-radius: 6px;
+
   border: 1px solid #404040;
   background: #2d2d2d;
   transition: all 0.3s ease;
@@ -3302,7 +3302,7 @@ onMounted(() => {
 .imported-highlight-record .operator-avatar {
   width: 50px;
   height: 50px;
-  border-radius: 50%;
+
   object-fit: cover;
   background: #1a1a1a;
   border: 2px solid #404040;
@@ -3368,7 +3368,7 @@ onMounted(() => {
 .clear-file-btn {
   padding: 6px 12px;
   border: 1px solid #404040;
-  border-radius: 4px;
+
   background: #3a3a3a;
   color: #ff6b6b;
   cursor: pointer;
@@ -3391,7 +3391,7 @@ onMounted(() => {
   width: 50px;
   height: 50px;
   border: 1px solid #404040;
-  border-radius: 50%;
+
   background: #3a3a3a;
   color: #ccc;
   font-size: 20px;
@@ -3430,7 +3430,7 @@ onMounted(() => {
 .expand-btn {
   padding: 6px 12px;
   border: 1px solid #404040;
-  border-radius: 4px;
+
   background: #3a3a3a;
   color: #ccc;
   cursor: pointer;

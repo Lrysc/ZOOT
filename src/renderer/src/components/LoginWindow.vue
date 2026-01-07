@@ -660,7 +660,7 @@ onUnmounted(() => {
 
 .login-window {
   background: #2d2d2d;
-  border-radius: 8px;
+
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
   width: 400px;
   max-width: 90vw;
@@ -744,7 +744,7 @@ onUnmounted(() => {
 .primary-account-card {
   background: #2a2a2a;
   border: 1px solid #404040;
-  border-radius: 8px;
+
   padding: 0;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -853,7 +853,7 @@ onUnmounted(() => {
 .account-dropdown {
   background: #2a2a2a;
   border: 1px solid #404040;
-  border-radius: 8px;
+
   margin-bottom: 16px;
   overflow: hidden;
   animation: slideDown 0.2s ease-out;
@@ -907,7 +907,7 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 4px;
+
   transition: all 0.2s ease;
   opacity: 0;
 }
@@ -928,7 +928,7 @@ onUnmounted(() => {
   font-size: 14px;
   cursor: pointer;
   padding: 8px;
-  border-radius: 4px;
+
   transition: color 0.2s ease;
 }
 
@@ -1010,7 +1010,7 @@ onUnmounted(() => {
   color: #ccc;
   padding: 8px 16px;
   cursor: pointer;
-  border-radius: 4px 4px 0 0;
+
   transition: all 0.3s ease;
 }
 
@@ -1033,7 +1033,7 @@ onUnmounted(() => {
   color: white;
   border: none;
   padding: 12px 16px;
-  border-radius: 6px;
+
   cursor: pointer;
   white-space: nowrap;
   transition: all 0.2s ease;
@@ -1060,7 +1060,7 @@ onUnmounted(() => {
   padding: 16px 20px;
   border-bottom: 1px solid #404040;
   background: #3a3a3a;
-  border-radius: 8px 8px 0 0;
+
 }
 
 .header-left {
@@ -1091,7 +1091,7 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 4px;
+
   transition: all 0.3s ease;
 }
 
@@ -1122,7 +1122,7 @@ onUnmounted(() => {
   width: 100%;
   padding: 12px;
   border: 1px solid #555;
-  border-radius: 6px;
+
   font-size: 14px;
   box-sizing: border-box;
   background: #1a1a1a;
@@ -1161,7 +1161,7 @@ onUnmounted(() => {
   color: white;
   border: none;
   padding: 12px 24px;
-  border-radius: 6px;
+
   cursor: pointer;
   font-size: 14px;
   font-weight: 500;
@@ -1178,7 +1178,7 @@ onUnmounted(() => {
   color: white;
   border: none;
   padding: 12px 24px;
-  border-radius: 6px;
+
   cursor: pointer;
   font-size: 14px;
   font-weight: 500;

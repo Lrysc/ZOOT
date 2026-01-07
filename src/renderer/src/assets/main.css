@@ -40,7 +40,7 @@ body {
 code {
   font-weight: 600;
   padding: 3px 5px;
-  border-radius: 2px;
+
   background-color: var(--color-background-mute);
   font-family:
     ui-monospace,
@@ -132,7 +132,7 @@ code {
   display: inline-flex;
   overflow: hidden;
   align-items: center;
-  border-radius: 22px;
+
   background-color: #202127;
   backdrop-filter: blur(24px);
 }

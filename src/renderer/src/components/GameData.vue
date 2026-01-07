@@ -678,7 +678,7 @@ defineExpose({
   display: flex;
   flex-direction: column;
   background: #3a3a3a;
-  border-radius: 8px;
+
   padding: 12px 16px;
   border: 1px solid #404040;
   transition: all 0.3s ease;
@@ -741,13 +741,13 @@ defineExpose({
 .hire-card .hire-label {
   background: rgba(255, 165, 0, 0.2);
   padding: 4px 8px;
-  border-radius: 4px;
+
 }
 
 .refresh-card .refresh-label {
   background: rgba(255, 255, 255, 0.15);
   padding: 4px 8px;
-  border-radius: 4px;
+
 }
 
 .hire-value {
@@ -773,7 +773,7 @@ defineExpose({
   height: 100%;
   padding: 8px;
   background: rgba(255, 255, 255, 0.02);
-  border-radius: 6px;
+
   border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
@@ -800,7 +800,7 @@ defineExpose({
   justify-content: space-between;
   align-items: center;
   padding: 3px 6px;
-  border-radius: 3px;
+
   background: rgba(255, 255, 255, 0.03);
   transition: background-color 0.2s ease;
 }
@@ -844,7 +844,7 @@ defineExpose({
   font-size: 14px;
   font-weight: 600;
   padding: 2px 6px;
-  border-radius: 3px;
+
   min-width: 40px;
 }
 
@@ -934,7 +934,7 @@ defineExpose({
 .training-avatar {
   width: 60px;
   height: 60px;
-  border-radius: 50%;
+
   border: 2px solid #444;
   object-fit: cover;
   transition: transform 0.2s ease, border-color 0.2s ease;
@@ -948,7 +948,7 @@ defineExpose({
 .empty-avatar {
   width: 60px;
   height: 60px;
-  border-radius: 50%;
+
   border: 2px dashed #666;
   display: flex;
   align-items: center;
@@ -973,7 +973,7 @@ defineExpose({
   color: #888;
   text-align: center;
   padding: 1px 4px;
-  border-radius: 2px;
+
   background: rgba(255, 255, 255, 0.05);
   font-weight: 400;
   opacity: 0.8;
@@ -1036,7 +1036,7 @@ defineExpose({
   color: #4caf50;
   background: rgba(76, 175, 80, 0.2);
   padding: 2px 4px;
-  border-radius: 3px;
+
   margin-top: 2px;
   display: inline-block;
   font-weight: 500;

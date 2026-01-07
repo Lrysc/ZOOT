@@ -80,7 +80,7 @@ onUnmounted(() => {
   left: 20px;
   background: #2d2d2d;
   border: 1px solid #404040;
-  border-radius: 8px;
+
   padding: 16px 20px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
   z-index: 10001;
@@ -140,7 +140,7 @@ onUnmounted(() => {
   font-size: 20px;
   cursor: pointer;
   padding: 4px 8px;
-  border-radius: 4px;
+
   transition: all 0.2s ease;
   flex-shrink: 0;
   line-height: 1;

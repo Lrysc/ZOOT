@@ -1147,7 +1147,7 @@ onMounted(() => {
 /* 用户信息区域 */
 .user-info-section {
   background: #2d2d2d;
-  border-radius: 8px;
+
   border: 1px solid #404040;
   padding: 20px;
   margin-bottom: 20px;
@@ -1165,7 +1165,7 @@ onMounted(() => {
   gap: 20px;
   padding: 20px;
   background: #3a3a3a;
-  border-radius: 6px;
+
   border: 1px solid #4a4a4a;
   margin-bottom: 15px;
 }
@@ -1228,7 +1228,7 @@ onMounted(() => {
   color: #ffffff;
   cursor: pointer;
   padding: 2px 6px;
-  border-radius: 4px;
+
   transition: all 0.2s ease;
   border: 1px solid transparent;
   user-select: none;
@@ -1247,7 +1247,7 @@ onMounted(() => {
 /* 基本信息卡片 */
 .basic-info-card {
   background: #3a3a3a;
-  border-radius: 6px;
+
   border: 1px solid #4a4a4a;
   padding: 15px;
   margin-bottom: 15px;
@@ -1275,7 +1275,7 @@ onMounted(() => {
   flex-direction: column;
   padding: 12px;
   background: #333333;
-  border-radius: 6px;
+
   transition: all 0.3s ease;
   border: 1px solid #404040;
 }
@@ -1312,7 +1312,7 @@ onMounted(() => {
 
 .assist-chars-card {
   background: #3a3a3a;
-  border-radius: 6px;
+
   border: 1px solid #4a4a4a;
   padding: 15px;
 }
@@ -1338,7 +1338,7 @@ onMounted(() => {
 .assist-char-item {
   background: #333333;
   border: 1px solid #404040;
-  border-radius: 8px;
+
   padding: 8px;
   display: flex;
   flex-direction: column;
@@ -1371,7 +1371,7 @@ onMounted(() => {
   display: flex;
   justify-content: center;
   overflow: hidden;
-  border-radius: 4px;
+
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -1385,7 +1385,7 @@ onMounted(() => {
   background: rgba(0, 0, 0, 0.7);
   color: #ffffff;
   border: 3px solid rgba(255, 255, 255, 1);
-  border-radius: 50%;
+
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1559,7 +1559,7 @@ onMounted(() => {
 .char-portrait-container .skill-icon {
   width: 48px;
   height: 48px;
-  border-radius: 4px;
+
   background: rgba(0, 0, 0, 0.8);
   border: 1px solid rgba(255, 255, 255, 0.4);
   transition: all 0.3s ease;
@@ -1579,7 +1579,7 @@ onMounted(() => {
   left: 0px;
   background: linear-gradient(135deg, #2196f3, #42a5f5);
   color: white;
-  border-radius: 8px;
+
   padding: 2px 4px;
   font-size: 9px;
   font-weight: 600;
@@ -1604,7 +1604,7 @@ onMounted(() => {
   width: 100%;
   height: 100%;
   background-color: #808080;
-  border-radius: 4px;
+
   position: relative;
 }
 
@@ -1612,7 +1612,7 @@ onMounted(() => {
   position: absolute;
   width: 6px;
   height: 6px;
-  border-radius: 50%;
+
   background-color: #666;
   transition: all 0.3s ease;
 }
@@ -1645,7 +1645,7 @@ onMounted(() => {
   color: #ba68c8;
   background: rgba(186, 104, 200, 0.1);
   padding: 1px 4px;
-  border-radius: 3px;
+
   font-weight: 500;
   line-height: 1.2;
   transition: all 0.3s ease;
@@ -1670,7 +1670,7 @@ onMounted(() => {
   padding: 20px;
   background: #333333;
   border: 1px solid #404040;
-  border-radius: 8px;
+
   width: 120px;
 }
 
@@ -1681,7 +1681,7 @@ onMounted(() => {
   align-items: center;
   justify-content: center;
   background: #2d2d2d;
-  border-radius: 6px;
+
   border: 2px solid #404040;
   overflow: hidden;
 }
@@ -1714,7 +1714,7 @@ onMounted(() => {
 /* 未登录状态 */
 .not-login-section {
   background: #2d2d2d;
-  border-radius: 8px;
+
   border: 1px solid #404040;
   padding: 30px 20px;
   margin-bottom: 20px;
@@ -1743,7 +1743,7 @@ onMounted(() => {
 /* 日志管理区域 */
 .log-management-section {
   background: #2d2d2d;
-  border-radius: 8px;
+
   border: 1px solid #404040;
   padding: 20px;
   margin-bottom: 20px;
@@ -1757,7 +1757,7 @@ onMounted(() => {
 
 .log-info-card {
   background: #3a3a3a;
-  border-radius: 6px;
+
   border: 1px solid #4a4a4a;
   padding: 15px;
 }
@@ -1802,7 +1802,7 @@ onMounted(() => {
   gap: 8px;
   padding: 10px 12px;
   border: none;
-  border-radius: 6px;
+
   cursor: pointer;
   font-size: 12px;
   transition: all 0.3s ease;
@@ -1843,7 +1843,7 @@ onMounted(() => {
 
 .log-tips {
   background: rgba(0, 0, 0, 0.2);
-  border-radius: 4px;
+
   padding: 12px;
   border-left: 3px solid #9feaf9;
 }
@@ -1875,7 +1875,7 @@ onMounted(() => {
   color: #ccc;
   font-size: 14px;
   background: #2d2d2d;
-  border-radius: 8px;
+
   border: 1px solid #404040;
 }
 
@@ -1898,7 +1898,7 @@ onMounted(() => {
 
 .modal-content {
   background: #2d2d2d;
-  border-radius: 12px;
+
   border: 1px solid #404040;
   width: 100%;
   max-width: min(800px, 90vw);
@@ -1939,7 +1939,7 @@ onMounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 6px;
+
   transition: all 0.2s ease;
   flex-shrink: 0;
 }
@@ -1975,7 +1975,7 @@ onMounted(() => {
   max-height: 400px;
   background: #1a1a1a;
   border: 1px solid #404040;
-  border-radius: 8px;
+
   color: #e0e0e0;
   padding: 16px;
   font-family: 'Courier New', monospace;
@@ -2004,7 +2004,7 @@ onMounted(() => {
 .modal-btn {
   padding: 10px 20px;
   border: none;
-  border-radius: 6px;
+
   cursor: pointer;
   font-size: 14px;
   font-weight: 500;
@@ -2067,7 +2067,7 @@ onMounted(() => {
 
 .custom-modal-content {
   background: #2d2d2d;
-  border-radius: 8px;
+
   border: 2px solid #404040;
   width: 90%;
   max-width: 400px;
@@ -2119,7 +2119,7 @@ onMounted(() => {
 .custom-modal-btn {
   padding: 10px 24px;
   border: none;
-  border-radius: 6px;
+
   cursor: pointer;
   font-size: 14px;
   font-weight: 600;
@@ -2232,7 +2232,7 @@ onMounted(() => {
 
 .update-modal-content {
   background: linear-gradient(135deg, #2d2d2d 0%, #1a1a1a 100%);
-  border-radius: 16px;
+
   border: 2px solid #404040;
   width: 100%;
   max-width: 500px;
@@ -2269,7 +2269,7 @@ onMounted(() => {
   font-size: 24px;
   cursor: pointer;
   padding: 4px 8px;
-  border-radius: 6px;
+
   transition: all 0.2s ease;
   position: absolute;
   right: 20px;
@@ -2297,7 +2297,7 @@ onMounted(() => {
 
 .version-info {
   background: rgba(63, 81, 181, 0.05);
-  border-radius: 12px;
+
   padding: 20px;
   margin: 16px;
   border: 1px solid rgba(63, 81, 181, 0.2);
@@ -2327,7 +2327,7 @@ onMounted(() => {
   font-weight: 600;
   background: rgba(63, 81, 181, 0.1);
   padding: 4px 8px;
-  border-radius: 6px;
+
 }
 
 .current-version .version-number {
@@ -2359,7 +2359,7 @@ onMounted(() => {
 
 .notes-content {
   background: #1a1a1a;
-  border-radius: 8px;
+
   padding: 16px;
   font-size: 14px;
   line-height: 1.6;
@@ -2418,7 +2418,7 @@ onMounted(() => {
 .notes-content .md-code-block {
   background: #2d2d2d;
   border: 1px solid #444;
-  border-radius: 4px;
+
   padding: 12px;
   margin: 8px 0;
   overflow-x: auto;
@@ -2430,7 +2430,7 @@ onMounted(() => {
 .notes-content .md-inline-code {
   background: #2d2d2d;
   border: 1px solid #444;
-  border-radius: 3px;
+
   padding: 2px 4px;
   font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
   font-size: 13px;
@@ -2476,7 +2476,7 @@ onMounted(() => {
   flex: 1;
   padding: 12px 24px;
   border: none;
-  border-radius: 8px;
+
   cursor: pointer;
   font-size: 14px;
   font-weight: 600;
@@ -2543,7 +2543,7 @@ onMounted(() => {
 
 .about-modal-content {
   background: linear-gradient(135deg, #2d2d2d 0%, #1a1a1a 100%);
-  border-radius: 16px;
+
   border: 2px solid #404040;
   width: 100%;
   max-width: 600px;
@@ -2585,7 +2585,7 @@ onMounted(() => {
   font-size: 24px;
   cursor: pointer;
   padding: 4px 8px;
-  border-radius: 6px;
+
   transition: all 0.2s ease;
   position: absolute;
   right: 20px;
@@ -2681,7 +2681,7 @@ onMounted(() => {
 .about-btn {
   padding: 12px 24px;
   border: none;
-  border-radius: 8px;
+
   cursor: pointer;
   font-size: 14px;
   font-weight: 600;
@@ -2730,7 +2730,7 @@ onMounted(() => {
 /* 系统功能区域 */
 .system-functions-section {
   background: #2d2d2d;
-  border-radius: 8px;
+
   border: 1px solid #404040;
   padding: 20px;
   margin-bottom: 20px;
@@ -2744,7 +2744,7 @@ onMounted(() => {
 
 .system-functions-card {
   background: #3a3a3a;
-  border-radius: 6px;
+
   border: 1px solid #4a4a4a;
   padding: 15px;
 }
@@ -2763,7 +2763,7 @@ onMounted(() => {
   gap: 8px;
   padding: 12px 16px;
   border: none;
-  border-radius: 6px;
+
   cursor: pointer;
   font-size: 14px;
   font-weight: 500;
@@ -2839,7 +2839,7 @@ onMounted(() => {
 /* 版本号样式 - 统一容器样式 */
 .version-info {
   background: #2d2d2d;
-  border-radius: 8px;
+
   border: 1px solid #404040;
   color: #999;
   font-size: 12px;
@@ -2985,7 +2985,7 @@ onMounted(() => {
 
 .about-modal-content {
   background: linear-gradient(135deg, #2d2d2d 0%, #1a1a1a 100%);
-  border-radius: 16px;
+
   border: 2px solid #404040;
   width: 100%;
   max-width: 600px;
@@ -3027,7 +3027,7 @@ onMounted(() => {
   font-size: 24px;
   cursor: pointer;
   padding: 4px 8px;
-  border-radius: 6px;
+
   transition: all 0.2s ease;
   position: absolute;
   right: 20px;
@@ -3125,7 +3125,7 @@ onMounted(() => {
 .about-btn {
   padding: 12px 24px;
   border: none;
-  border-radius: 8px;
+
   cursor: pointer;
   font-size: 14px;
   font-weight: 600;

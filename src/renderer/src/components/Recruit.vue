@@ -438,7 +438,7 @@ onMounted(() => {
   background: linear-gradient(135deg, #ff4444, #ff6b6b);
   color: white;
   padding: 15px 20px;
-  border-radius: 8px;
+
   margin-bottom: 20px;
   text-align: center;
   font-size: 16px;
@@ -455,7 +455,7 @@ onMounted(() => {
   background: white;
   color: #ff4444;
   border: none;
-  border-radius: 4px;
+
   cursor: pointer;
   font-weight: bold;
   transition: all 0.2s;
@@ -471,7 +471,7 @@ onMounted(() => {
   justify-content: space-between;
   background: #2d2d2d;
   padding: 10px 15px;
-  border-radius: 6px;
+
   margin-bottom: 10px;
   font-size: 12px;
   color: #ccc;
@@ -490,7 +490,7 @@ onMounted(() => {
   background: linear-gradient(135deg, #ff4444, #ff6b6b);
   color: white;
   padding: 15px 20px;
-  border-radius: 8px;
+
   margin-bottom: 25px;
   text-align: center;
   font-size: 18px;
@@ -513,7 +513,7 @@ onMounted(() => {
 .tags-section {
   margin-bottom: 30px;
   background: #2d2d2d;
-  border-radius: 8px;
+
   border: 1px solid #404040;
   padding: 20px;
 }
@@ -535,7 +535,7 @@ onMounted(() => {
   background: #6c757d;
   color: white;
   border: none;
-  border-radius: 4px;
+
   cursor: pointer;
   font-size: 14px;
   transition: background-color 0.2s;
@@ -560,7 +560,7 @@ onMounted(() => {
   padding: 12px 8px;
   background: #3a3a3a;
   border: 2px solid #404040;
-  border-radius: 6px;
+
   text-align: center;
   cursor: pointer;
   font-size: 13px;
@@ -635,7 +635,7 @@ onMounted(() => {
   align-items: flex-start;
   padding: 15px;
   background: #2d2d2d;
-  border-radius: 8px;
+
   border: 1px solid #404040;
   gap: 20px;
   transition: all 0.2s ease;
@@ -659,7 +659,7 @@ onMounted(() => {
 .avatar-img {
   width: 70px;
   height: 70px;
-  border-radius: 8px;
+
   background: #3a3a3a;
   border: 2px solid #404040;
   object-fit: cover;
@@ -703,7 +703,7 @@ onMounted(() => {
 .operator-tag {
   padding: 4px 8px;
   background: #3a3a3a;
-  border-radius: 4px;
+
   font-size: 11px;
   color: #ccc;
   border: 1px solid #404040;
@@ -716,7 +716,7 @@ onMounted(() => {
   color: #ccc;
   font-size: 16px;
   background: #2d2d2d;
-  border-radius: 8px;
+
   border: 1px solid #404040;
   margin-bottom: 20px;
 }
@@ -724,7 +724,7 @@ onMounted(() => {
 .tips {
   padding: 25px;
   background: #2d2d2d;
-  border-radius: 8px;
+
   border: 1px solid #404040;
   margin-top: 30px;
 }

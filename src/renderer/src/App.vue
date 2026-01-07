@@ -635,7 +635,7 @@ body {
   position: fixed;
   background: #2d2d2d;
   border: 1px solid #404040;
-  border-radius: 8px;
+
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
   z-index: 10000;
   min-width: 150px;
@@ -652,7 +652,7 @@ body {
   padding: 12px 16px;
   background: transparent;
   border: none;
-  border-radius: 6px;
+
   color: #ccc;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -740,7 +740,7 @@ body {
   border: none;
   cursor: pointer;
   padding: 6px;
-  border-radius: 4px;
+
   transition: all 0.3s ease;
   display: flex;
   align-items: center;
@@ -769,7 +769,7 @@ body {
   border: none;
   cursor: pointer;
   padding: 6px;
-  border-radius: 4px;
+
   transition: all 0.3s ease;
   display: flex;
   align-items: center;
@@ -820,7 +820,7 @@ body {
   width: 8px;
   height: 8px;
   background: #4caf50;
-  border-radius: 50%;
+
   border: 1px solid #2d2d2d;
 }
 
@@ -832,7 +832,7 @@ body {
   margin-top: 8px;
   background: #2d2d2d;
   border: 1px solid #404040;
-  border-radius: 8px;
+
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
   min-width: 120px;
   z-index: 1001;
@@ -947,7 +947,7 @@ body {
 .nav-item {
   padding: 14px 20px;
   margin: 4px 0;
-  border-radius: 0;
+
   cursor: pointer;
   transition: all 0.3s ease;
   font-size: 15px;
