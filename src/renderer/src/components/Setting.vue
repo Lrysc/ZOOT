@@ -1173,7 +1173,7 @@ onMounted(() => {
 .user-avatar {
   width: 100px;
   height: 100px;
-  background: linear-gradient(135deg, #646cff, #af47ff);
+  background: #3a3a3a;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1385,6 +1385,7 @@ onMounted(() => {
   background: rgba(0, 0, 0, 0.7);
   color: #ffffff;
   border: 3px solid rgba(255, 255, 255, 1);
+  border-radius: 50%;
 
   display: flex;
   align-items: center;
@@ -1604,7 +1605,7 @@ onMounted(() => {
   width: 100%;
   height: 100%;
   background-color: #808080;
-
+  border-radius: 4px;
   position: relative;
 }
 
@@ -1612,7 +1613,7 @@ onMounted(() => {
   position: absolute;
   width: 6px;
   height: 6px;
-
+  border-radius: 50%;
   background-color: #666;
   transition: all 0.3s ease;
 }
