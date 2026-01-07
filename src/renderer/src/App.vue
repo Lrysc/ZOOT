@@ -9,12 +9,14 @@ import HeadhuntingRecord from '@components/headhuntingrecord.vue'
 import TitleBar from '@components/TitleBar.vue'
 import { useAuthStore } from '@stores/auth'
 import { useGameDataStore } from '@stores/gameData'
-import { ref, onMounted, onUnmounted, provide, computed } from 'vue'
+import { ref, onMounted, onUnmounted, provide, computed, inject } from 'vue'
 import {
   showSuccess,
   showError,
-  showInfo
+  showInfo,
+  showWarning
 } from '@services/toastService'
+import { AuthAPI } from '@services/api'
 
 // ==================== Store实例初始化 ====================
 /**
@@ -62,6 +64,11 @@ const contextMenuPosition = ref({ x: 0, y: 0 });
  * 控制全局刷新按钮的加载状态
  */
 const isRefreshing = ref(false);
+
+/**
+ * 签到操作状态
+ */
+const isAttending = ref(false);
 
 // ==================== 计算属性 ====================
 /**
@@ -263,6 +270,85 @@ const handleUserIconClick = () => {
 };
 
 /**
+ * 处理森空岛签到功能
+ * 包含登录检查、凭证验证、角色选择、签到执行等完整流程
+ */
+const handleAttendance = async () => {
+  // 前置检查：必须已登录且有绑定角色
+  if (!authStore.isLogin || !authStore.bindingRoles?.length) {
+    showWarning('请先登录并绑定游戏角色');
+    return;
+  }
+
+  // 设置签到中状态，禁用按钮
+  isAttending.value = true;
+
+  try {
+    // 第一步：验证cred有效性
+    console.log('=== 开始验证cred有效性 ===');
+    const isCredValid = await AuthAPI.checkCred(authStore.sklandCred);
+    console.log('Cred有效性验证结果:', isCredValid);
+
+    if (!isCredValid) {
+      throw new Error('Cred已失效，请重新登录');
+    }
+
+    // 第二步：获取目标角色信息
+    // 优先选择默认角色，否则选择第一个角色
+    const targetRole = authStore.bindingRoles.find((role: any) => role.isDefault) || authStore.bindingRoles[0];
+    if (!targetRole) {
+      throw new Error('未找到绑定的游戏角色');
+    }
+
+    // 调试信息输出
+    console.log('=== 绑定角色详细信息 ===');
+    console.log('完整的绑定角色列表:', JSON.stringify(authStore.bindingRoles, null, 2));
+    console.log('选中的角色信息:', JSON.stringify(targetRole, null, 2));
+    console.log('角色UID:', targetRole.uid);
+    console.log('channelMasterId:', targetRole.channelMasterId);
+    console.log('========================');
+
+    const gameId = targetRole.channelMasterId;
+    console.log('用于签到的gameId:', gameId);
+
+    // 第三步：执行签到请求
+    const attendanceData = await AuthAPI.attendance(
+      authStore.sklandCred,
+      authStore.sklandSignToken,
+      targetRole.uid,
+      gameId
+    );
+
+    // 第四步：处理签到结果
+    if (attendanceData.alreadyAttended) {
+      showInfo('今日已签到');
+    } else {
+      // 解析签到奖励信息
+      const awards = attendanceData.awards || [];
+      const awardTexts = awards.map((award: any) => {
+        const count = award.count || 0;
+        const name = award.resource?.name || '未知奖励';
+        return `${name} x${count}`;
+      }).join(', ');
+
+      showSuccess(`签到成功！获得：${awardTexts}`);
+
+      // 签到成功后自动刷新数据
+      await gameDataStore.refreshData();
+    }
+
+  } catch (error: any) {
+    // 安全的错误处理，提供友好的错误信息
+    const errorMsg = error?.message || '签到失败，请稍后重试';
+    console.error('签到过程发生错误:', error);
+    showError(errorMsg);
+  } finally {
+    // 无论成功失败，都重置签到状态
+    isAttending.value = false;
+  }
+};
+
+/**
  * 切换主内容区组件
  * @param componentName 组件名称
  */
@@ -412,8 +498,24 @@ const componentMap: Record<string, any> = {
         <h1>ZOOT备用系统</h1>
       </div>
 
-      <!-- 用户图标放在右侧 -->
+      <!-- 用户图标和签到按钮放在右侧 -->
       <div class="header-right user-menu-container">
+        <!-- 森空岛签到按钮 -->
+        <button
+          class="attendance-btn"
+          @click="handleAttendance"
+          :disabled="isAttending || !authStore.isLogin"
+          :class="{ attending: isAttending }"
+          :title="!authStore.isLogin ? '请先登录' : (isAttending ? '签到中...' : '每日签到')"
+        >
+          <img
+            src="@assets/icon_skland.svg"
+            alt="森空岛签到"
+            class="skland-icon"
+          />
+        </button>
+
+        <!-- 用户图标 -->
         <button
           class="user-icon-btn"
           @click="handleUserIconClick"
@@ -659,6 +761,55 @@ body {
 
 .user-icon-btn:hover .user-icon {
   filter: brightness(0) saturate(100%) invert(42%) sepia(91%) saturate(1352%) hue-rotate(202deg) brightness(97%) contrast(89%);
+}
+
+/* ==================== 签到按钮样式 ==================== */
+.attendance-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 4px;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  margin-right: 4px;
+}
+
+.attendance-btn:hover:not(:disabled) {
+  background: transparent;
+  transform: scale(1.15);
+}
+
+.attendance-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.attendance-btn.attending {
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.skland-icon {
+  height: 28px;
+  width: 28px;
+  filter: brightness(0) invert(0.6);
+  transition: filter 0.3s ease;
+}
+
+.attendance-btn:hover:not(:disabled) .skland-icon {
+  filter: brightness(0) saturate(100%) invert(42%) sepia(91%) saturate(495%) hue-rotate(80deg) brightness(95%) contrast(89%);
 }
 
 /* 已登录状态指示器 */

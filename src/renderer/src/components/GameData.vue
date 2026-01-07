@@ -5,37 +5,6 @@
     <!-- 数据卡片区域 -->
     <div class="cards-wrapper">
 
-      <!-- 数据头部操作栏 -->
-      <div class="data-header">
-        <div class="left-section">
-          <div class="update-info">
-            <!-- 最后更新时间 - 只在有数据时显示 -->
-            <span class="last-update" v-if="gameDataStore.lastUpdateTime && authStore.isLogin">
-              最后更新：{{ gameDataStore.formatTimestamp(Math.floor(gameDataStore.lastUpdateTime / 1000)) }}
-            </span>
-          </div>
-        </div>
-        <div class="header-buttons">
-          <!-- 森空岛签到图标按钮 -->
-          <button
-            class="attendance-icon-btn"
-            @click="handleAttendance"
-            :disabled="isAttending || !authStore.isLogin"
-            :class="{ attending: isAttending }"
-            :title="!authStore.isLogin ? '请先登录' : (isAttending ? '签到中...' : '每日签到')"
-          >
-            <img
-              src="@assets/icon_skland.svg"
-              alt="森空岛签到"
-              class="skland-icon"
-            />
-            <span class="attendance-tooltip" v-if="isAttending">签到中...</span>
-            <span class="attendance-tooltip" v-else-if="!authStore.isLogin">请先登录</span>
-            <span class="attendance-tooltip" v-else>每日签到</span>
-          </button>
-        </div>
-      </div>
-
       <!-- 未登录时的提示信息 -->
       <div class="section-card" v-if="!authStore.isLogin">
         <h3 class="section-title">--- 登录提示 ---</h3>
@@ -103,26 +72,60 @@
             </div>
           </li>
           <li class="data-item task-item">
-            <div class="task-container-horizontal">
-              <div class="task-item-horizontal">
-                <span class="task-label daily-label">每日</span>
-                <span class="task-value daily-value">{{ gameDataStore.getDailyTaskProgress || '--' }}</span>
+            <div class="task-container">
+              <!-- 每日任务卡片 -->
+              <div class="task-card" :class="{ 'task-completed': isDailyTaskCompleted() }">
+                <div class="task-background-icon" v-if="isDailyTaskCompleted()">
+                  <img src="@assets/complete.6cecac.svg" alt="completed" class="complete-icon" />
+                </div>
+                <div class="task-content">
+                  <span class="task-label daily-label">每日任务</span>
+                  <div class="task-value-wrapper">
+                    <span class="task-value daily-value" v-if="!isDailyTaskCompleted()">
+                      {{ gameDataStore.getDailyTaskProgress || '--' }}
+                    </span>
+                    <span class="task-completed-text" v-else>COMPLETED</span>
+                  </div>
+                </div>
               </div>
-              <div class="task-item-horizontal">
-                <span class="task-label weekly-label">每周</span>
-                <span class="task-value weekly-value">{{ gameDataStore.getWeeklyTaskProgress || '--' }}</span>
+
+              <!-- 每周任务卡片 -->
+              <div class="task-card" :class="{ 'task-completed': isWeeklyTaskCompleted() }">
+                <div class="task-background-icon" v-if="isWeeklyTaskCompleted()">
+                  <img src="@assets/complete.6cecac.svg" alt="completed" class="complete-icon" />
+                </div>
+                <div class="task-content">
+                  <span class="task-label weekly-label">每周任务</span>
+                  <div class="task-value-wrapper">
+                    <span class="task-value weekly-value" v-if="!isWeeklyTaskCompleted()">
+                      {{ gameDataStore.getWeeklyTaskProgress || '--' }}
+                    </span>
+                    <span class="task-completed-text" v-else>COMPLETED</span>
+                  </div>
+                </div>
               </div>
             </div>
           </li>
           <li class="data-item">
             <div class="task-container">
-              <div class="task-row">
-                <span class="task-label hire-label">公开招募</span>
-                <span class="task-value hire-value">{{ gameDataStore.getHireSlotCount || '--' }}</span>
+              <!-- 公开招募卡片 -->
+              <div class="task-card hire-card">
+                <div class="task-content">
+                  <span class="task-label hire-label">公开招募</span>
+                  <div class="task-value-wrapper">
+                    <span class="task-value hire-value">{{ gameDataStore.getHireSlotCount || '--' }}</span>
+                  </div>
+                </div>
               </div>
-              <div class="task-row">
-                <span class="task-label refresh-label">刷新次数</span>
-                <span class="task-value refresh-value">{{ gameDataStore.getHireRefreshCount || '--' }}</span>
+
+              <!-- 刷新次数卡片 -->
+              <div class="task-card refresh-card">
+                <div class="task-content">
+                  <span class="task-label refresh-label">刷新次数</span>
+                  <div class="task-value-wrapper">
+                    <span class="task-value refresh-value">{{ gameDataStore.getHireRefreshCount || '--' }}</span>
+                  </div>
+                </div>
               </div>
             </div>
           </li>
@@ -221,12 +224,12 @@
       <!-- 游戏战绩卡片 -->
       <div class="section-card" v-if="authStore.isLogin">
         <h3 class="section-title">--- 肉鸽成绩 ---</h3>
-<!--        <ul class="data-grid">-->
-<!--          <li class="data-item">-->
-<!--            <span class="label">集成战略</span>-->
-<!--            <span class="value">{{ gameDataStore.getRelicCount || '&#45;&#45;' }} 收藏品</span>-->
-<!--          </li>-->
-<!--        </ul>-->
+        <!--        <ul class="data-grid">-->
+        <!--          <li class="data-item">-->
+        <!--            <span class="label">集成战略</span>-->
+        <!--            <span class="value">{{ gameDataStore.getRelicCount || '&#45;&#45;' }} 收藏品</span>-->
+        <!--          </li>-->
+        <!--        </ul>-->
         <h3 class="section-title">功能开发中</h3>
       </div>
     </div>
@@ -237,7 +240,6 @@
 import { ref, onMounted, watch, inject, computed } from 'vue';
 import { useAuthStore } from '@stores/auth';
 import { useGameDataStore } from '@stores/gameData';
-import { AuthAPI } from '@services/api';
 import {
   showSuccess,
   showError,
@@ -303,98 +305,7 @@ const refreshData = inject('refreshData') as (() => Promise<void>) | undefined;
  */
 const currentActiveComponent = inject('currentActiveComponent') as { value: string };
 
-// ==================== 组件状态管理 ====================
-
-/**
- * 签到操作状态
- * 控制签到按钮的加载状态和禁用状态
- */
-const isAttending = ref(false);
-
 // ==================== 数据操作功能 ====================
-
-/**
- * 处理森空岛签到功能
- * 包含登录检查、凭证验证、角色选择、签到执行等完整流程
- */
-const handleAttendance = async () => {
-  // 前置检查：必须已登录且有绑定角色
-  if (!authStore.isLogin || !authStore.bindingRoles?.length) {
-    showWarning('请先登录并绑定游戏角色');
-    return;
-  }
-
-  // 设置签到中状态，禁用按钮
-  isAttending.value = true;
-
-  try {
-    // 第一步：验证cred有效性
-    console.log('=== 开始验证cred有效性 ===');
-    const isCredValid = await AuthAPI.checkCred(authStore.sklandCred);
-    console.log('Cred有效性验证结果:', isCredValid);
-
-    if (!isCredValid) {
-      throw new Error('Cred已失效，请重新登录');
-    }
-
-    // 第二步：获取目标角色信息
-    // 优先选择默认角色，否则选择第一个角色
-    const targetRole = authStore.bindingRoles.find((role: any) => role.isDefault) || authStore.bindingRoles[0];
-    if (!targetRole) {
-      throw new Error('未找到绑定的游戏角色');
-    }
-
-    // 调试信息输出
-    console.log('=== 绑定角色详细信息 ===');
-    console.log('完整的绑定角色列表:', JSON.stringify(authStore.bindingRoles, null, 2));
-    console.log('选中的角色信息:', JSON.stringify(targetRole, null, 2));
-    console.log('角色UID:', targetRole.uid);
-    console.log('channelMasterId:', targetRole.channelMasterId);
-    console.log('========================');
-
-    const gameId = targetRole.channelMasterId;
-    console.log('用于签到的gameId:', gameId);
-
-    // 第三步：执行签到请求
-    const attendanceData = await AuthAPI.attendance(
-      authStore.sklandCred,
-      authStore.sklandSignToken,
-      targetRole.uid,
-      gameId
-    );
-
-    // 第四步：处理签到结果
-    if (attendanceData.alreadyAttended) {
-      showInfo('今日已签到');
-    } else {
-      // 解析签到奖励信息
-      const awards = attendanceData.awards || [];
-      const awardTexts = awards.map((award: any) => {
-        const count = award.count || 0;
-        const name = award.resource?.name || '未知奖励';
-        return `${name} x${count}`;
-      }).join(', ');
-
-      showSuccess(`签到成功！获得：${awardTexts}`);
-
-      // 签到成功后自动刷新数据
-      if (refreshData) {
-        setTimeout(() => {
-          refreshData();
-        }, 1000);
-      }
-    }
-
-  } catch (error: any) {
-    // 安全的错误处理，提供友好的错误信息
-    const errorMsg = error?.message || '签到失败，请稍后重试';
-    console.error('签到过程发生错误:', error);
-    showError(errorMsg);
-  } finally {
-    // 无论成功失败，都重置签到状态
-    isAttending.value = false;
-  }
-};
 
 /**
  * 手动刷新游戏数据
@@ -412,6 +323,34 @@ const handleManualRefresh = async () => {
       console.error('刷新数据失败:', error);
       showError(`同步失败：${errorMessage}`);
     }
+  }
+};
+
+/**
+ * 检查每日任务是否完成
+ */
+const isDailyTaskCompleted = () => {
+  try {
+    const daily = gameDataStore.playerData?.routine?.daily;
+    const completed = daily?.current || 0;
+    const total = daily?.total || 0;
+    return completed >= total && total > 0;
+  } catch (error) {
+    return false;
+  }
+};
+
+/**
+ * 检查每周任务是否完成
+ */
+const isWeeklyTaskCompleted = () => {
+  try {
+    const weekly = gameDataStore.playerData?.routine?.weekly;
+    const completed = weekly?.current || 0;
+    const total = weekly?.total || 0;
+    return completed >= total && total > 0;
+  } catch (error) {
+    return false;
   }
 };
 
@@ -504,12 +443,12 @@ const getTradingBuff = () => {
   try {
     const tradingsData = gameDataStore.playerData?.building?.tradings || [];
     let totalBuff = 0;
-    
+
     tradingsData.forEach(station => {
       const { totalSpeedBuff } = gameDataStore.calculateBuildingEfficiency(station.chars || [], 'TRADING');
       totalBuff = Math.max(totalBuff, totalSpeedBuff);
     });
-    
+
     return totalBuff > 0 ? `+${(totalBuff * 100).toFixed(1)}%` : '';
   } catch (error) {
     return '';
@@ -523,12 +462,12 @@ const getManufactureBuff = () => {
   try {
     const manufacturesData = gameDataStore.playerData?.building?.manufactures || [];
     let totalBuff = 0;
-    
+
     manufacturesData.forEach(station => {
       const { totalSpeedBuff } = gameDataStore.calculateBuildingEfficiency(station.chars || [], 'MANUFACTURE');
       totalBuff = Math.max(totalBuff, totalSpeedBuff);
     });
-    
+
     return totalBuff > 0 ? `+${(totalBuff * 100).toFixed(1)}%` : '';
   } catch (error) {
     return '';
@@ -562,30 +501,6 @@ defineExpose({
   gap: 20px;
 }
 
-.data-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 16px 20px;
-  background: #2d2d2d;
-  border-radius: 8px;
-  border: 1px solid #404040;
-  margin-bottom: 10px;
-}
-
-.left-section {
-  display: flex;
-  align-items: center;
-  gap: 20px;
-  flex: 1;
-}
-
-.header-buttons {
-  display: flex;
-  gap: 10px;
-  align-items: center;
-}
-
 /* 登录提示样式 */
 .login-prompt {
   text-align: center;
@@ -604,80 +519,6 @@ defineExpose({
   color: #999;
 }
 
-/* ==================== 签到按钮样式 ==================== */
-.attendance-icon-btn {
-  position: relative;
-  width: 44px;
-  height: 44px;
-  padding: 8px;
-  background: transparent;
-  border: 2px solid #4caf50;
-  border-radius: 50%;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.attendance-icon-btn:hover:not(:disabled) {
-  background: rgba(76, 175, 80, 0.1);
-  border-color: #45a049;
-  transform: scale(1.05);
-  box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
-}
-
-.attendance-icon-btn:disabled {
-  border-color: #666;
-  cursor: not-allowed;
-  opacity: 0.7;
-}
-
-.attendance-icon-btn.attending {
-  border-color: #ffa500;
-  animation: pulse 1.5s infinite;
-}
-
-.attendance-icon-btn.attending:hover {
-  border-color: #ff8c00;
-}
-
-.skland-icon {
-  width: 28px;
-  height: 28px;
-  filter: brightness(0) saturate(100%) invert(67%) sepia(51%) saturate(495%) hue-rotate(80deg) brightness(95%) contrast(89%);
-  transition: all 0.3s ease;
-}
-
-.attendance-icon-btn:hover .skland-icon {
-  filter: brightness(0) saturate(100%) invert(67%) sepia(51%) saturate(495%) hue-rotate(80deg) brightness(110%) contrast(89%);
-  transform: scale(1.1);
-}
-
-.attendance-icon-btn.attending .skland-icon {
-  filter: brightness(0) saturate(100%) invert(75%) sepia(90%) saturate(500%) hue-rotate(360deg) brightness(105%) contrast(105%);
-}
-
-.attendance-tooltip {
-  position: absolute;
-  bottom: -30px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: rgba(0, 0, 0, 0.8);
-  color: white;
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 12px;
-  white-space: nowrap;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.3s ease;
-}
-
-.attendance-icon-btn:hover .attendance-tooltip {
-  opacity: 1;
-}
-
 /* ==================== 信息显示样式 ==================== */
 .update-info {
   display: flex;
@@ -685,16 +526,10 @@ defineExpose({
   gap: 12px;
 }
 
-.last-update {
-  color: #999;
-  font-size: 14px;
-}
-
 .section-card {
   background: #2d2d2d;
-  border-radius: 8px;
   border: 1px solid #404040;
-  padding: 20px;
+  padding: 16px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
@@ -702,7 +537,7 @@ defineExpose({
   color: #9feaf9;
   font-size: 18px;
   font-weight: 600;
-  margin-bottom: 16px;
+  margin-bottom: 12px;
   padding-bottom: 8px;
   border-bottom: 1px solid #404040;
   text-align: center;
@@ -722,7 +557,6 @@ defineExpose({
   flex-direction: column;
   padding: 12px;
   background: #333333;
-  border-radius: 6px;
   transition: all 0.3s ease;
   border: 1px solid #404040;
   flex: 1 1 calc(50% - 6px);
@@ -832,38 +666,96 @@ defineExpose({
   width: 100%;
 }
 
-.task-container-horizontal {
+.task-container {
   display: flex;
-  flex-direction: row;
-  gap: 12px;
-  width: 100%;
-  justify-content: center;
-  align-items: center;
+  flex-direction: column;
+  gap: 10px;
   height: 100%;
 }
 
-.task-item-horizontal {
+.task-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  background: #3a3a3a;
+  border-radius: 8px;
+  padding: 12px 16px;
+  border: 1px solid #404040;
+  transition: all 0.3s ease;
+  overflow: hidden;
+}
+
+.task-card:hover {
+  background: #4a4a4a;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.task-card.task-completed {
+  background: linear-gradient(135deg, rgba(76, 175, 80, 0.15), rgba(76, 175, 80, 0.05));
+  border-color: #4caf50;
+}
+
+.task-background-icon {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.complete-icon {
+  width: 120px;
+  height: 120px;
+  opacity: 0.15;
+  filter: brightness(0) invert(67%) sepia(51%) saturate(495%) hue-rotate(80deg) brightness(95%) contrast(89%);
+}
+
+.task-content {
+  position: relative;
+  z-index: 1;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 4px 8px;
-  border-radius: 4px;
-  background: rgba(255, 255, 255, 0.05);
-  transition: background-color 0.2s ease;
-  flex: 1;
+  width: 100%;
 }
 
-.task-item-horizontal:hover {
-  background: rgba(255, 255, 255, 0.1);
-}
-
-.task-row {
+.task-value-wrapper {
   display: flex;
-  justify-content: space-between;
   align-items: center;
+}
+
+.task-completed-text {
+  font-size: 16px;
+  font-weight: 700;
+  color: #4caf50;
+  letter-spacing: 2px;
+}
+
+/* 公开招募和刷新卡片特殊样式 */
+.hire-card .hire-label {
+  background: rgba(255, 165, 0, 0.2);
   padding: 4px 8px;
   border-radius: 4px;
-  background: rgba(255, 255, 255, 0.05);
+}
+
+.refresh-card .refresh-label {
+  background: rgba(255, 255, 255, 0.15);
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+
+.hire-value {
+  color: #ffa500;
+}
+
+.refresh-value {
+  color: #ffffff;
 }
 
 /* 周常容器样式 */
@@ -954,38 +846,28 @@ defineExpose({
   padding: 2px 6px;
   border-radius: 3px;
   min-width: 40px;
-  text-align: center;
 }
 
 .daily-label {
   color: #6cc24a;
 }
 
-
-
 .task-value {
-  font-size: 15px;
-  font-weight: 600;
+  font-size: 18px;
+  font-weight: 700;
+  color: #fff;
 }
 
 .daily-value {
   color: #6cc24a;
 }
 
-.weekly-value {
+.weekly-label {
   color: #4682b4;
 }
 
-.hire-label {
-  background: rgba(255, 165, 0, 0.3);
-  color: #ffa500;
-  border: 1px solid rgba(255, 165, 0, 0.5);
-}
-
-.refresh-label {
-  background: rgba(255, 255, 255, 0.3);
-  color: #ffffff;
-  border: 1px solid rgba(255, 255, 255, 0.5);
+.weekly-value {
+  color: #4682b4;
 }
 
 .hire-value {
@@ -1218,8 +1100,10 @@ defineExpose({
 
 /* 数据项颜色区分 - 为不同类型数据提供视觉区分 */
 .data-item:nth-child(1) .value { color: #9feaf9; } /* 理智 - 蓝色 */
-.data-item:nth-child(2) .value { color: #6cc24a; } /* 每日任务 - 绿色 */
-.data-item:nth-child(3) .value { color: #ff7eb9; } /* 每周任务 - 粉色 */
+.data-item:nth-child(2) .task-value { color: #6cc24a; } /* 每日任务 - 绿色 */
+.data-item:nth-child(2) .task-completed-text { color: #4caf50; } /* 每日任务完成 - 绿色 */
+.data-item:nth-child(3) .task-value { color: #4682b4; } /* 每周任务 - 蓝色 */
+.data-item:nth-child(3) .task-completed-text { color: #4caf50; } /* 每周任务完成 - 绿色 */
 .data-item:nth-child(4) .value { color: #ff65a3; } /* 公开招募 - 玫红 */
 .data-item:nth-child(5) .value { color: #feff9c; } /* 公招刷新 - 浅黄 */
 
@@ -1257,14 +1141,17 @@ defineExpose({
     gap: 8px;
   }
 
-  .data-header {
-    flex-direction: column;
-    gap: 12px;
-    align-items: flex-start;
+  .task-container {
+    gap: 8px;
   }
 
-  .header-buttons {
-    align-self: flex-end;
+  .task-card {
+    padding: 10px 12px;
+  }
+
+  .complete-icon {
+    width: 80px;
+    height: 80px;
   }
 
   .section-card {
@@ -1275,6 +1162,24 @@ defineExpose({
 @media (max-width: 480px) {
   .data-item {
     flex: 1 1 100%;
+  }
+
+  .task-content {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+
+  .task-label {
+    font-size: 13px;
+  }
+
+  .task-value {
+    font-size: 16px;
+  }
+
+  .task-completed-text {
+    font-size: 14px;
   }
 }
 </style>
