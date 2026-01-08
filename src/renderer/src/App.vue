@@ -861,6 +861,7 @@ body {
   border-left: 1px solid #404040;
   border-top: 1px solid #404040;
   transform: rotate(45deg);
+  z-index: -1;
 }
 
 .menu-item {

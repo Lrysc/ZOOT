@@ -145,6 +145,20 @@ export default defineConfig({
               }
             });
           }
+        },
+        '/api/hycdn': {
+          target: 'https://bbs.hycdn.cn',
+          changeOrigin: true,
+          rewrite: (path) => path.replace(/^\/api\/hycdn/, ''),
+          secure: true,
+          configure: (_proxy) => {
+            _proxy.on('proxyReq', (_proxyReq, req) => {
+              console.log('HYCDN代理请求:', req.method, req.url);
+            });
+            _proxy.on('proxyRes', (proxyRes) => {
+              console.log('HYCDN代理响应:', proxyRes.statusCode, proxyRes.headers);
+            });
+          }
         }
       }
     }

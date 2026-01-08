@@ -221,16 +221,46 @@
         </ul>
       </div>
 
-      <!-- 游戏战绩卡片 -->
-      <div class="section-card" v-if="authStore.isLogin">
+      <!-- 肉鸽成绩卡片 -->
+      <div class="section-card" v-if="authStore.isLogin && getRogueList().length > 0">
         <h3 class="section-title">--- 肉鸽成绩 ---</h3>
-        <!--        <ul class="data-grid">-->
-        <!--          <li class="data-item">-->
-        <!--            <span class="label">集成战略</span>-->
-        <!--            <span class="value">{{ gameDataStore.getRelicCount || '&#45;&#45;' }} 收藏品</span>-->
-        <!--          </li>-->
-        <!--        </ul>-->
-        <h3 class="section-title">功能开发中</h3>
+        <div class="rogue-container">
+          <div
+            v-for="rogue in getRogueList()"
+            :key="rogue.rogueId"
+            class="rogue-item"
+          >
+            <div class="rogue-image-wrapper">
+              <img
+                :src="getRogueInfo(rogue.rogueId)?.picUrl"
+                :alt="getRogueInfo(rogue.rogueId)?.name"
+                class="rogue-image"
+                @error="(e) => handleRogueImageError(e, getRogueInfo(rogue.rogueId)?.picUrl, getRogueInfo(rogue.rogueId)?.name)"
+                @load="handleRogueImageLoad"
+                referrerpolicy="no-referrer"
+              />
+            </div>
+            <div class="rogue-info">
+              <div class="rogue-header">
+                <div class="rogue-name">{{ getRogueInfo(rogue.rogueId)?.name }}</div>
+                <div class="rogue-level-badge">
+                  <span class="rogue-level-label">Lv</span>
+                  <span class="rogue-level-value">{{ rogue.bpLevel }}</span>
+                </div>
+              </div>
+              <div class="rogue-stats">
+                <span class="rogue-stat">
+                  <span class="stat-value">{{ rogue.clearTime }}</span>
+                  <span class="stat-label">通关</span>
+                </span>
+                <span class="rogue-stat">
+                  <span class="stat-value">{{ rogue.relicCnt }}</span>
+                  <span class="stat-label">收藏</span>
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -240,12 +270,7 @@
 import { ref, onMounted, watch, inject, computed } from 'vue';
 import { useAuthStore } from '@stores/auth';
 import { useGameDataStore } from '@stores/gameData';
-import {
-  showSuccess,
-  showError,
-  showWarning,
-  showInfo
-} from '@services/toastService';
+import { showError } from '@services/toastService';
 
 // ==================== Store实例初始化 ====================
 /**
@@ -324,6 +349,84 @@ const handleManualRefresh = async () => {
       showError(`同步失败：${errorMessage}`);
     }
   }
+};
+
+// ==================== 肉鸽数据处理方法 ====================
+
+/**
+ * 获取肉鸽列表
+ * 根据sort排序，过滤掉无数据的肉鸽
+ */
+const getRogueList = () => {
+  try {
+    const playerData = gameDataStore.playerData;
+    if (!playerData?.rogue?.records) {
+      return [];
+    }
+
+    const records = playerData.rogue.records;
+
+    return records
+      .filter((record: any) => record && record.rogueId && record.bpLevel > 0)
+      .sort((a: any, b: any) => {
+        const aInfo = getRogueInfo(a.rogueId);
+        const bInfo = getRogueInfo(b.rogueId);
+        return (aInfo?.sort || 999) - (bInfo?.sort || 999);
+      });
+  } catch (error) {
+    console.error('获取肉鸽列表失败', error);
+    return [];
+  }
+};
+
+/**
+ * 获取肉鸽信息
+ * @param rogueId 肉鸽ID
+ */
+const getRogueInfo = (rogueId: string) => {
+  try {
+    const playerData = gameDataStore.playerData;
+    console.log('获取肉鸽信息 - rogueId:', rogueId);
+    console.log('playerData:', playerData);
+    console.log('playerData.rogueInfoMap:', playerData?.rogueInfoMap);
+
+    // 从API返回的rogueInfoMap中获取（在playerData根级别）
+    if (playerData?.rogueInfoMap && playerData.rogueInfoMap[rogueId]) {
+      const info = playerData.rogueInfoMap[rogueId];
+      console.log('找到肉鸽信息:', info);
+      return info;
+    }
+  } catch (error) {
+    console.error('从API获取肉鸽信息失败', error);
+  }
+
+  // 如果API中没有对应数据，返回默认值
+  console.log('未找到肉鸽信息，返回默认值');
+  return { id: rogueId, name: '未知', picUrl: '', sort: 999 };
+};
+
+/**
+ * 处理肉鸽图片加载错误
+ */
+const handleRogueImageError = (event: Event, url?: string, name?: string) => {
+  const imgElement = event.target as HTMLImageElement;
+  console.error('肉鸽图片加载失败', {
+    src: imgElement.src,
+    url: url,
+    name: name,
+    naturalWidth: imgElement.naturalWidth,
+    naturalHeight: imgElement.naturalHeight,
+    error: (event as ErrorEvent).error
+  });
+  imgElement.style.display = 'none';
+};
+
+/**
+ * 处理肉鸽图片加载成功
+ */
+const handleRogueImageLoad = (event: Event) => {
+  const imgElement = event.target as HTMLImageElement;
+  console.log('肉鸽图片加载成功', { src: imgElement.src, naturalWidth: imgElement.naturalWidth, naturalHeight: imgElement.naturalHeight });
 };
 
 /**
@@ -534,7 +637,7 @@ defineExpose({
 }
 
 .section-title {
-  color: #9feaf9;
+  color: #ffffff;
   font-size: 18px;
   font-weight: 600;
   margin-bottom: 12px;
@@ -1096,6 +1199,167 @@ defineExpose({
 /* 无人机颜色 */
 .drone-value {
   color: #b19cd9 !important;
+}
+
+/* ==================== 肉鸽成绩样式 ==================== */
+
+.rogue-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.rogue-item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 12px;
+  border: 1px solid #444;
+  border-radius: 8px;
+  cursor: pointer;
+  overflow: hidden;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.rogue-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+/* 肉鸽图片容器 */
+.rogue-image-wrapper {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+}
+
+/* 肉鸽图片 */
+.rogue-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* 肉鸽等级徽章 */
+.rogue-level-badge {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 12px;
+  flex-shrink: 0;
+}
+
+.rogue-level-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #fff;
+}
+
+.rogue-level-value {
+  font-size: 16px;
+  font-weight: 700;
+  color: #fff;
+}
+
+/* 肉鸽信息 */
+.rogue-info {
+  position: relative;
+  z-index: 1;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+
+.rogue-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.rogue-name {
+  font-size: 18px;
+  font-weight: 600;
+  color: #ffd700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.rogue-stats {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.rogue-stat {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 14px;
+  color: #ccc;
+}
+
+.stat-value {
+  font-size: 16px;
+  font-weight: 600;
+  color: #fff;
+}
+
+.stat-label {
+  font-size: 12px;
+  color: #999;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .rogue-image-wrapper {
+    height: 120px;
+  }
+
+  .rogue-info {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .rogue-image-wrapper {
+    height: 100px;
+  }
+
+  .rogue-level-badge {
+    padding: 4px 8px;
+  }
+
+  .rogue-level-label {
+    font-size: 10px;
+  }
+
+  .rogue-level-value {
+    font-size: 14px;
+  }
+
+  .rogue-name {
+    font-size: 16px;
+  }
+
+  .rogue-stats {
+    gap: 12px;
+  }
+
+  .rogue-stat {
+    font-size: 12px;
+  }
+
+  .stat-value {
+    font-size: 14px;
+  }
 }
 
 /* 数据项颜色区分 - 为不同类型数据提供视觉区分 */

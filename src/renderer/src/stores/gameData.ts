@@ -299,7 +299,14 @@ interface PlayerData {
   skins?: any[];
   rogue?: {
     relicCnt?: number;
+    records?: any[];
   };
+  rogueInfoMap?: Record<string, {
+    id: string;
+    name: string;
+    picUrl: string;
+    sort: number;
+  }>;
   charInfoMap?: Record<string, {
     name: string;
     profession?: string;

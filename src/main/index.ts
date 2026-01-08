@@ -221,7 +221,7 @@ function createWindow(): void {
           "default-src 'self' 'unsafe-inline' data: https:; " +
           "script-src 'self' 'unsafe-inline'; " +
           "style-src 'self' 'unsafe-inline'; " +
-          "img-src 'self' data: https:; " +
+          "img-src 'self' data: https: https://bbs.hycdn.cn https://raw.githubusercontent.com; " +
           "font-src 'self' data:; " +
           "connect-src 'self' https: ws: " +
           "https://as.hypergryph.com https://zonai.skland.com https://www.skland.com; " +
@@ -234,7 +234,7 @@ function createWindow(): void {
           "default-src 'self'; " +
           "script-src 'self' 'unsafe-inline'; " +
           "style-src 'self' 'unsafe-inline'; " +
-          "img-src 'self' data: https:; " +
+          "img-src 'self' data: https: https://bbs.hycdn.cn https://raw.githubusercontent.com; " +
           "font-src 'self' data:; " +
           "connect-src 'self' https://as.hypergryph.com https://zonai.skland.com https://www.skland.com; " +
           "object-src 'none'; " +
