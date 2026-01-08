@@ -9,7 +9,7 @@ import HeadhuntingRecord from '@components/headhuntingrecord.vue'
 import TitleBar from '@components/TitleBar.vue'
 import { useAuthStore } from '@stores/auth'
 import { useGameDataStore } from '@stores/gameData'
-import { ref, onMounted, onUnmounted, provide, computed, inject } from 'vue'
+import { ref, onMounted, onUnmounted, provide, computed } from 'vue'
 import {
   showSuccess,
   showError,
@@ -70,6 +70,12 @@ const isRefreshing = ref(false);
  */
 const isAttending = ref(false);
 
+/**
+ * 刷新防抖定时器
+ * 防止短时间内频繁刷新
+ */
+let refreshDebounceTimer: NodeJS.Timeout | null = null;
+
 // ==================== 计算属性 ====================
 /**
  * 当前组件刷新函数映射
@@ -81,22 +87,19 @@ const currentRefreshMethod = computed(() => {
       await gameDataStore.refreshData();
     },
     'Recruit': async () => {
-      // Recruit组件的刷新逻辑
-      console.log('刷新公招计算数据');
-      // 这里可以调用Recruit组件的刷新方法
+      // 公招计算暂无需要刷新的数据
+      console.log('公招计算页面无需刷新');
     },
     'Material': async () => {
-      // Material组件的刷新逻辑
-      console.log('刷新材料计算数据');
-      // 这里可以调用Material组件的刷新方法
+      // 材料计算暂无需要刷新的数据
+      console.log('材料计算页面无需刷新');
     },
     'HeadhuntingRecord': async () => {
-      // HeadhuntingRecord组件的刷新逻辑
-      console.log('刷新寻访记录数据');
-      // 这里可以调用HeadhuntingRecord组件的刷新方法
+      // 寻访记录暂无需要刷新的数据
+      console.log('寻访记录页面无需刷新');
     },
     'Setting': async () => {
-      // Setting组件通常不需要刷新
+      // 设置页面刷新用户信息
       console.log('设置页面无需刷新');
     }
   };
@@ -108,29 +111,34 @@ const currentRefreshMethod = computed(() => {
  * 根据当前活动组件返回对应的刷新提示
  */
 const currentRefreshMessage = computed(() => {
-  const messages: Record<string, { loading: string, success: string }> = {
+  const messages: Record<string, { loading: string, success: string, disabled: boolean }> = {
     'GameData': {
       loading: '神经连接中...',
-      success: '神经连接同步完成！'
+      success: '神经连接同步完成！',
+      disabled: false
     },
     'Recruit': {
       loading: '更新公招数据中...',
-      success: '公招数据更新完成！'
+      success: '公招数据更新完成！',
+      disabled: true // 公招计算无需刷新
     },
     'Material': {
       loading: '更新材料数据中...',
-      success: '材料数据更新完成！'
+      success: '材料数据更新完成！',
+      disabled: true // 材料计算无需刷新
     },
     'HeadhuntingRecord': {
       loading: '更新寻访记录中...',
-      success: '寻访记录更新完成！'
+      success: '寻访记录更新完成！',
+      disabled: true // 寻访记录无需刷新
     },
     'Setting': {
       loading: '刷新设置中...',
-      success: '设置刷新完成！'
+      success: '设置刷新完成！',
+      disabled: true // 设置页面无需刷新
     }
   };
-  return messages[activeComponent.value] || { loading: '刷新中...', success: '刷新完成！' };
+  return messages[activeComponent.value] || { loading: '刷新中...', success: '刷新完成！', disabled: false };
 });
 
 // ==================== 全局右键菜单功能 ====================
@@ -203,37 +211,69 @@ const openPaymentCenter = () => {
 /**
  * 全局刷新数据功能
  * 根据当前活动组件调用对应的刷新方法
+ * 添加防抖机制防止频繁刷新
  */
 const handleGlobalRefresh = async () => {
+  // 如果正在刷新，直接返回
+  if (isRefreshing.value) {
+    showWarning('正在刷新中，请稍候...');
+    return;
+  }
+
+  // 防抖：清除之前的定时器
+  if (refreshDebounceTimer) {
+    clearTimeout(refreshDebounceTimer);
+  }
+
   // 先隐藏右键菜单
   hideContextMenu();
 
-  // 设置刷新状态
-  isRefreshing.value = true;
+  // 防抖延迟 500ms
+  refreshDebounceTimer = setTimeout(async () => {
+    // 设置刷新状态
+    isRefreshing.value = true;
 
-  try {
-    // 显示刷新中的浮窗通知
-    const { loading, success } = currentRefreshMessage.value;
-    showInfo(loading);
+    try {
+      // 检查登录状态
+      if (!authStore.isLogin) {
+        showWarning('请先登录后再刷新');
+        return;
+      }
 
-    // 调用当前组件的刷新方法
-    const refreshMethod = currentRefreshMethod.value;
-    if (refreshMethod) {
-      await refreshMethod();
+      // 显示刷新中的浮窗通知
+      const { loading, success } = currentRefreshMessage.value;
+      showInfo(loading);
+
+      // 调用当前组件的刷新方法
+      const refreshMethod = currentRefreshMethod.value;
+      if (refreshMethod) {
+        await refreshMethod();
+      }
+
+      // 显示成功提示
+      showSuccess(success);
+
+    } catch (error: any) {
+      // 安全的错误处理
+      const errorMessage = error?.message || '未知错误';
+      console.error('全局刷新失败:', error);
+
+      // 根据错误类型提供不同的提示
+      if (errorMessage.includes('网络') || errorMessage.includes('Network')) {
+        showError('网络连接失败，请检查网络设置');
+      } else if (errorMessage.includes('认证') || errorMessage.includes('401')) {
+        showError('登录已过期，请重新登录');
+      } else if (errorMessage.includes('超时') || errorMessage.includes('timeout')) {
+        showError('请求超时，请稍后重试');
+      } else {
+        showError(`刷新失败：${errorMessage}`);
+      }
+    } finally {
+      // 无论成功失败，都重置刷新状态
+      isRefreshing.value = false;
+      refreshDebounceTimer = null;
     }
-
-    // 显示成功提示
-    showSuccess(success);
-
-  } catch (error: any) {
-    // 安全的错误处理
-    const errorMessage = error?.message || '未知错误';
-    console.error('全局刷新失败:', error);
-    showError(`刷新失败：${errorMessage}`);
-  } finally {
-    // 无论成功失败，都重置刷新状态
-    isRefreshing.value = false;
-  }
+  }, 500);
 };
 
 /**
@@ -244,6 +284,7 @@ const handleKeyboardRefresh = (event: KeyboardEvent) => {
   // 检查是否按下了 F5 或 Ctrl+R
   if (event.key === 'F5' || (event.ctrlKey && event.key === 'r')) {
     event.preventDefault(); // 阻止浏览器默认刷新行为
+    // 键盘刷新不需要防抖，立即执行
     handleGlobalRefresh();
   }
 };
@@ -459,6 +500,12 @@ onUnmounted(() => {
   // 停止游戏数据时间更新定时器
   gameDataStore.stopTimeUpdate();
 
+  // 清理刷新防抖定时器
+  if (refreshDebounceTimer) {
+    clearTimeout(refreshDebounceTimer);
+    refreshDebounceTimer = null;
+  }
+
   // 移除全局事件监听器
   document.removeEventListener('contextmenu', showContextMenu);
   document.removeEventListener('click', hideContextMenu);
@@ -496,25 +543,29 @@ const componentMap: Record<string, any> = {
       @click.stop
     >
       <button
+        v-if="!currentRefreshMessage.disabled"
         class="context-menu-item refresh-item"
         @click="handleGlobalRefresh"
         :disabled="isRefreshing"
         :class="{ refreshing: isRefreshing }"
+        :title="currentRefreshMessage.success"
       >
         <span class="context-menu-text">
           {{ isRefreshing ? '刷新中...' : '刷新当前页面' }}
         </span>
       </button>
-      <div class="context-menu-divider"></div>
+      <div v-if="!currentRefreshMessage.disabled" class="context-menu-divider"></div>
       <button
         class="context-menu-item"
         @click="openOfficialWebsite"
+        title="在浏览器中打开明日方舟官网"
       >
         <span class="context-menu-text">明日方舟官网</span>
       </button>
       <button
         class="context-menu-item"
         @click="openPaymentCenter"
+        title="在浏览器中打开官方充值中心"
       >
         <span class="context-menu-text">官方充值中心</span>
       </button>
