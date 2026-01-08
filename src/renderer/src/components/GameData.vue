@@ -1216,7 +1216,6 @@ defineExpose({
   gap: 16px;
   padding: 12px;
   border: 1px solid #444;
-  border-radius: 8px;
   cursor: pointer;
   overflow: hidden;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
@@ -1274,11 +1273,12 @@ defineExpose({
   flex-direction: column;
   gap: 8px;
   min-width: 0;
+  text-align: right;
 }
 
 .rogue-header {
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-end;
   align-items: center;
   gap: 12px;
 }
@@ -1296,6 +1296,7 @@ defineExpose({
   display: flex;
   gap: 16px;
   flex-wrap: wrap;
+  justify-content: flex-end;
 }
 
 .rogue-stat {
