@@ -1338,7 +1338,6 @@ onMounted(() => {
 .assist-char-item {
   background: #333333;
   border: 1px solid #404040;
-
   padding: 8px;
   display: flex;
   flex-direction: column;
@@ -2874,7 +2873,7 @@ onMounted(() => {
   .data-grid {
     grid-template-columns: 1fr;
   }
-  
+
   .basic-info-grid {
     grid-template-columns: repeat(2, 1fr);
   }

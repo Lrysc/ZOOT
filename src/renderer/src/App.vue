@@ -147,7 +147,7 @@ const showContextMenu = (event: MouseEvent) => {
 
   // 菜单尺寸定义
   const menuWidth = 150;
-  const menuHeight = 50;
+  const menuHeight = 120;
   const viewportWidth = window.innerWidth;
   const viewportHeight = window.innerHeight;
 
@@ -180,6 +180,22 @@ const showContextMenu = (event: MouseEvent) => {
  */
 const hideContextMenu = () => {
   contextMenuVisible.value = false;
+};
+
+/**
+ * 打开明日方舟官网
+ */
+const openOfficialWebsite = () => {
+  hideContextMenu();
+  window.open('https://ak.hypergryph.com/#index', '_blank');
+};
+
+/**
+ * 打开官方充值中心
+ */
+const openPaymentCenter = () => {
+  hideContextMenu();
+  window.open('https://user.hypergryph.com/payment/arknights', '_blank');
 };
 
 // ==================== 全局刷新功能 ====================
@@ -489,6 +505,19 @@ const componentMap: Record<string, any> = {
           {{ isRefreshing ? '刷新中...' : '刷新当前页面' }}
         </span>
       </button>
+      <div class="context-menu-divider"></div>
+      <button
+        class="context-menu-item"
+        @click="openOfficialWebsite"
+      >
+        <span class="context-menu-text">明日方舟官网</span>
+      </button>
+      <button
+        class="context-menu-item"
+        @click="openPaymentCenter"
+      >
+        <span class="context-menu-text">官方充值中心</span>
+      </button>
     </div>
 
     <!-- 顶部 Header -->
@@ -689,6 +718,13 @@ body {
     opacity: 1;
     transform: scale(1) translateY(0);
   }
+}
+
+/* 右键菜单分隔线 */
+.context-menu-divider {
+  height: 1px;
+  background: #404040;
+  margin: 4px 0;
 }
 
 /* ==================== 顶部 Header 样式 ==================== */
