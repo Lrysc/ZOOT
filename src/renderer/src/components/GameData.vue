@@ -367,7 +367,7 @@ const getRogueList = () => {
     const records = playerData.rogue.records;
 
     return records
-      .filter((record: any) => record && record.rogueId && record.bpLevel > 0)
+      .filter((record: any) => record && record.rogueId)
       .sort((a: any, b: any) => {
         const aInfo = getRogueInfo(a.rogueId);
         const bInfo = getRogueInfo(b.rogueId);
