@@ -1,0 +1,165 @@
+/**
+ * 通用样式
+ * 提供可复用的 CSS 类
+ */
+
+/* ==================== 卡片样式 ==================== */
+.card {
+  background: #2d2d2d;
+  border: 1px solid #404040;
+  padding: 20px;
+  border-radius: 8px;
+}
+
+/* ==================== 按钮样式 ==================== */
+.btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  color: white;
+  background: linear-gradient(135deg, #4a90e2, #357abd);
+}
+
+.btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(74, 144, 226, 0.4);
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+/* ==================== 输入框样式 ==================== */
+.input {
+  width: 100%;
+  padding: 12px 16px;
+  background: #3a3a3a;
+  border: 1px solid #4a4a4a;
+  border-radius: 6px;
+  color: white;
+  font-size: 14px;
+  transition: all 0.3s ease;
+}
+
+.input:focus {
+  outline: none;
+  border-color: #4a90e2;
+  box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.2);
+}
+
+.input::placeholder {
+  color: #888;
+}
+
+/* ==================== 加载动画 ==================== */
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.loading-spinner {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+/* ==================== 滚动条样式 ==================== */
+.scrollbar-custom::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.scrollbar-custom::-webkit-scrollbar-track {
+  background: #1a1a1a;
+}
+
+.scrollbar-custom::-webkit-scrollbar-thumb {
+  background: #404040;
+  border-radius: 4px;
+}
+
+.scrollbar-custom::-webkit-scrollbar-thumb:hover {
+  background: #505050;
+}
+
+/* ==================== 文本样式 ==================== */
+.text-ellipsis {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.text-secondary {
+  color: #ccc;
+}
+
+.text-muted {
+  color: #888;
+}
+
+.text-success {
+  color: #4caf50;
+}
+
+.text-error {
+  color: #f44336;
+}
+
+.text-warning {
+  color: #ff9800;
+}
+
+/* ==================== 工具类 ==================== */
+.flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.flex-between {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.gap-sm {
+  gap: 8px;
+}
+
+.gap-md {
+  gap: 16px;
+}
+
+.gap-lg {
+  gap: 24px;
+}
+
+/* ==================== 响应式 ==================== */
+@media (max-width: 768px) {
+  .card {
+    padding: 16px;
+  }
+
+  .btn {
+    padding: 8px 12px;
+    font-size: 13px;
+  }
+}
