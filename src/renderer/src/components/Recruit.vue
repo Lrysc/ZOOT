@@ -301,29 +301,22 @@ onMounted(() => {
     </div>
 
     <div v-if="recruitData && !isLoading">
-      <div class="version-info">
-        <span>数据版本: {{ recruitData.update.version }} ({{ recruitData.update.date }})</span>
-        <span>数据来源：blueskybone</span>
-        <span class="new-operators" v-if="recruitData.new_ope.name.length > 0">
-          新增干员: {{ recruitData.new_ope.name.join('、') }}
-        </span>
-      </div>
-
-      <div class="important-tip">
-        <span class="warning-icon">!</span>
-        高资及资深干员切记拉满九小时！！
-      </div>
-
       <div class="tags-section">
-        <h3>选择标签 ({{ selectedTags.length }}/5)</h3>
-        <div class="tags-controls">
-          <button
-            @click="clearAllTags"
-            class="clear-btn"
-            :disabled="selectedTags.length === 0"
-          >
-            清空标签
-          </button>
+        <div class="tags-header">
+          <h3>选择标签 ({{ selectedTags.length }}/5)</h3>
+          <div class="tags-controls">
+            <div class="important-tip-inline">
+              <span class="warning-icon">!</span>
+              高资及资深干员切记拉满九小时！！
+            </div>
+            <button
+              @click="clearAllTags"
+              class="clear-btn"
+              :disabled="selectedTags.length === 0"
+            >
+              清空标签
+            </button>
+          </div>
         </div>
         <div class="tags-grid">
           <div
@@ -392,6 +385,14 @@ onMounted(() => {
           <li><span class="senior-text">资深干员</span>必须拉满九小时才能保证不被划掉tag！！！</li>
           <li>组合特定标签可以精确筛选目标干员</li>
         </ul>
+      </div>
+
+      <div class="version-info">
+        <span>数据版本: {{ recruitData.update.version }} ({{ recruitData.update.date }})</span>
+        <span>数据来源：blueskybone</span>
+        <span class="new-operators" v-if="recruitData.new_ope.name.length > 0">
+          新增干员: {{ recruitData.new_ope.name.join('、') }}
+        </span>
       </div>
     </div>
   </div>
@@ -518,16 +519,49 @@ onMounted(() => {
   padding: 20px;
 }
 
-.tags-section h3 {
+.tags-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   margin-bottom: 15px;
+}
+
+.tags-section h3 {
+  margin-bottom: 0;
   color: #9feaf9;
   font-size: 1.3rem;
 }
 
 .tags-controls {
   display: flex;
-  justify-content: space-between;
-  margin-bottom: 15px;
+  align-items: center;
+  gap: 15px;
+}
+
+.important-tip-inline {
+  background: linear-gradient(135deg, #ff4444, #ff6b6b);
+  color: white;
+  padding: 8px 15px;
+  font-size: 14px;
+  font-weight: bold;
+  border: 2px solid #ff8e8e;
+  animation: pulse 2s infinite;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.important-tip-inline .warning-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  font-weight: bold;
+  font-size: 14px;
 }
 
 .clear-btn {

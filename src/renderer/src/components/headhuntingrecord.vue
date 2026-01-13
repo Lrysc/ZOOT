@@ -4,10 +4,32 @@
       <h2>寻访记录</h2>
       <div class="actions">
         <!-- 统一的格式选择 -->
-        <select v-model="exportFormat" class="format-select" title="选择导出格式">
-          <option value="native">原始格式</option>
-          <option value="official">通用格式</option>
-        </select>
+        <div class="format-select-wrapper" ref="formatSelectWrapper">
+          <button
+            class="format-select-button"
+            @click="toggleFormatDropdown"
+            :class="{ 'active': showFormatDropdown }"
+          >
+            {{ exportFormat === 'native' ? '原始格式' : '通用格式' }}
+            <span class="dropdown-arrow" :class="{ 'rotated': showFormatDropdown }">▼</span>
+          </button>
+          <div class="format-dropdown" :class="{ 'show': showFormatDropdown }">
+            <div
+              class="format-option"
+              :class="{ 'selected': exportFormat === 'native' }"
+              @click="selectFormat('native')"
+            >
+              原始格式
+            </div>
+            <div
+              class="format-option"
+              :class="{ 'selected': exportFormat === 'official' }"
+              @click="selectFormat('official')"
+            >
+              通用格式
+            </div>
+          </div>
+        </div>
 
         <!-- 导出按钮组 -->
         <div class="export-buttons">
@@ -86,7 +108,7 @@
 
     <!-- 卡池列表 -->
     <div v-else-if="!selectedCategory && categories.length > 0" class="categories-list">
-      <h3>选择卡池类型</h3>
+      <h3>当期卡池</h3>
       <div class="categories-horizontal">
         <div
           v-for="category in categories"
@@ -95,8 +117,8 @@
         >
           <div class="category-info" @click="toggleCategory(category)">
             <div class="category-type-name">
-              <h4>{{ category.name.replace('\n', ' ') }}</h4>
-              <p class="category-poolname">{{ getPoolNameForCategory(category.id) }}</p>
+              <h4>{{ getPoolNameForCategory(category.id) }}</h4>
+              <p class="category-poolname">{{ category.name.replace('\n', ' ') }}</p>
             </div>
             <div class="category-count">
               <span class="count-number">{{ getRecordCountForCategory(category.id) }}</span>
@@ -106,6 +128,7 @@
 
           <!-- 展开的记录显示 -->
           <div v-if="isCategoryExpanded(category.id)" class="category-records">
+            <!-- 高光记录显示 -->
             <div class="highlights-container">
               <div
                 v-for="(processedRecord, index) in getProcessedRecords(category.id)"
@@ -131,6 +154,9 @@
                       <span class="count-number">{{ processedRecord.pullCount }}</span>
                       <span class="count-text">抽</span>
                     </div>
+                    <div class="pool-name-info" v-if="processedRecord.poolName">
+                      {{ processedRecord.poolName }}
+                    </div>
                     <div class="time-info">
                       {{ formatTime(processedRecord.record.gachaTs) }}
                     </div>
@@ -140,7 +166,7 @@
 
               <!-- 无高光记录提示 -->
               <div v-if="getProcessedRecords(category.id).length === 0" class="no-highlights">
-                <p>该卡池暂无数据</p>
+                <p>{{ selectedPoolName ? '该卡池暂无数据' : '该卡池暂无数据' }}</p>
               </div>
             </div>
           </div>
@@ -320,6 +346,75 @@
       </div>
     </div>
 
+    <!-- 往期卡池 -->
+    <div v-if="categories.length > 0" class="categories-list">
+      <h3>往期卡池</h3>
+      <div class="categories-horizontal">
+        <div
+          v-for="pastPool in getAllPastPools()"
+          :key="pastPool.poolName"
+          class="category-card-horizontal"
+        >
+          <div class="category-info" @click="togglePastPoolExpand(pastPool.poolName)">
+            <div class="category-type-name">
+              <h4>{{ pastPool.poolName }}</h4>
+              <p class="category-poolname">{{ pastPool.categoryName }}</p>
+            </div>
+            <div class="category-count">
+              <span class="count-number">{{ pastPool.records.length }}</span>
+              <span class="count-label">抽</span>
+            </div>
+          </div>
+
+          <!-- 展开的记录显示 -->
+          <div v-if="isPastPoolExpanded(pastPool.poolName)" class="category-records">
+            <!-- 高光记录显示 -->
+            <div class="highlights-container">
+              <div
+                v-for="(processedRecord, index) in processSinglePoolGroup(pastPool)"
+                :key="index"
+                class="highlight-record"
+                :class="{ 'six-star': processedRecord.record.rarity === 5, 'five-star': processedRecord.record.rarity === 4 }"
+              >
+                <div class="record-info">
+                  <img
+                    :src="processedRecord.avatarUrl"
+                    :alt="processedRecord.record.charName"
+                    class="operator-avatar"
+                  />
+                  <div class="record-details">
+                    <h4 class="operator-name">{{ processedRecord.record.charName }}</h4>
+
+                    <div class="rarity-info">
+                      <span class="rarity-badge" :class="`rarity-${processedRecord.record.rarity}`">
+                        {{ getRarityText(processedRecord.record.rarity) }}
+                      </span>
+                    </div>
+                    <div class="pull-count">
+                      <span class="count-number">{{ processedRecord.pullCount }}</span>
+                      <span class="count-text">抽</span>
+                    </div>
+                    <div class="time-info">
+                      {{ formatTime(processedRecord.record.gachaTs) }}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 无高光记录提示 -->
+              <div v-if="processSinglePoolGroup(pastPool).length === 0" class="no-highlights">
+                <p>该卡池暂无高光记录</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div v-if="getAllPastPools().length === 0" class="no-data">
+        <p>暂无往期卡池数据</p>
+      </div>
+    </div>
+
     <!-- 回到顶部按钮 -->
     <button
       @click="scrollToTop"
@@ -360,11 +455,14 @@ const error = ref<string | null>(null);
 const exportLoading = ref(false);
 const exportProgress = ref('');
 const exportFormat = ref<'native' | 'official'>('native');
+const showFormatDropdown = ref(false);
+const formatSelectWrapper = ref<HTMLElement | null>(null);
 
 // 数据状态变量
 const categories = ref<GachaCategory[]>([]);
 const selectedCategory = ref<GachaCategory | null>(null);
 const gachaRecords = ref<GachaRecord[]>([]);
+const expandedPastPools = ref<Set<string>>(new Set()); // 展开的往期卡池
 const categoryPoolNames = ref<Map<string, string>>(new Map());
 const categoryRecordCounts = ref<Map<string, number>>(new Map());
 const categoryRecords = ref<Map<string, GachaRecord[]>>(new Map());
@@ -850,7 +948,17 @@ const getPoolNameForCategory = (categoryId: string) => {
 };
 
 const getRecordCountForCategory = (categoryId: string) => {
-  return categoryRecordCounts.value.get(categoryId) || 0;
+  // 只计算当期卡池的抽数
+  const poolGroups = poolGroupsForCategory.value.get(categoryId);
+  if (!poolGroups) return 0;
+
+  const currentPoolName = getCurrentPoolName(categoryId);
+  if (!currentPoolName) return 0;
+
+  const group = poolGroups.get(currentPoolName);
+  if (!group) return 0;
+
+  return group.records.length;
 };
 
 // 计算总抽数
@@ -875,6 +983,8 @@ const getTotalOrundumCost = () => {
 const toggleCategory = async (category: GachaCategory) => {
   const categoryId = category.id;
 
+  logger.info('toggleCategory 被调用', { categoryId, categoryName: category.name });
+
   if (expandedCategories.value.has(categoryId)) {
     // 如果已展开，则折叠
     expandedCategories.value.delete(categoryId);
@@ -889,7 +999,13 @@ const toggleCategory = async (category: GachaCategory) => {
       await loadCategoryRecords(category);
     }
   }
+
+  // 重置选中的 poolName
+  selectedPoolName.value = null;
 };
+
+// 按 poolName 分组的记录（在卡池记录加载后）- 按 categoryId 索引
+const poolGroupsForCategory = ref<Map<string, Map<string, { poolName: string; records: GachaRecord[] }>>>(new Map());
 
 // 加载单个卡池的记录
 const loadCategoryRecords = async (category: GachaCategory) => {
@@ -970,10 +1086,23 @@ const loadCategoryRecords = async (category: GachaCategory) => {
     // 保存排序后的记录到Map中
     categoryRecords.value.set(category.id, allRecords);
 
+    // 按 poolName 分组记录（相同 poolName 的记录合并）
+    const poolGroups = new Map<string, { poolName: string; records: GachaRecord[] }>();
+    allRecords.forEach((record) => {
+      const poolName = record.poolName || '未知卡池';
+      if (!poolGroups.has(poolName)) {
+        poolGroups.set(poolName, { poolName, records: [] });
+      }
+      poolGroups.get(poolName)!.records.push(record);
+    });
+    // 将分组的记录按 categoryId 存储
+    poolGroupsForCategory.value.set(category.id, poolGroups);
+
     logger.info('卡池记录加载完成', {
       categoryId: category.id,
       categoryName: category.name,
       recordCount: allRecords.length,
+      poolGroupsCount: poolGroups.size,
       pageCount: pageCount
     });
 
@@ -1003,14 +1132,87 @@ const isCategoryExpanded = (categoryId: string) => {
   return expandedCategories.value.has(categoryId);
 };
 
-// 计算抽数并处理五星/六星显示
-const getProcessedRecords = (categoryId: string) => {
-  const records = getCategoryRecords(categoryId);
+// 获取当期卡池名字（最新的 poolName）
+const getCurrentPoolName = (categoryId: string) => {
+  const poolGroups = poolGroupsForCategory.value.get(categoryId);
+  if (!poolGroups || poolGroups.size === 0) return '';
+
+  // 按最后一条记录的时间戳排序，最新的为当期卡池
+  const pools = Array.from(poolGroups.values());
+  pools.sort((a, b) => {
+    const lastRecordA = a.records[a.records.length - 1];
+    const lastRecordB = b.records[b.records.length - 1];
+    const timeA = parseFloat(lastRecordA?.gachaTs || '0');
+    const timeB = parseFloat(lastRecordB?.gachaTs || '0');
+    return timeB - timeA; // 降序，最新的在前
+  });
+
+  return pools[0]?.poolName || '';
+};
+
+// 获取所有往期卡池
+const getAllPastPools = () => {
+  const allPastPools: Array<{
+    poolName: string;
+    categoryName: string;
+    categoryId: string;
+    records: GachaRecord[];
+  }> = [];
+
+  categories.value.forEach((category) => {
+    const poolGroups = poolGroupsForCategory.value.get(category.id);
+    if (!poolGroups) return;
+
+    const currentPoolName = getCurrentPoolName(category.id);
+
+    poolGroups.forEach((group) => {
+      // 排除当期卡池
+      if (group.poolName !== currentPoolName) {
+        allPastPools.push({
+          poolName: group.poolName,
+          categoryName: category.name.replace('\n', ' '),
+          categoryId: category.id,
+          records: group.records
+        });
+      }
+    });
+  });
+
+  // 按最后一条记录的时间戳降序排序（最新的在前）
+  allPastPools.sort((a, b) => {
+    const lastRecordA = a.records[a.records.length - 1];
+    const lastRecordB = b.records[b.records.length - 1];
+    const timeA = parseFloat(lastRecordA?.gachaTs || '0');
+    const timeB = parseFloat(lastRecordB?.gachaTs || '0');
+    return timeB - timeA;
+  });
+
+  return allPastPools;
+};
+
+// 切换往期卡池的展开状态
+const togglePastPoolExpand = (poolName: string) => {
+  if (expandedPastPools.value.has(poolName)) {
+    expandedPastPools.value.delete(poolName);
+  } else {
+    expandedPastPools.value.add(poolName);
+  }
+};
+
+// 检查往期卡池是否展开
+const isPastPoolExpanded = (poolName: string) => {
+  return expandedPastPools.value.has(poolName);
+};
+
+// 处理单个 poolName 分组的记录
+const processSinglePoolGroup = (group: { poolName: string; records: GachaRecord[] }) => {
+  const { poolName, records } = group;
   const processedRecords: Array<{
     record: GachaRecord;
     pullCount: number;
     avatarUrl: string;
     isHighlight: boolean;
+    poolName: string;
   }> = [];
 
   let pullCount = 0;
@@ -1025,7 +1227,8 @@ const getProcessedRecords = (categoryId: string) => {
         record,
         pullCount,
         avatarUrl: getAvatarUrl(record.charId),
-        isHighlight: true
+        isHighlight: true,
+        poolName
       });
       pullCount = 0; // 六星重置计数，开始新的计数周期
     }
@@ -1035,7 +1238,8 @@ const getProcessedRecords = (categoryId: string) => {
         record,
         pullCount,
         avatarUrl: getAvatarUrl(record.charId),
-        isHighlight: true
+        isHighlight: true,
+        poolName
       });
       // 五星不重置计数，继续累计到下一个六星
     }
@@ -1043,6 +1247,21 @@ const getProcessedRecords = (categoryId: string) => {
   });
 
   return processedRecords;
+};
+
+// 计算抽数并处理五星/六星显示（按 poolName 分组后）
+const getProcessedRecords = (categoryId: string) => {
+  const poolGroups = poolGroupsForCategory.value.get(categoryId);
+  if (!poolGroups) return [];
+
+  // 只显示当期卡池（最新的 poolName）的记录
+  const currentPoolName = getCurrentPoolName(categoryId);
+  if (!currentPoolName) return [];
+
+  const group = poolGroups.get(currentPoolName);
+  if (!group) return [];
+
+  return processSinglePoolGroup(group);
 };
 
 // 处理导入数据的高光显示
@@ -2135,11 +2354,45 @@ const loadAllPoolNames = async (
             }
           }
 
-          recordCount = allRecords.length;
+          // 按时间戳和位置排序记录（从早到晚）
+          allRecords.sort((a: any, b: any) => {
+            const timeA = parseFloat(a.gachaTs);
+            const timeB = parseFloat(b.gachaTs);
+            if (timeA !== timeB) {
+              return timeA - timeB;
+            }
+            return a.pos - b.pos;
+          });
 
-          // 设置poolName
-          const firstRecord = countResponse.list[0];
-          categoryPoolNames.value.set(category.id, firstRecord.poolName);
+          // 按 poolName 分组记录
+          const poolGroups = new Map<string, { poolName: string; records: any[] }>();
+          allRecords.forEach((record) => {
+            const poolName = record.poolName || '未知卡池';
+            if (!poolGroups.has(poolName)) {
+              poolGroups.set(poolName, { poolName, records: [] });
+            }
+            poolGroups.get(poolName)!.records.push(record);
+          });
+
+          // 保存 poolGroups 到全局变量
+          poolGroupsForCategory.value.set(category.id, poolGroups);
+
+          // 找到当期卡池（最新的 poolName）
+          const pools = Array.from(poolGroups.values());
+          pools.sort((a, b) => {
+            const lastRecordA = a.records[a.records.length - 1];
+            const lastRecordB = b.records[b.records.length - 1];
+            const timeA = parseFloat(lastRecordA?.gachaTs || '0');
+            const timeB = parseFloat(lastRecordB?.gachaTs || '0');
+            return timeB - timeA; // 降序，最新的在前
+          });
+
+          // 只计算当期卡池的抽数
+          recordCount = pools[0]?.records.length || 0;
+
+          // 设置poolName为当期卡池名称
+          const currentPoolName = pools[0]?.poolName || '';
+          categoryPoolNames.value.set(category.id, currentPoolName);
         } else {
           // 没有记录
           recordCount = 0;
@@ -2205,6 +2458,23 @@ const handleScroll = () => {
   showBackToTop.value = window.scrollY > 300;
 };
 
+// 格式选择下拉框控制
+const toggleFormatDropdown = () => {
+  showFormatDropdown.value = !showFormatDropdown.value;
+};
+
+const selectFormat = (format: 'native' | 'official') => {
+  exportFormat.value = format;
+  showFormatDropdown.value = false;
+};
+
+// 点击外部关闭下拉框
+const handleClickOutside = (event: MouseEvent) => {
+  if (formatSelectWrapper.value && !formatSelectWrapper.value.contains(event.target as Node)) {
+    showFormatDropdown.value = false;
+  }
+};
+
 // 组件挂载
 onMounted(() => {
   logger.gacha('寻访记录组件已挂载', {
@@ -2225,9 +2495,13 @@ onMounted(() => {
   // 添加滚动监听器
   window.addEventListener('scroll', handleScroll);
 
+  // 添加点击外部关闭下拉框监听器
+  document.addEventListener('click', handleClickOutside);
+
   // 组件卸载时移除监听器
   onUnmounted(() => {
     window.removeEventListener('scroll', handleScroll);
+    document.removeEventListener('click', handleClickOutside);
   });
 });
 </script>
@@ -2624,6 +2898,107 @@ onMounted(() => {
   padding-top: 12px;
 }
 
+.pool-section {
+  margin-bottom: 16px;
+}
+
+.pool-section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.pool-section-title {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: #999;
+}
+
+.past-pools-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 8px 0;
+}
+
+.pool-name-tag {
+  display: inline-block;
+  padding: 6px 12px;
+  background: #3a3a3a;
+  border: 1px solid #404040;
+  color: #ccc;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+  border-radius: 4px;
+}
+
+.pool-name-tag:hover {
+  background: #4a4a4a;
+  border-color: #646cff;
+  color: #ffffff;
+}
+
+.pool-name-tag.active {
+  background: #646cff;
+  border-color: #646cff;
+  color: #ffffff;
+}
+
+/* 往期卡池区域样式 */
+.past-pools-section {
+  background: #2d2d2d;
+  padding: 24px;
+  border: 1px solid #404040;
+  margin-top: 24px;
+}
+
+.past-pools-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #404040;
+}
+
+.past-pools-header h3 {
+  margin: 0;
+  color: #ffffff;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.category-select {
+  padding: 8px 12px;
+  border: 1px solid #404040;
+  background: #3a3a3a;
+  color: #ccc;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+  min-width: 200px;
+}
+
+.category-select:hover {
+  border-color: #646cff;
+  background: #4a4a4a;
+}
+
+.category-select:focus {
+  outline: none;
+  border-color: #646cff;
+  box-shadow: 0 0 0 2px rgba(100, 108, 255, 0.2);
+}
+
+.past-pools-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
 .records-table-container {
   max-height: 300px;
   overflow-y: auto;
@@ -2782,7 +3157,17 @@ onMounted(() => {
   font-size: 11px;
   color: #888;
   flex-shrink: 0;
-  margin-left: auto; /* 推到最右边 */
+  margin-left: 8px;
+}
+
+.pool-name-info {
+  font-size: 11px;
+  color: #646cff;
+  flex-shrink: 0;
+  max-width: 100px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .no-highlights {
@@ -3020,26 +3405,88 @@ onMounted(() => {
   align-items: center;
 }
 
-.format-select {
-  padding: 10px 12px;
-  border: 1px solid #404040;
+/* 自定义格式选择器 */
+.format-select-wrapper {
+  position: relative;
+}
 
+.format-select-button {
+  padding: 10px 30px 10px 12px;
+  border: 1px solid #404040;
   background: #3a3a3a;
+  color: #ccc;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  position: relative;
+}
+
+.format-select-button:hover {
+  border-color: #646cff;
+  background: #4a4a4a;
+  color: #ffffff;
+}
+
+.format-select-button.active {
+  border-color: #646cff;
+  background: #4a4a4a;
+}
+
+.dropdown-arrow {
+  position: absolute;
+  right: 10px;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  font-size: 10px;
+  color: #999;
+}
+
+.dropdown-arrow.rotated {
+  transform: rotate(180deg);
+  color: #ffffff;
+}
+
+.format-dropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  background: #3a3a3a;
+  border: 1px solid #404040;
+  overflow: hidden;
+  opacity: 0;
+  transform: translateY(-10px);
+  visibility: hidden;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  z-index: 100;
+}
+
+.format-dropdown.show {
+  opacity: 1;
+  transform: translateY(0);
+  visibility: visible;
+}
+
+.format-option {
+  padding: 10px 12px;
   color: #ccc;
   font-size: 14px;
   cursor: pointer;
   transition: all 0.2s;
 }
 
-.format-select:hover {
-  border-color: #646cff;
+.format-option:hover {
   background: #4a4a4a;
+  color: #ffffff;
 }
 
-.format-select:focus {
-  outline: none;
-  border-color: #646cff;
-  box-shadow: 0 0 0 2px rgba(100, 108, 255, 0.2);
+.format-option.selected {
+  background: #646cff;
+  color: #ffffff;
+  font-weight: 500;
 }
 
 .export-btn, .import-btn, .clear-btn {
