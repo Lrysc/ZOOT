@@ -2467,12 +2467,6 @@ onMounted(() => {
   transition: all 0.3s ease;
 }
 
-.statistics-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
-  border-color: #646cff;
-}
-
 .statistics-info {
   flex: 1;
   margin-right: 20px;

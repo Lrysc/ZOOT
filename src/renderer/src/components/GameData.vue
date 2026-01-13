@@ -7,7 +7,7 @@
 
       <!-- 未登录时的提示信息 -->
       <div class="section-card" v-if="!authStore.isLogin">
-        <h3 class="section-title">--- 登录提示 ---</h3>
+        <h3 class="section-title">登录提示</h3>
         <div class="login-prompt">
           <p class="prompt-text">请登录鹰角网络通行证以查看游戏数据</p>
           <p class="prompt-subtext">登录后即可查看详细的游戏信息和统计数据</p>
@@ -16,7 +16,7 @@
 
       <!-- 实时数据卡片 -->
       <div class="section-card" v-if="authStore.isLogin">
-        <h3 class="section-title">--- 实时数据 ---</h3>
+        <h3 class="section-title">实时数据</h3>
         <ul class="data-grid">
           <li class="data-item">
             <div class="ap-ring-container">
@@ -54,7 +54,10 @@
           </li>
           <li class="data-item weekly-item">
             <div class="weekly-container">
-              <h4 class="weekly-title">周常</h4>
+              <div class="weekly-header">
+                <h4 class="weekly-title">周常</h4>
+                <span class="weekly-countdown">{{ weeklyCountdown }}</span>
+              </div>
               <div class="weekly-content">
                 <div class="weekly-row">
                   <span class="weeklyrewards-label">剿灭作战</span>
@@ -134,7 +137,7 @@
 
       <!-- 基建数据卡片 -->
       <div class="section-card" v-if="authStore.isLogin">
-        <h3 class="section-title">--- 基建数据 ---</h3>
+        <h3 class="section-title">基建数据</h3>
         <ul class="data-grid">
           <li class="data-item production-item">
             <div class="production-container">
@@ -223,7 +226,7 @@
 
       <!-- 肉鸽成绩卡片 -->
       <div class="section-card" v-if="authStore.isLogin && getRogueList().length > 0">
-        <h3 class="section-title">--- 肉鸽成绩 ---</h3>
+        <h3 class="section-title">肉鸽成绩</h3>
         <div class="rogue-container">
           <div
             v-for="rogue in getRogueList()"
@@ -267,7 +270,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, watch, inject, computed } from 'vue';
+import { ref, onMounted, watch, inject, computed, onUnmounted } from 'vue';
 import { useAuthStore } from '@stores/auth';
 import { useGameDataStore } from '@stores/gameData';
 import { showError } from '@services/toastService';
@@ -457,6 +460,37 @@ const isWeeklyTaskCompleted = () => {
   }
 };
 
+// ==================== 周常刷新倒计时 ====================
+
+/**
+ * 计算距离下周一凌晨4点的剩余时间
+ */
+const weeklyCountdown = computed(() => {
+  const now = new Date();
+  // 获取下周一凌晨4点的时间戳
+  const nextMonday = new Date(now);
+  const dayOfWeek = now.getDay(); // 0 是周日, 1 是周一
+  const daysUntilMonday = dayOfWeek === 1 ? 7 : (8 - dayOfWeek) % 7;
+  nextMonday.setDate(now.getDate() + daysUntilMonday);
+  nextMonday.setHours(4, 0, 0, 0);
+  
+  const diff = nextMonday.getTime() - now.getTime();
+  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+  const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+  const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+  
+  if (days > 0) {
+    return `还有${days}天${hours}小时刷新`;
+  } else if (hours > 0) {
+    return `还有${hours}小时${minutes}分钟刷新`;
+  } else {
+    return `还有${minutes}分钟刷新`;
+  }
+});
+
+// 周常倒计时定时器
+let weeklyCountdownInterval: number | null = null;
+
 // ==================== 生命周期管理 ====================
 
 /**
@@ -487,6 +521,22 @@ onMounted(async () => {
     // 捕获错误但不阻止组件显示
     console.error('GameData组件初始化失败:', error);
     // 组件会显示错误状态或空数据，保证用户体验
+  }
+
+  // 启动周常倒计时定时器（每分钟更新一次）
+  weeklyCountdownInterval = window.setInterval(() => {
+    // 强制更新计算属性
+    weeklyCountdown.value;
+  }, 60000);
+});
+
+/**
+ * 组件卸载时的清理操作
+ */
+onUnmounted(() => {
+  if (weeklyCountdownInterval !== null) {
+    clearInterval(weeklyCountdownInterval);
+    weeklyCountdownInterval = null;
   }
 });
 
@@ -643,7 +693,7 @@ defineExpose({
   margin-bottom: 12px;
   padding-bottom: 8px;
   border-bottom: 1px solid #404040;
-  text-align: center;
+  text-align: left;
 }
 
 .data-grid {
@@ -880,14 +930,26 @@ defineExpose({
   border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
+.weekly-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  padding-bottom: 4px;
+  border-bottom: 1px solid rgba(250, 208, 0, 0.3);
+}
+
 .weekly-title {
   color: #fad000;
   font-size: 16px;
   font-weight: 600;
-  text-align: center;
   margin: 0;
-  padding-bottom: 4px;
-  border-bottom: 1px solid rgba(250, 208, 0, 0.3);
+}
+
+.weekly-countdown {
+  color: #888;
+  font-size: 12px;
+  font-weight: 500;
 }
 
 .weekly-content {

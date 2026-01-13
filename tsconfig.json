@@ -13,7 +13,8 @@
       "@utils/*": ["./src/renderer/src/utils/*"],
       "@stores/*": ["./src/renderer/src/stores/*"],
       "@types/*": ["./src/renderer/src/types/*"],
-      "@services/*": ["./src/renderer/src/services/*"]
+      "@services/*": ["./src/renderer/src/services/*"],
+      "@composables/*": ["./src/renderer/src/services/*"]
     }
   }
 }
