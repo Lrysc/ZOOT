@@ -33,9 +33,8 @@
 
 <script setup lang="ts">
 import { ref } from 'vue';
-import { useCopy } from '@composables/useCopy';
-import { useImage } from '@composables/useImage';
-import { formatTimestamp } from '@utils/date';
+import { useCopy } from '../composables/useCopy';
+import { useImage } from '../composables/useImage';
 
 // Props
 interface Props {
@@ -53,13 +52,10 @@ const props = withDefaults(defineProps<Props>(), {
 
 // Composables
 const { copyWithToast } = useCopy();
-const { handleImageError, handleImageLoad, processImageUrl } = useImage();
+const { handleImageError, handleImageLoad } = useImage();
 
 // Refs
 const avatarLoadError = ref(false);
-
-// 计算属性
-const processedAvatar = processImageUrl(props.userAvatar);
 
 /**
  * 处理头像加载错误
@@ -90,11 +86,6 @@ const handleCopyName = async () => {
 const handleCopyUid = async () => {
   await copyWithToast(props.uid, 'UID');
 };
-
-/**
- * 格式化注册时间
- */
-const formattedRegisterTime = formatTimestamp(props.registerTs);
 </script>
 
 <style scoped>

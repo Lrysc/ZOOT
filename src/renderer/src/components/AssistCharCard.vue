@@ -55,7 +55,7 @@
 
 <script setup lang="ts">
 import { ref } from 'vue';
-import { useImage } from '@composables/useImage';
+import { useImage } from '../composables/useImage';
 
 // Props
 interface Props {
@@ -92,7 +92,6 @@ const { handleImageError, handleImageLoad } = useImage();
 
 // Refs
 const portraitLoadError = ref(false);
-const skillLoadError = ref(false);
 
 /**
  * 处理卡片点击

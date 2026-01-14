@@ -91,8 +91,8 @@ const currentRefreshMethod = computed(() => {
       console.log('公招计算页面无需刷新');
     },
     'Material': async () => {
-      // 材料计算暂无需要刷新的数据
-      console.log('材料计算页面无需刷新');
+      // 培养计算暂无需要刷新的数据
+      console.log('培养计算页面无需刷新');
     },
     'HeadhuntingRecord': async () => {
       // 寻访记录暂无需要刷新的数据
@@ -125,7 +125,7 @@ const currentRefreshMessage = computed(() => {
     'Material': {
       loading: '更新材料数据中...',
       success: '材料数据更新完成！',
-      disabled: true // 材料计算无需刷新
+      disabled: true // 培养计算无需刷新
     },
     'HeadhuntingRecord': {
       loading: '更新寻访记录中...',
@@ -652,7 +652,7 @@ const componentMap: Record<string, any> = {
                 :class="['nav-item', { 'nav-item-active': activeComponent === 'Material' }]"
                 @click="switchComponent('Material')"
               >
-                材料计算
+                培养计算
               </li>
             </ul>
           </div>

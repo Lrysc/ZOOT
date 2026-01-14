@@ -209,7 +209,7 @@
 
               <!-- 无高光记录提示 -->
               <div v-if="getProcessedRecords(category.id).length === 0" class="no-highlights">
-                <p>{{ selectedPoolName ? '该卡池暂无数据' : '该卡池暂无数据' }}</p>
+                <p>该卡池暂无数据</p>
               </div>
             </div>
           </div>
@@ -483,8 +483,7 @@ import {
   getGachaCategories,
   getGachaHistory,
   type GachaCategory,
-  type GachaRecord,
-  type GachaHistoryResponse
+  type GachaRecord
 } from '@services/Gacha';
 import { showToast } from '@services/toastService';
 import { logger } from '@services/logger';
@@ -1048,9 +1047,6 @@ const toggleCategory = async (category: GachaCategory) => {
       await loadCategoryRecords(category);
     }
   }
-
-  // 重置选中的 poolName
-  selectedPoolName.value = null;
 };
 
 // 按 poolName 分组的记录（在卡池记录加载后）- 按 categoryId 索引
@@ -1169,11 +1165,6 @@ const loadCategoryRecords = async (category: GachaCategory) => {
     // 加载失败时移除展开状态
     expandedCategories.value.delete(category.id);
   }
-};
-
-// 获取卡池的记录
-const getCategoryRecords = (categoryId: string) => {
-  return categoryRecords.value.get(categoryId) || [];
 };
 
 // 检查卡池是否展开
@@ -1609,7 +1600,7 @@ const exportSelectedPools = async () => {
       return;
     }
 
-    const { uid, cookie, roleToken, accountToken } = JSON.parse(authData);
+    const { uid } = JSON.parse(authData);
     logger.debug('导出验证信息获取成功', {
       uid: uid.substring(0, 8) + '...'
     });
@@ -2346,17 +2337,17 @@ const exportMergedAllData = async () => {
         };
         mergedData.summary.totalCategories += accountCategories.length;
         mergedData.summary.totalRecords += accountCategories.reduce((sum, cat) => sum + cat.records.length, 0);
-      }
-    }
 
-    // 检查是否被取消
-    if (exportCancelRequested.value) {
-      logger.info('导出已取消，清理缓存数据', {
-        exportedCategories: accountCategories.length,
-        totalDuration: Date.now() - exportStartTime
-      });
-      showToast('已取消导出');
-      return;
+        // 检查是否被取消
+        if (exportCancelRequested.value) {
+          logger.info('导出已取消，清理缓存数据', {
+            exportedCategories: accountCategories.length,
+            totalDuration: Date.now() - exportStartTime
+          });
+          showToast('已取消导出');
+          return;
+        }
+      }
     }
 
     // 导出导入数据
