@@ -3,34 +3,6 @@
     <div class="header">
       <h2>寻访记录</h2>
       <div class="actions">
-        <!-- 统一的格式选择 -->
-        <div class="format-select-wrapper" ref="formatSelectWrapper">
-          <button
-            class="format-select-button"
-            @click="toggleFormatDropdown"
-            :class="{ 'active': showFormatDropdown }"
-          >
-            {{ exportFormat === 'native' ? '原始格式' : '通用格式' }}
-            <span class="dropdown-arrow" :class="{ 'rotated': showFormatDropdown }">▼</span>
-          </button>
-          <div class="format-dropdown" :class="{ 'show': showFormatDropdown }">
-            <div
-              class="format-option"
-              :class="{ 'selected': exportFormat === 'native' }"
-              @click="selectFormat('native')"
-            >
-              原始格式
-            </div>
-            <div
-              class="format-option"
-              :class="{ 'selected': exportFormat === 'official' }"
-              @click="selectFormat('official')"
-            >
-              通用格式
-            </div>
-          </div>
-        </div>
-
         <!-- 导出按钮组 -->
         <div class="export-buttons">
           <button @click="exportGachaData" class="export-btn" title="导出当前账号记录" :disabled="exportLoading">
@@ -78,6 +50,76 @@
         <div class="export-loading-spinner"></div>
         <p>正在导出寻访记录，请稍候...</p>
         <p class="export-progress">{{ exportProgress }}</p>
+        <button @click="cancelExport" class="export-cancel-btn">取消导出</button>
+      </div>
+    </div>
+
+    <!-- 卡池选择窗口 -->
+    <div v-if="showPoolSelectModal" class="modal-overlay" @click="showPoolSelectModal = false">
+      <div class="modal-content pool-select-modal" @click.stop>
+        <div class="modal-header">
+          <div class="header-left">
+            <h2>选择导出卡池</h2>
+          </div>
+          <div class="header-right">
+            <span class="selected-count">已选择 {{ selectedPoolsForExport.size }} / {{ getAllPoolsForExport().length }} 个卡池</span>
+            <button @click="showPoolSelectModal = false" class="modal-close-btn">×</button>
+          </div>
+        </div>
+
+        <div class="modal-body">
+          <div class="pool-grid">
+            <div
+              v-for="pool in getAllPoolsForExport()"
+              :key="pool.id"
+              :class="['pool-item', { 'selected': selectedPoolsForExport.has(pool.id) }]"
+              @click="togglePoolSelection(pool.id)"
+            >
+              <div class="pool-background-icon" v-if="selectedPoolsForExport.has(pool.id)">
+                <img src="@assets/complete.6cecac.svg" alt="selected" class="complete-icon" />
+              </div>
+              <div class="pool-info">
+                <div class="pool-name-row">
+                  <div class="pool-type" :class="pool.type">
+                    {{ pool.type === 'current' ? '当期' : '往期' }}
+                  </div>
+                  <div class="pool-name">{{ pool.poolName }}</div>
+                </div>
+                <div class="pool-category">{{ pool.categoryName }}</div>
+              </div>
+              <div class="pool-record-count">{{ pool.recordCount }} 抽</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <div class="footer-left">
+            <label class="format-label">导出格式:</label>
+            <div class="format-options">
+              <div
+                :class="['format-option-btn', { 'selected': exportFormat === 'native' }]"
+                @click="exportFormat = 'native'"
+              >
+                原始格式
+              </div>
+              <div
+                :class="['format-option-btn', { 'selected': exportFormat === 'official' }]"
+                @click="exportFormat = 'official'"
+              >
+                通用格式
+              </div>
+            </div>
+          </div>
+          <div class="footer-right">
+            <button @click="toggleSelectAllPools" class="select-all-btn">
+              {{ getAllPoolsForExport().every(pool => selectedPoolsForExport.has(pool.id)) ? '取消全选' : '全选' }}
+            </button>
+            <button @click="showPoolSelectModal = false" class="modal-cancel-btn">取消</button>
+            <button @click="exportSelectedPools" class="modal-confirm-btn" :disabled="selectedPoolsForExport.size === 0">
+              导出选中的卡池
+            </button>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -108,6 +150,7 @@
 
     <!-- 卡池列表 -->
     <div v-else-if="!selectedCategory && categories.length > 0" class="categories-list">
+      <!-- 当期卡池 -->
       <h3>当期卡池</h3>
       <div class="categories-horizontal">
         <div
@@ -171,6 +214,76 @@
             </div>
           </div>
         </div>
+      </div>
+
+      <!-- 分隔线 -->
+      <div class="pool-divider"></div>
+
+      <!-- 往期卡池 -->
+      <h3>往期卡池</h3>
+      <div class="categories-horizontal">
+        <div
+          v-for="pastPool in getAllPastPools()"
+          :key="pastPool.poolName"
+          class="category-card-horizontal"
+        >
+          <div class="category-info" @click="togglePastPoolExpand(pastPool.poolName)">
+            <div class="category-type-name">
+              <h4>{{ pastPool.poolName }}</h4>
+              <p class="category-poolname">{{ pastPool.categoryName }}</p>
+            </div>
+            <div class="category-count">
+              <span class="count-number">{{ pastPool.records.length }}</span>
+              <span class="count-label">抽</span>
+            </div>
+          </div>
+
+          <!-- 展开的记录显示 -->
+          <div v-if="isPastPoolExpanded(pastPool.poolName)" class="category-records">
+            <!-- 高光记录显示 -->
+            <div class="highlights-container">
+              <div
+                v-for="(processedRecord, index) in processSinglePoolGroup(pastPool)"
+                :key="index"
+                class="highlight-record"
+                :class="{ 'six-star': processedRecord.record.rarity === 5, 'five-star': processedRecord.record.rarity === 4 }"
+              >
+                <div class="record-info">
+                  <img
+                    :src="processedRecord.avatarUrl"
+                    :alt="processedRecord.record.charName"
+                    class="operator-avatar"
+                  />
+                  <div class="record-details">
+                    <h4 class="operator-name">{{ processedRecord.record.charName }}</h4>
+
+                    <div class="rarity-info">
+                      <span class="rarity-badge" :class="`rarity-${processedRecord.record.rarity}`">
+                        {{ getRarityText(processedRecord.record.rarity) }}
+                      </span>
+                    </div>
+                    <div class="pull-count">
+                      <span class="count-number">{{ processedRecord.pullCount }}</span>
+                      <span class="count-text">抽</span>
+                    </div>
+                    <div class="time-info">
+                      {{ formatTime(processedRecord.record.gachaTs) }}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 无高光记录提示 -->
+              <div v-if="processSinglePoolGroup(pastPool).length === 0" class="no-highlights">
+                <p>该卡池暂无高光记录</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div v-if="getAllPastPools().length === 0" class="no-data">
+        <p>暂无往期卡池数据</p>
       </div>
     </div>
 
@@ -346,74 +459,7 @@
       </div>
     </div>
 
-    <!-- 往期卡池 -->
-    <div v-if="categories.length > 0" class="categories-list">
-      <h3>往期卡池</h3>
-      <div class="categories-horizontal">
-        <div
-          v-for="pastPool in getAllPastPools()"
-          :key="pastPool.poolName"
-          class="category-card-horizontal"
-        >
-          <div class="category-info" @click="togglePastPoolExpand(pastPool.poolName)">
-            <div class="category-type-name">
-              <h4>{{ pastPool.poolName }}</h4>
-              <p class="category-poolname">{{ pastPool.categoryName }}</p>
-            </div>
-            <div class="category-count">
-              <span class="count-number">{{ pastPool.records.length }}</span>
-              <span class="count-label">抽</span>
-            </div>
-          </div>
 
-          <!-- 展开的记录显示 -->
-          <div v-if="isPastPoolExpanded(pastPool.poolName)" class="category-records">
-            <!-- 高光记录显示 -->
-            <div class="highlights-container">
-              <div
-                v-for="(processedRecord, index) in processSinglePoolGroup(pastPool)"
-                :key="index"
-                class="highlight-record"
-                :class="{ 'six-star': processedRecord.record.rarity === 5, 'five-star': processedRecord.record.rarity === 4 }"
-              >
-                <div class="record-info">
-                  <img
-                    :src="processedRecord.avatarUrl"
-                    :alt="processedRecord.record.charName"
-                    class="operator-avatar"
-                  />
-                  <div class="record-details">
-                    <h4 class="operator-name">{{ processedRecord.record.charName }}</h4>
-
-                    <div class="rarity-info">
-                      <span class="rarity-badge" :class="`rarity-${processedRecord.record.rarity}`">
-                        {{ getRarityText(processedRecord.record.rarity) }}
-                      </span>
-                    </div>
-                    <div class="pull-count">
-                      <span class="count-number">{{ processedRecord.pullCount }}</span>
-                      <span class="count-text">抽</span>
-                    </div>
-                    <div class="time-info">
-                      {{ formatTime(processedRecord.record.gachaTs) }}
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <!-- 无高光记录提示 -->
-              <div v-if="processSinglePoolGroup(pastPool).length === 0" class="no-highlights">
-                <p>该卡池暂无高光记录</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div v-if="getAllPastPools().length === 0" class="no-data">
-        <p>暂无往期卡池数据</p>
-      </div>
-    </div>
 
     <!-- 回到顶部按钮 -->
     <button
@@ -455,8 +501,11 @@ const error = ref<string | null>(null);
 const exportLoading = ref(false);
 const exportProgress = ref('');
 const exportFormat = ref<'native' | 'official'>('native');
-const showFormatDropdown = ref(false);
-const formatSelectWrapper = ref<HTMLElement | null>(null);
+const exportCancelRequested = ref(false);
+
+// 卡池选择导出状态
+const showPoolSelectModal = ref(false);
+const selectedPoolsForExport = ref<Set<string>>(new Set());
 
 // 数据状态变量
 const categories = ref<GachaCategory[]>([]);
@@ -1418,10 +1467,9 @@ const convertToOfficialFormat = (rawDataExport: any) => {
   return officialData;
 };
 
-const exportGachaData = async () => {
-  logger.info('开始导出寻访记录', {
-    categoriesCount: categories.value.length,
-    hasAuthData: !!localStorage.getItem('gacha_auth')
+const exportGachaData = () => {
+  logger.info('打开卡池选择窗口', {
+    categoriesCount: categories.value.length
   });
 
   if (categories.value.length === 0) {
@@ -1430,7 +1478,125 @@ const exportGachaData = async () => {
     return;
   }
 
+  // 重置选择状态
+  selectedPoolsForExport.value.clear();
+  // 默认全选
+  getAllPoolsForExport().forEach(pool => {
+    selectedPoolsForExport.value.add(pool.id);
+  });
+
+  showPoolSelectModal.value = true;
+};
+
+// 获取所有可导出的卡池（包括当期和往期）
+const getAllPoolsForExport = () => {
+  const pools: Array<{
+    id: string;
+    poolName: string;
+    categoryName: string;
+    recordCount: number;
+    type: 'current' | 'past'
+  }> = [];
+
+  categories.value.forEach(category => {
+    const poolGroups = poolGroupsForCategory.value.get(category.id);
+    if (!poolGroups) return;
+
+    const currentPoolName = getCurrentPoolName(category.id);
+
+    poolGroups.forEach((group) => {
+      const isCurrent = group.poolName === currentPoolName;
+      pools.push({
+        id: `${category.id}_${group.poolName}`,
+        poolName: group.poolName,
+        categoryName: category.name.replace('\n', ' '),
+        recordCount: group.records.length,
+        type: isCurrent ? 'current' : 'past'
+      });
+    });
+  });
+
+  // 先按类型排序（当期在前，往期在后），再按第一条记录的时间戳降序排序
+  pools.sort((a, b) => {
+    // 当期卡池优先
+    if (a.type === 'current' && b.type !== 'current') return -1;
+    if (a.type !== 'current' && b.type === 'current') return 1;
+
+    // 同类型按时间戳排序
+    const [categoryIdA, poolNameA] = a.id.split('_');
+    const [categoryIdB, poolNameB] = b.id.split('_');
+
+    const poolGroupsA = poolGroupsForCategory.value.get(categoryIdA);
+    const poolGroupsB = poolGroupsForCategory.value.get(categoryIdB);
+
+    if (!poolGroupsA || !poolGroupsB) return 0;
+
+    const groupA = poolGroupsA.get(poolNameA);
+    const groupB = poolGroupsB.get(poolNameB);
+
+    if (!groupA || !groupB) return 0;
+
+    // 使用第一条记录的时间作为卡池发布时间
+    const firstRecordA = groupA.records[0];
+    const firstRecordB = groupB.records[0];
+
+    const timeA = parseFloat(firstRecordA?.gachaTs || '0');
+    const timeB = parseFloat(firstRecordB?.gachaTs || '0');
+
+    return timeB - timeA; // 降序，最新的在前
+  });
+
+  return pools;
+};
+
+// 切换卡池选择状态
+const togglePoolSelection = (poolId: string) => {
+  if (selectedPoolsForExport.value.has(poolId)) {
+    selectedPoolsForExport.value.delete(poolId);
+  } else {
+    selectedPoolsForExport.value.add(poolId);
+  }
+};
+
+// 全选/取消全选
+const toggleSelectAllPools = () => {
+  const allPools = getAllPoolsForExport();
+  const allSelected = allPools.every(pool => selectedPoolsForExport.value.has(pool.id));
+
+  if (allSelected) {
+    selectedPoolsForExport.value.clear();
+  } else {
+    allPools.forEach(pool => {
+      selectedPoolsForExport.value.add(pool.id);
+    });
+  }
+};
+
+// 取消导出
+const cancelExport = () => {
+  logger.info('用户取消导出', {
+    progress: exportProgress.value
+  });
+
+  exportCancelRequested.value = true;
+  showToast('已取消导出');
+};
+
+// 执行导出选中的卡池
+const exportSelectedPools = async () => {
+  if (selectedPoolsForExport.value.size === 0) {
+    showToast('请至少选择一个卡池');
+    return;
+  }
+
+  showPoolSelectModal.value = false;
+
+  logger.info('开始导出选中的卡池记录', {
+    selectedCount: selectedPoolsForExport.value.size
+  });
+
   exportLoading.value = true;
+  exportCancelRequested.value = false;
   exportProgress.value = '准备导出...';
   const exportStartTime = Date.now();
 
@@ -1455,97 +1621,63 @@ const exportGachaData = async () => {
       categories: [] as any[]
     };
 
-    const totalCategories = categories.value.length;
     let totalExportedRecords = 0;
     let successfulCategories = 0;
 
-    for (let i = 0; i < totalCategories; i++) {
-      const category = categories.value[i];
-      const categoryStartTime = Date.now();
+    // 遍历所有选中的卡池
+    const allPools = getAllPoolsForExport();
+    const selectedPools = allPools.filter(pool => selectedPoolsForExport.value.has(pool.id));
+
+    for (let i = 0; i < selectedPools.length; i++) {
+      const pool = selectedPools[i];
+      const poolStartTime = Date.now();
+
+      // 检查是否取消
+      if (exportCancelRequested.value) {
+        logger.info('导出已取消', {
+          cancelledIndex: i,
+          totalPools: selectedPools.length
+        });
+        break;
+      }
 
       try {
-        exportProgress.value = `正在导出卡池 ${i + 1}/${totalCategories}: ${category.name.replace('\n', ' ')}`;
-        logger.debug(`开始导出卡池 ${i + 1}/${totalCategories}`, {
-          categoryId: category.id,
-          categoryName: category.name
+        exportProgress.value = `正在导出卡池 ${i + 1}/${selectedPools.length}: ${pool.poolName}`;
+        logger.debug(`开始导出卡池 ${i + 1}/${selectedPools.length}`, {
+          poolId: pool.id,
+          poolName: pool.poolName,
+          categoryName: pool.categoryName
         });
 
-        // 使用现有的 getGachaHistory 函数来获取数据
-        const allApiResponses: Array<{
-          code: number;
-          data: GachaHistoryResponse;
-          msg: string;
-        }> = [];
-        const allRecords: GachaRecord[] = [];
-        let currentPos: number | undefined = 0; // 第一次请求 pos=0
-        let currentTs: string | undefined;
-        let hasMore = true;
-        let pageCount = 0;
-
-        while (hasMore) {
-          pageCount++;
-          exportProgress.value = `正在导出卡池 ${i + 1}/${totalCategories}: ${category.name.replace('\n', ' ')} (第${pageCount}页)`;
-
-          const response = await logger.performanceAsync(`导出卡池${category.name}第${pageCount}页`, async () => {
-            return await getGachaHistory(
-              uid,
-              cookie,
-              roleToken,
-              accountToken,
-              category.id,
-              10, // 使用较小的分页大小
-              currentPos,
-              currentTs
-            );
-          });
-
-          console.log(`导出卡池 ${category.name} 响应:`, response);
-          logger.debug(`导出${category.name}第${pageCount}页响应`, {
-            listLength: response.list?.length || 0,
-            hasMore: response.hasMore
-          });
-
-          // 模拟原始API响应格式
-          const mockRawData = {
-            code: 0,
-            data: response,
-            msg: ''
-          };
-          allApiResponses.push(mockRawData);
-
-          // 根据响应结构更新分页参数
-          if (response && response.list && Array.isArray(response.list)) {
-            hasMore = response.hasMore;
-            allRecords.push(...response.list);
-
-            if (response.list.length > 0) {
-              // 使用最后一条记录的 pos 和 gachaTs 作为下一页的参数
-              const lastRecord = response.list[response.list.length - 1];
-              currentPos = lastRecord.pos;
-              currentTs = lastRecord.gachaTs;
-            } else {
-              hasMore = false;
-            }
-          } else {
-            logger.warn(`卡池${category.name}响应格式异常`, { response });
-            hasMore = false;
-          }
+        // 从已有数据中获取该卡池的记录
+        const [categoryId, poolName] = pool.id.split('_');
+        const poolGroups = poolGroupsForCategory.value.get(categoryId);
+        if (!poolGroups || !poolGroups.has(poolName)) {
+          logger.warn(`卡池${pool.poolName}没有数据`, { poolId: pool.id });
+          continue;
         }
 
-        const categoryDuration = Date.now() - categoryStartTime;
-        logger.info(`卡池${category.name}导出完成`, {
-          categoryId: category.id,
-          categoryName: category.name,
-          pageCount: pageCount,
+        const poolData = poolGroups.get(poolName)!;
+        const allRecords = poolData.records;
+
+        const poolDuration = Date.now() - poolStartTime;
+        logger.info(`卡池${pool.poolName}导出完成`, {
+          poolId: pool.id,
+          poolName: pool.poolName,
+          categoryName: pool.categoryName,
           recordsCount: allRecords.length,
-          duration: categoryDuration
+          duration: poolDuration
         });
 
-        // 构建合并数据，同时保留原始响应
+        // 构建合并数据
         if (allRecords.length > 0) {
           rawDataExport.categories.push({
-            categoryInfo: category,
-            apiResponses: allApiResponses,
+            categoryInfo: {
+              id: categoryId,
+              name: pool.categoryName
+            },
+            poolName: poolName,
+            poolType: pool.type,
             mergedData: {
               code: 0,
               data: {
@@ -1558,31 +1690,38 @@ const exportGachaData = async () => {
           totalExportedRecords += allRecords.length;
           successfulCategories++;
         } else {
-          logger.warn(`卡池${category.name}无记录数据`, {
-            categoryId: category.id,
-            pageCount: pageCount
-          });
+          logger.warn(`卡池${pool.poolName}无记录数据`, { poolId: pool.id });
         }
 
       } catch (err: unknown) {
-        const categoryDuration = Date.now() - categoryStartTime;
+        const poolDuration = Date.now() - poolStartTime;
         const errorMessage = err instanceof Error ? err.message : '未知错误';
-        logger.error(`导出卡池${category.name}时发生错误`, {
+        logger.error(`导出卡池${pool.poolName}时发生错误`, {
           error: errorMessage,
           stack: err instanceof Error ? err.stack : undefined,
-          categoryId: category.id,
-          categoryName: category.name,
-          duration: categoryDuration
+          poolId: pool.id,
+          poolName: pool.poolName,
+          duration: poolDuration
         });
-        console.error(`导出卡池 ${category.name} 时出错:`, err);
-        showToast(`导出卡池 ${category.name} 时出错: ${errorMessage}`);
+        console.error(`导出卡池 ${pool.poolName} 时出错:`, err);
+        showToast(`导出卡池 ${pool.poolName} 时出错: ${errorMessage}`);
       }
+    }
+
+    // 检查是否被取消
+    if (exportCancelRequested.value) {
+      logger.info('导出已取消，清理缓存数据', {
+        exportedPools: successfulCategories,
+        totalDuration: Date.now() - exportStartTime
+      });
+      showToast('已取消导出');
+      return;
     }
 
     const totalDuration = Date.now() - exportStartTime;
     logger.info('寻访记录导出成功统计', {
-      totalCategories: totalCategories,
-      successfulCategories: successfulCategories,
+      totalSelectedPools: selectedPools.length,
+      successfulPools: successfulCategories,
       totalExportedRecords: totalExportedRecords,
       totalDuration: totalDuration,
       categoriesWithRecords: rawDataExport.categories.length
@@ -1590,8 +1729,8 @@ const exportGachaData = async () => {
 
     if (rawDataExport.categories.length === 0) {
       logger.warn('没有可导出的记录数据', {
-        totalCategories: totalCategories,
-        successfulCategories: successfulCategories
+        totalSelectedPools: selectedPools.length,
+        successfulPools: successfulCategories
       });
       showToast('没有可导出的记录数据');
       return;
@@ -1653,12 +1792,20 @@ const exportGachaData = async () => {
       fileName: fileName,
       format: formatDescription,
       totalDuration: totalDuration,
-      totalCategories: successfulCategories,
+      totalPools: successfulCategories,
       totalRecords: totalExportedRecords
     });
 
     showToast(`寻访记录${formatDescription}导出成功`);
   } catch (err: unknown) {
+    // 如果是取消导致的，不显示失败提示
+    if (exportCancelRequested.value) {
+      logger.info('导出已取消（异常退出）', {
+        error: err instanceof Error ? err.message : '未知错误'
+      });
+      return;
+    }
+
     const totalDuration = Date.now() - exportStartTime;
     const errorMessage = err instanceof Error ? err.message : '未知错误';
     logger.error('导出失败', {
@@ -2100,6 +2247,7 @@ const exportMergedAllData = async () => {
   }
 
   exportLoading.value = true;
+  exportCancelRequested.value = false;
   exportProgress.value = '准备导出合并数据...';
   const exportStartTime = Date.now();
 
@@ -2129,6 +2277,16 @@ const exportMergedAllData = async () => {
           records: GachaRecord[];
         }> = [];
         for (const category of categories.value) {
+          // 检查是否取消
+          if (exportCancelRequested.value) {
+            logger.info('导出已取消', {
+              cancelledAt: 'accountData',
+              processedCategories: accountCategories.length,
+              totalCategories: categories.value.length
+            });
+            break;
+          }
+
           exportProgress.value = `正在导出账号卡池: ${category.name.replace('\n', ' ')}`;
 
           const allRecords: GachaRecord[] = [];
@@ -2137,6 +2295,16 @@ const exportMergedAllData = async () => {
           let hasMore = true;
 
           while (hasMore) {
+            // 检查是否取消
+            if (exportCancelRequested.value) {
+              logger.info('导出已取消', {
+                cancelledAt: 'accountData_fetching',
+                category: category.name
+              });
+              hasMore = false;
+              break;
+            }
+
             const response = await getGachaHistory(
               uid,
               cookie,
@@ -2179,6 +2347,16 @@ const exportMergedAllData = async () => {
         mergedData.summary.totalCategories += accountCategories.length;
         mergedData.summary.totalRecords += accountCategories.reduce((sum, cat) => sum + cat.records.length, 0);
       }
+    }
+
+    // 检查是否被取消
+    if (exportCancelRequested.value) {
+      logger.info('导出已取消，清理缓存数据', {
+        exportedCategories: accountCategories.length,
+        totalDuration: Date.now() - exportStartTime
+      });
+      showToast('已取消导出');
+      return;
     }
 
     // 导出导入数据
@@ -2277,6 +2455,14 @@ const exportMergedAllData = async () => {
 
     showToast(`合并${formatDescription}导出成功，共${mergedData.summary.totalRecords}条记录`);
   } catch (err: unknown) {
+    // 如果是取消导致的，不显示失败提示
+    if (exportCancelRequested.value) {
+      logger.info('导出已取消（异常退出）', {
+        error: err instanceof Error ? err.message : '未知错误'
+      });
+      return;
+    }
+
     const errorMessage = err instanceof Error ? err.message : '未知错误';
     logger.error('合并导出失败', {
       error: errorMessage,
@@ -2301,6 +2487,10 @@ const loadAllPoolNames = async (
     categoriesCount: categoryList.length
   });
 
+  // 统一加载提示
+  loadingText.value = '正在加载卡池数据...';
+  logger.gachaDebug('开始加载卡池数据(包含当期和往期)');
+
   const promises = categoryList.map(async (category, index) => {
     try {
       logger.debug(`获取卡池${index + 1}/${categoryList.length}的详细信息`, {
@@ -2308,136 +2498,134 @@ const loadAllPoolNames = async (
         categoryName: category.name
       });
 
-      // 先获取记录总数
-      let recordCount = 0;
-      try {
-        const countResponse = await logger.performanceAsync(`获取卡池${category.id}的记录数`, async () => {
-          return await getGachaHistory(
+      // 只获取1条记录来快速确定当期卡池的poolName
+      const countResponse = await logger.performanceAsync(`获取卡池${category.id}的数据`, async () => {
+        return await getGachaHistory(
+          uid,
+          cookie,
+          roleToken,
+          accountToken,
+          category.id,
+          1, // 先获取1条
+          undefined,
+          undefined
+        );
+      });
+
+      if (countResponse.list.length > 0) {
+        // 设置当期卡池名称
+        const currentPoolName = countResponse.list[0].poolName || '未知卡池';
+        categoryPoolNames.value.set(category.id, currentPoolName);
+
+        // 初始化poolGroups，放入当期卡池
+        const poolGroups = new Map<string, { poolName: string; records: any[] }>();
+        poolGroups.set(currentPoolName, { poolName: currentPoolName, records: countResponse.list });
+        poolGroupsForCategory.value.set(category.id, poolGroups);
+
+        // 初始化当期卡池的记录数为1
+        categoryRecordCounts.value.set(category.id, 1);
+
+        // 继续获取更多数据(最多100条)
+        const lastRecord = countResponse.list[0];
+        let currentPos = lastRecord?.pos;
+        let currentTs = lastRecord?.gachaTs;
+        let hasMore = true;
+        let allRecords = [...countResponse.list];
+
+        while (hasMore && allRecords.length < 100) {
+          const moreResponse = await getGachaHistory(
             uid,
             cookie,
             roleToken,
             accountToken,
             category.id,
-            1, // 先获取1条看看是否有数据
-            undefined,
-            undefined
+            10,
+            currentPos,
+            currentTs
           );
-        });
 
-        if (countResponse.list.length > 0) {
-          // 如果有数据，再获取更多数据来计算总数
-          let allRecords: any[] = [...countResponse.list];
-          let currentPos = countResponse.list[countResponse.list.length - 1]?.pos;
-          let currentTs = countResponse.list[countResponse.list.length - 1]?.gachaTs;
-          let hasMore = countResponse.hasMore;
-
-          // 继续获取所有数据来计算总数
-          while (hasMore && allRecords.length < 100) { // 限制最多获取100条来计算总数，避免请求过多
-            const moreResponse = await getGachaHistory(
-              uid,
-              cookie,
-              roleToken,
-              accountToken,
-              category.id,
-              10,
-              currentPos,
-              currentTs
-            );
-
-            if (moreResponse.list && moreResponse.list.length > 0) {
-              allRecords.push(...moreResponse.list);
-              hasMore = moreResponse.hasMore;
-              currentPos = moreResponse.list[moreResponse.list.length - 1]?.pos;
-              currentTs = moreResponse.list[moreResponse.list.length - 1]?.gachaTs;
-            } else {
-              hasMore = false;
-            }
+          if (moreResponse.list && moreResponse.list.length > 0) {
+            allRecords.push(...moreResponse.list);
+            hasMore = moreResponse.hasMore;
+            currentPos = moreResponse.list[moreResponse.list.length - 1]?.pos;
+            currentTs = moreResponse.list[moreResponse.list.length - 1]?.gachaTs;
+          } else {
+            hasMore = false;
           }
-
-          // 按时间戳和位置排序记录（从早到晚）
-          allRecords.sort((a: any, b: any) => {
-            const timeA = parseFloat(a.gachaTs);
-            const timeB = parseFloat(b.gachaTs);
-            if (timeA !== timeB) {
-              return timeA - timeB;
-            }
-            return a.pos - b.pos;
-          });
-
-          // 按 poolName 分组记录
-          const poolGroups = new Map<string, { poolName: string; records: any[] }>();
-          allRecords.forEach((record) => {
-            const poolName = record.poolName || '未知卡池';
-            if (!poolGroups.has(poolName)) {
-              poolGroups.set(poolName, { poolName, records: [] });
-            }
-            poolGroups.get(poolName)!.records.push(record);
-          });
-
-          // 保存 poolGroups 到全局变量
-          poolGroupsForCategory.value.set(category.id, poolGroups);
-
-          // 找到当期卡池（最新的 poolName）
-          const pools = Array.from(poolGroups.values());
-          pools.sort((a, b) => {
-            const lastRecordA = a.records[a.records.length - 1];
-            const lastRecordB = b.records[b.records.length - 1];
-            const timeA = parseFloat(lastRecordA?.gachaTs || '0');
-            const timeB = parseFloat(lastRecordB?.gachaTs || '0');
-            return timeB - timeA; // 降序，最新的在前
-          });
-
-          // 只计算当期卡池的抽数
-          recordCount = pools[0]?.records.length || 0;
-
-          // 设置poolName为当期卡池名称
-          const currentPoolName = pools[0]?.poolName || '';
-          categoryPoolNames.value.set(category.id, currentPoolName);
-        } else {
-          // 没有记录
-          recordCount = 0;
         }
-      } catch (countError) {
-        logger.warn(`获取卡池${category.id}的记录数失败`, {
-          error: countError instanceof Error ? countError.message : '未知错误',
-          categoryId: category.id
+
+        // 按时间戳和位置排序记录（从早到晚）
+        allRecords.sort((a: any, b: any) => {
+          const timeA = parseFloat(a.gachaTs);
+          const timeB = parseFloat(b.gachaTs);
+          if (timeA !== timeB) {
+            return timeA - timeB;
+          }
+          return a.pos - b.pos;
         });
-        recordCount = 0;
+
+        // 重新按 poolName 分组记录
+        const newPoolGroups = new Map<string, { poolName: string; records: any[] }>();
+        allRecords.forEach((record) => {
+          const poolName = record.poolName || '未知卡池';
+          if (!newPoolGroups.has(poolName)) {
+            newPoolGroups.set(poolName, { poolName, records: [] });
+          }
+          newPoolGroups.get(poolName)!.records.push(record);
+        });
+
+        // 找到当期卡池（最新的 poolName）
+        const pools = Array.from(newPoolGroups.values());
+        pools.sort((a, b) => {
+          const lastRecordA = a.records[a.records.length - 1];
+          const lastRecordB = b.records[b.records.length - 1];
+          const timeA = parseFloat(lastRecordA?.gachaTs || '0');
+          const timeB = parseFloat(lastRecordB?.gachaTs || '0');
+          return timeB - timeA; // 降序，最新的在前
+        });
+
+        // 更新全局变量
+        poolGroupsForCategory.value.set(category.id, newPoolGroups);
+
+        // 只计算当期卡池的抽数
+        const recordCount = pools[0]?.records.length || 0;
+        categoryRecordCounts.value.set(category.id, recordCount);
+
+        logger.debug(`卡池${category.id}的数据加载成功`, {
+          categoryId: category.id,
+          totalRecords: allRecords.length,
+          poolGroups: pools.length,
+          recordCount: recordCount
+        });
+
+      } else {
+        // 没有记录
+        categoryPoolNames.value.set(category.id, '');
+        categoryRecordCounts.value.set(category.id, 0);
+        poolGroupsForCategory.value.set(category.id, new Map());
       }
-
-      // 设置记录数
-      categoryRecordCounts.value.set(category.id, recordCount);
-
-      logger.debug(`卡池${category.id}的详细信息获取成功`, {
-        categoryId: category.id,
-        recordCount: recordCount,
-        poolName: categoryPoolNames.value.get(category.id)
-      });
 
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : '未知错误';
-      logger.error(`获取卡池 ${category.id} 的详细信息失败`, {
+      logger.warn(`获取卡池${category.id}的数据失败`, {
         error: errorMessage,
-        stack: error instanceof Error ? error.stack : undefined,
         categoryId: category.id,
         categoryName: category.name
       });
 
-      console.warn(`获取卡池 ${category.id} 的详细信息失败:`, error);
       // 设置默认值
+      categoryPoolNames.value.set(category.id, '');
       categoryRecordCounts.value.set(category.id, 0);
+      poolGroupsForCategory.value.set(category.id, new Map());
     }
   });
 
   const results = await Promise.allSettled(promises);
   const successful = results.filter(r => r.status === 'fulfilled').length;
-  const failed = results.filter(r => r.status === 'rejected').length;
 
-  logger.info('卡池详细信息预获取完成', {
+  logger.info('卡池数据加载完成', {
     totalCategories: categoryList.length,
     successful: successful,
-    failed: failed,
-    successRate: `${((successful / categoryList.length) * 100).toFixed(1)}%`,
     poolNamesCount: categoryPoolNames.value.size,
     recordCountsCount: categoryRecordCounts.value.size
   });
@@ -2456,23 +2644,6 @@ const scrollToTop = () => {
 // 滚动事件监听器
 const handleScroll = () => {
   showBackToTop.value = window.scrollY > 300;
-};
-
-// 格式选择下拉框控制
-const toggleFormatDropdown = () => {
-  showFormatDropdown.value = !showFormatDropdown.value;
-};
-
-const selectFormat = (format: 'native' | 'official') => {
-  exportFormat.value = format;
-  showFormatDropdown.value = false;
-};
-
-// 点击外部关闭下拉框
-const handleClickOutside = (event: MouseEvent) => {
-  if (formatSelectWrapper.value && !formatSelectWrapper.value.contains(event.target as Node)) {
-    showFormatDropdown.value = false;
-  }
 };
 
 // 组件挂载
@@ -2495,13 +2666,9 @@ onMounted(() => {
   // 添加滚动监听器
   window.addEventListener('scroll', handleScroll);
 
-  // 添加点击外部关闭下拉框监听器
-  document.addEventListener('click', handleClickOutside);
-
   // 组件卸载时移除监听器
   onUnmounted(() => {
     window.removeEventListener('scroll', handleScroll);
-    document.removeEventListener('click', handleClickOutside);
   });
 });
 </script>
@@ -2617,9 +2784,358 @@ onMounted(() => {
   font-size: 14px !important;
 }
 
+.export-cancel-btn {
+  margin-top: 20px;
+  padding: 10px 24px;
+  border: 1px solid #ff4444;
+  background: #3a3a3a;
+  color: #ff4444;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+
+.export-cancel-btn:hover {
+  background: #ff4444;
+  color: #ffffff;
+}
+
 @keyframes spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
+}
+
+/* 卡池选择窗口样式 */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1001;
+}
+
+.pool-select-modal {
+  background: #2d2d2d;
+  border: 1px solid #404040;
+  max-width: 900px;
+  width: 90%;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 24px;
+  border-bottom: 1px solid #404040;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.modal-header h2 {
+  margin: 0;
+  color: #ffffff;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.modal-close-btn {
+  background: none;
+  border: none;
+  color: #999;
+  font-size: 28px;
+  cursor: pointer;
+  padding: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s;
+}
+
+.modal-close-btn:hover {
+  color: #ffffff;
+}
+
+.modal-body {
+  padding: 20px 24px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+/* 自定义滚动条样式 - 导出窗口 */
+.modal-body::-webkit-scrollbar {
+  width: 6px;
+}
+
+.modal-body::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.modal-body::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.3);
+  transition: background 0.2s ease;
+}
+
+.modal-body::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.5);
+}
+
+.select-all-btn {
+  padding: 8px 16px;
+  border: 1px solid #646cff;
+  background: #3a3a3a;
+  color: #646cff;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.select-all-btn:hover {
+  background: #646cff;
+  color: #ffffff;
+}
+
+.selected-count {
+  color: #ccc;
+  font-size: 14px;
+}
+
+.format-label {
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.format-options {
+  display: flex;
+  gap: 8px;
+}
+
+.format-option-btn {
+  padding: 8px 16px;
+  border: 1px solid #404040;
+  background: #3a3a3a;
+  color: #ccc;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.format-option-btn:hover {
+  background: #4a4a4a;
+  color: #ffffff;
+  border-color: #646cff;
+}
+
+.format-option-btn.selected {
+  background: #646cff;
+  color: #ffffff;
+  border-color: #646cff;
+}
+
+.pool-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.pool-item {
+  background: #3a3a3a;
+  border: 2px solid #404040;
+  padding: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.pool-item:hover {
+  border-color: #646cff;
+  background: #4a4a4a;
+}
+
+.pool-item.selected {
+  border-color: #4caf50;
+  background: linear-gradient(135deg, rgba(76, 175, 80, 0.15), rgba(76, 175, 80, 0.05));
+}
+
+.pool-background-icon {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.complete-icon {
+  width: 120px;
+  height: 120px;
+  opacity: 0.15;
+  filter: brightness(0) invert(67%) sepia(51%) saturate(495%) hue-rotate(80deg) brightness(95%) contrast(89%);
+}
+
+.pool-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  position: relative;
+  z-index: 1;
+}
+
+.pool-name-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.pool-name {
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 1;
+  min-width: 0;
+}
+
+.pool-category {
+  color: #999;
+  font-size: 12px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pool-record-count {
+  color: #646cff;
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+  position: relative;
+  z-index: 1;
+}
+
+.pool-item.selected .pool-record-count {
+  color: #4caf50;
+}
+
+.pool-type {
+  display: inline-block;
+  padding: 1px 6px;
+  border-radius: 3px;
+  font-size: 10px;
+  font-weight: 500;
+  white-space: nowrap;
+  width: fit-content;
+  min-width: fit-content;
+}
+
+.pool-type.current {
+  background: rgba(255, 165, 0, 0.2);
+  color: #ffa500;
+}
+
+.pool-type.past {
+  background: rgba(100, 108, 255, 0.2);
+  color: #646cff;
+}
+
+.pool-record-count {
+  color: #646cff;
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 24px;
+  border-top: 1px solid #404040;
+}
+
+.footer-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.footer-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.modal-cancel-btn,
+.modal-confirm-btn {
+  padding: 10px 20px;
+  border: 1px solid #404040;
+  background: #3a3a3a;
+  color: #ccc;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.modal-cancel-btn:hover {
+  background: #4a4a4a;
+  color: #ffffff;
+}
+
+.modal-confirm-btn {
+  background: #646cff;
+  color: #ffffff;
+  border-color: #646cff;
+}
+
+.modal-confirm-btn:hover:not(:disabled) {
+  background: #7d7dff;
+  border-color: #7d7dff;
+}
+
+.modal-confirm-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 /* 登录提示样式 */
@@ -2809,6 +3325,14 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   gap: 12px;
+}
+
+/* 卡池分隔线 */
+.pool-divider {
+  width: 100%;
+  height: 1px;
+  background: #555555;
+  margin: 32px 0;
 }
 
 .category-card {
@@ -3403,90 +3927,6 @@ onMounted(() => {
   display: flex;
   gap: 8px;
   align-items: center;
-}
-
-/* 自定义格式选择器 */
-.format-select-wrapper {
-  position: relative;
-}
-
-.format-select-button {
-  padding: 10px 30px 10px 12px;
-  border: 1px solid #404040;
-  background: #3a3a3a;
-  color: #ccc;
-  font-size: 14px;
-  cursor: pointer;
-  transition: all 0.2s;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  position: relative;
-}
-
-.format-select-button:hover {
-  border-color: #646cff;
-  background: #4a4a4a;
-  color: #ffffff;
-}
-
-.format-select-button.active {
-  border-color: #646cff;
-  background: #4a4a4a;
-}
-
-.dropdown-arrow {
-  position: absolute;
-  right: 10px;
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  font-size: 10px;
-  color: #999;
-}
-
-.dropdown-arrow.rotated {
-  transform: rotate(180deg);
-  color: #ffffff;
-}
-
-.format-dropdown {
-  position: absolute;
-  top: calc(100% + 4px);
-  left: 0;
-  right: 0;
-  background: #3a3a3a;
-  border: 1px solid #404040;
-  overflow: hidden;
-  opacity: 0;
-  transform: translateY(-10px);
-  visibility: hidden;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-  z-index: 100;
-}
-
-.format-dropdown.show {
-  opacity: 1;
-  transform: translateY(0);
-  visibility: visible;
-}
-
-.format-option {
-  padding: 10px 12px;
-  color: #ccc;
-  font-size: 14px;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.format-option:hover {
-  background: #4a4a4a;
-  color: #ffffff;
-}
-
-.format-option.selected {
-  background: #646cff;
-  color: #ffffff;
-  font-weight: 500;
 }
 
 .export-btn, .import-btn, .clear-btn {
