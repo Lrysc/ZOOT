@@ -71,6 +71,12 @@ const isRefreshing = ref(false);
 const isAttending = ref(false);
 
 /**
+ * 当前组件引用
+ * 用于调用子组件的刷新方法
+ */
+const currentComponentRef = ref<any>(null);
+
+/**
  * 刷新防抖定时器
  * 防止短时间内频繁刷新
  */
@@ -81,30 +87,42 @@ let refreshDebounceTimer: NodeJS.Timeout | null = null;
  * 当前组件刷新函数映射
  * 根据当前活动组件返回对应的刷新方法
  */
-const currentRefreshMethod = computed(() => {
-  const refreshMethods: Record<string, () => Promise<void>> = {
-    'GameData': async () => {
-      await gameDataStore.refreshData();
-    },
-    'Recruit': async () => {
-      // 公招计算暂无需要刷新的数据
-      console.log('公招计算页面无需刷新');
-    },
-    'Material': async () => {
-      // 培养计算暂无需要刷新的数据
-      console.log('培养计算页面无需刷新');
-    },
-    'HeadhuntingRecord': async () => {
-      // 寻访记录暂无需要刷新的数据
-      console.log('寻访记录页面无需刷新');
-    },
-    'Setting': async () => {
-      // 设置页面刷新用户信息
-      console.log('设置页面无需刷新');
-    }
-  };
-  return refreshMethods[activeComponent.value];
-});
+const getRefreshMethod = () => {
+  console.log('=== getRefreshMethod 被调用 ===', { activeComponent: activeComponent.value });
+
+  switch (activeComponent.value) {
+    case 'GameData':
+      return async () => {
+        console.log('=== 执行 GameData 刷新 ===');
+        await gameDataStore.refreshData();
+      };
+    case 'Recruit':
+      return async () => {
+        console.log('公招计算页面无需刷新');
+      };
+    case 'Material':
+      return async () => {
+        console.log('培养计算页面无需刷新');
+      };
+    case 'HeadhuntingRecord':
+      return async () => {
+        console.log('=== 执行 HeadhuntingRecord 刷新 ===');
+        if (currentComponentRef.value?.refreshGachaData) {
+          await currentComponentRef.value.refreshGachaData();
+        } else {
+          console.log('寻访记录组件未暴露刷新方法');
+        }
+      };
+    case 'Setting':
+      return async () => {
+        console.log('设置页面无需刷新');
+      };
+    default:
+      return async () => {
+        console.log('未知组件，无法刷新');
+      };
+  }
+};
 
 /**
  * 当前组件刷新提示映射
@@ -130,7 +148,7 @@ const currentRefreshMessage = computed(() => {
     'HeadhuntingRecord': {
       loading: '更新寻访记录中...',
       success: '寻访记录更新完成！',
-      disabled: true // 寻访记录无需刷新
+      disabled: false // 寻访记录支持刷新
     },
     'Setting': {
       loading: '刷新设置中...',
@@ -206,6 +224,14 @@ const openPaymentCenter = () => {
   window.open('https://user.hypergryph.com/payment/arknights', '_blank');
 };
 
+/**
+ * 打开反馈页面
+ */
+const openFeedback = () => {
+  showUserMenu.value = false;
+  window.open('https://v.wjx.cn/vm/QiJHVVY.aspx#', '_blank');
+};
+
 // ==================== 全局刷新功能 ====================
 
 /**
@@ -214,6 +240,11 @@ const openPaymentCenter = () => {
  * 添加防抖机制防止频繁刷新
  */
 const handleGlobalRefresh = async () => {
+  console.log('=== handleGlobalRefresh 被调用 ===', {
+    currentComponent: activeComponent.value,
+    isRefreshing: isRefreshing.value
+  });
+
   // 如果正在刷新，直接返回
   if (isRefreshing.value) {
     showWarning('正在刷新中，请稍候...');
@@ -230,6 +261,7 @@ const handleGlobalRefresh = async () => {
 
   // 防抖延迟 500ms
   refreshDebounceTimer = setTimeout(async () => {
+    console.log('=== 开始执行刷新逻辑 ===');
     // 设置刷新状态
     isRefreshing.value = true;
 
@@ -245,7 +277,8 @@ const handleGlobalRefresh = async () => {
       showInfo(loading);
 
       // 调用当前组件的刷新方法
-      const refreshMethod = currentRefreshMethod.value;
+      console.log('=== 准备调用刷新方法 ===', { activeComponent: activeComponent.value });
+      const refreshMethod = getRefreshMethod();
       if (refreshMethod) {
         await refreshMethod();
       }
@@ -593,11 +626,12 @@ const componentMap: Record<string, any> = {
         top: `${contextMenuPosition.y}px`
       }"
       @click.stop
+      @contextmenu.prevent
     >
       <button
         v-if="!currentRefreshMessage.disabled"
         class="context-menu-item refresh-item"
-        @click="handleGlobalRefresh"
+        @click.stop="handleGlobalRefresh"
         :disabled="isRefreshing"
         :class="{ refreshing: isRefreshing }"
         :title="currentRefreshMessage.success"
@@ -609,14 +643,14 @@ const componentMap: Record<string, any> = {
       <div v-if="!currentRefreshMessage.disabled" class="context-menu-divider"></div>
       <button
         class="context-menu-item"
-        @click="openOfficialWebsite"
+        @click.stop="openOfficialWebsite"
         title="在浏览器中打开明日方舟官网"
       >
         <span class="context-menu-text">明日方舟官网</span>
       </button>
       <button
         class="context-menu-item"
-        @click="openPaymentCenter"
+        @click.stop="openPaymentCenter"
         title="在浏览器中打开官方充值中心"
       >
         <span class="context-menu-text">官方充值中心</span>
@@ -662,6 +696,9 @@ const componentMap: Record<string, any> = {
         <div v-if="authStore.isLogin && showUserMenu" class="user-dropdown-menu">
           <div class="menu-item" @click="handleMenuClick('setting')">
             <span>设置</span>
+          </div>
+          <div class="menu-item" @click="openFeedback">
+            <span>反馈</span>
           </div>
           <div class="menu-divider"></div>
           <div class="menu-item logout" @click="handleMenuClick('logout')">
@@ -715,6 +752,7 @@ const componentMap: Record<string, any> = {
       <main class="main-content">
         <component
           :is="componentMap[activeComponent]"
+          ref="currentComponentRef"
           @showLogin="showLogin = true"
         />
       </main>

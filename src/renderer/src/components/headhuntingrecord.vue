@@ -2662,6 +2662,11 @@ onMounted(() => {
     window.removeEventListener('scroll', handleScroll);
   });
 });
+
+// 暴露刷新方法给父组件
+defineExpose({
+  refreshGachaData
+});
 </script>
 
 <style scoped>
@@ -2981,12 +2986,12 @@ onMounted(() => {
 .pool-background-icon {
   position: absolute;
   top: 0;
-  left: 0;
+  right: 0;
   width: 100%;
   height: 100%;
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-end;
   pointer-events: none;
   z-index: 0;
 }
