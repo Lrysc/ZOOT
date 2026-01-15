@@ -1,10 +1,96 @@
-import { app, shell, BrowserWindow, ipcMain, session, net } from 'electron'
+import { app, shell, BrowserWindow, ipcMain, session, net, Tray, Menu, nativeImage, Notification } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 // import icon from '../../resources/icon.png?asset'
 
 // 将mainWindow声明为全局变量
 let mainWindow: BrowserWindow | null = null
+let tray: Tray | null = null
+
+// 添加应用退出标志
+declare global {
+  namespace NodeJS {
+    interface Process {
+      isQuitting?: boolean
+    }
+  }
+}
+
+app.isQuitting = false
+
+// 创建系统托盘
+function createTray(): void {
+  // 根据平台选择合适的图标路径
+  let trayIconPath: string
+
+  if (process.platform === 'win32') {
+    trayIconPath = join(__dirname, '../../build/icon.ico')
+  } else if (process.platform === 'darwin') {
+    trayIconPath = join(__dirname, '../../build/icon.png')
+  } else {
+    trayIconPath = join(__dirname, '../../resources/icon.png')
+  }
+
+  // 加载托盘图标
+  const trayIcon = nativeImage.createFromPath(trayIconPath)
+
+  // 创建托盘实例
+  tray = new Tray(trayIcon)
+
+  // 设置托盘提示文本
+  tray.setToolTip('ZOOT备用系统')
+
+  // 创建托盘菜单
+  const contextMenu = Menu.buildFromTemplate([
+    {
+      label: '显示主窗口',
+      click: () => {
+        if (mainWindow && !mainWindow.isDestroyed()) {
+          mainWindow.show()
+          mainWindow.focus()
+        }
+      }
+    },
+    { type: 'separator' },
+    {
+      label: '森空岛签到',
+      click: () => {
+        // 发送签到请求到渲染进程
+        if (mainWindow && !mainWindow.isDestroyed()) {
+          mainWindow.webContents.send('tray-attendance-request')
+        } else {
+          // 如果窗口未显示,发送系统通知
+          new Notification({
+            title: '签到失败',
+            body: '请先打开主窗口后再进行签到',
+            icon: trayIconPath
+          }).show()
+        }
+      }
+    },
+    { type: 'separator' },
+    {
+      label: '退出程序',
+      click: () => {
+        app.quit()
+      }
+    }
+  ])
+
+  tray.setContextMenu(contextMenu)
+
+  // 双击托盘图标显示/隐藏窗口
+  tray.on('double-click', () => {
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      if (mainWindow.isVisible()) {
+        mainWindow.hide()
+      } else {
+        mainWindow.show()
+        mainWindow.focus()
+      }
+    }
+  })
+}
 
 function createWindow(): void {
   // 创建主浏览器窗口
@@ -201,6 +287,21 @@ function createWindow(): void {
     mainWindow?.show()
   })
 
+  // 窗口关闭时最小化到托盘
+  mainWindow.on('close', (event) => {
+    // 检查是否是用户手动关闭(不是程序退出时的关闭)
+    if (!app.isQuitting && mainWindow && !mainWindow.isDestroyed()) {
+      event.preventDefault()
+      mainWindow.hide()
+
+      // Windows系统显示托盘通知
+      if (process.platform === 'win32') {
+        mainWindow.flashFrame(true)
+        setTimeout(() => mainWindow?.flashFrame(false), 1000)
+      }
+    }
+  })
+
   // 处理外部链接打开
   mainWindow.webContents.setWindowOpenHandler((details) => {
     shell.openExternal(details.url).catch((err) => {
@@ -263,6 +364,9 @@ app.whenReady().then(() => {
   // 设置应用ID - 修复任务栏显示问题
   app.setAppUserModelId('com.zoot.app')
   electronApp.setAppUserModelId('com.zoot.app')
+
+  // 创建系统托盘
+  createTray()
 
   // 权限请求处理
   session.defaultSession.setPermissionRequestHandler((_webContents, permission, callback) => {
@@ -467,6 +571,30 @@ app.whenReady().then(() => {
   // IPC测试
   ipcMain.on('ping', () => console.log('pong'))
 
+  // IPC处理器：森空岛签到
+  ipcMain.handle('skland-attendance', async (_event) => {
+    // 这个处理器只是个占位符,实际的签到逻辑由渲染进程通过事件通知触发
+    // 托盘点击会通过 'tray-attendance-request' 事件通知渲染进程
+    return { success: true }
+  })
+
+  // IPC处理器：发送系统通知
+  ipcMain.handle('show-notification', async (_event, { title, body }) => {
+    try {
+      new Notification({
+        title,
+        body,
+        icon: process.platform === 'win32'
+          ? join(__dirname, '../../build/icon.ico')
+          : join(__dirname, '../../resources/icon.png')
+      }).show()
+      return { success: true }
+    } catch (error) {
+      console.error('发送通知失败:', error)
+      return { success: false, error: '发送通知失败' }
+    }
+  })
+
   // 创建主窗口
   createWindow()
 
@@ -478,7 +606,14 @@ app.whenReady().then(() => {
 
 // 窗口关闭处理
 app.on('window-all-closed', () => {
-  if (process.platform !== 'darwin') {
+  // Windows和Linux:所有窗口关闭时退出(如果有托盘,不退出)
+  // macOS:保持运行
+  if (process.platform !== 'darwin' && !tray) {
     app.quit()
   }
+})
+
+// 应用退出前清理托盘
+app.on('before-quit', () => {
+  app.isQuitting = true
 })

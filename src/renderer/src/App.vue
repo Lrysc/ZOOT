@@ -327,56 +327,64 @@ const handleUserIconClick = () => {
 };
 
 /**
- * 处理森空岛签到功能
- * 包含登录检查、凭证验证、角色选择、签到执行等完整流程
+ * 核心签到逻辑（不包含任何UI反馈）
+ * @returns 签到结果对象
  */
-const handleAttendance = async () => {
+const performAttendance = async () => {
   // 前置检查：必须已登录且有绑定角色
   if (!authStore.isLogin || !authStore.bindingRoles?.length) {
-    showWarning('请先登录并绑定游戏角色');
-    return;
+    throw new Error('请先登录并绑定游戏角色');
   }
 
+  // 第一步：验证cred有效性
+  console.log('=== 开始验证cred有效性 ===');
+  const isCredValid = await AuthAPI.checkCred(authStore.sklandCred);
+  console.log('Cred有效性验证结果:', isCredValid);
+
+  if (!isCredValid) {
+    throw new Error('Cred已失效，请重新登录');
+  }
+
+  // 第二步：获取目标角色信息
+  // 优先选择默认角色，否则选择第一个角色
+  const targetRole = authStore.bindingRoles.find((role: any) => role.isDefault) || authStore.bindingRoles[0];
+  if (!targetRole) {
+    throw new Error('未找到绑定的游戏角色');
+  }
+
+  // 调试信息输出
+  console.log('=== 绑定角色详细信息 ===');
+  console.log('完整的绑定角色列表:', JSON.stringify(authStore.bindingRoles, null, 2));
+  console.log('选中的角色信息:', JSON.stringify(targetRole, null, 2));
+  console.log('角色UID:', targetRole.uid);
+  console.log('channelMasterId:', targetRole.channelMasterId);
+  console.log('========================');
+
+  const gameId = targetRole.channelMasterId;
+  console.log('用于签到的gameId:', gameId);
+
+  // 第三步：执行签到请求
+  const attendanceData = await AuthAPI.attendance(
+    authStore.sklandCred,
+    authStore.sklandSignToken,
+    targetRole.uid,
+    gameId
+  );
+
+  return attendanceData;
+};
+
+/**
+ * 程序内签到：只显示程序内弹窗，不触发 Windows 通知
+ */
+const handleAttendance = async () => {
   // 设置签到中状态，禁用按钮
   isAttending.value = true;
 
   try {
-    // 第一步：验证cred有效性
-    console.log('=== 开始验证cred有效性 ===');
-    const isCredValid = await AuthAPI.checkCred(authStore.sklandCred);
-    console.log('Cred有效性验证结果:', isCredValid);
+    const attendanceData = await performAttendance();
 
-    if (!isCredValid) {
-      throw new Error('Cred已失效，请重新登录');
-    }
-
-    // 第二步：获取目标角色信息
-    // 优先选择默认角色，否则选择第一个角色
-    const targetRole = authStore.bindingRoles.find((role: any) => role.isDefault) || authStore.bindingRoles[0];
-    if (!targetRole) {
-      throw new Error('未找到绑定的游戏角色');
-    }
-
-    // 调试信息输出
-    console.log('=== 绑定角色详细信息 ===');
-    console.log('完整的绑定角色列表:', JSON.stringify(authStore.bindingRoles, null, 2));
-    console.log('选中的角色信息:', JSON.stringify(targetRole, null, 2));
-    console.log('角色UID:', targetRole.uid);
-    console.log('channelMasterId:', targetRole.channelMasterId);
-    console.log('========================');
-
-    const gameId = targetRole.channelMasterId;
-    console.log('用于签到的gameId:', gameId);
-
-    // 第三步：执行签到请求
-    const attendanceData = await AuthAPI.attendance(
-      authStore.sklandCred,
-      authStore.sklandSignToken,
-      targetRole.uid,
-      gameId
-    );
-
-    // 第四步：处理签到结果
+    // 处理签到结果 - 只显示程序内提示
     if (attendanceData.alreadyAttended) {
       showInfo('今日已签到');
     } else {
@@ -402,6 +410,39 @@ const handleAttendance = async () => {
   } finally {
     // 无论成功失败，都重置签到状态
     isAttending.value = false;
+  }
+};
+
+/**
+ * 托盘签到：只触发 Windows 通知，不显示程序内弹窗
+ */
+const handleTrayAttendance = async () => {
+  try {
+    const attendanceData = await performAttendance();
+
+    // 处理签到结果 - 只发送 Windows 通知
+    if (attendanceData.alreadyAttended) {
+      await window.api?.showNotification('森空岛签到', '今日已签到');
+    } else {
+      // 解析签到奖励信息
+      const awards = attendanceData.awards || [];
+      const awardTexts = awards.map((award: any) => {
+        const count = award.count || 0;
+        const name = award.resource?.name || '未知奖励';
+        return `${name} x${count}`;
+      }).join(', ');
+
+      await window.api?.showNotification('森空岛签到成功', `获得：${awardTexts}`);
+
+      // 签到成功后自动刷新数据
+      await gameDataStore.refreshData();
+    }
+
+  } catch (error: any) {
+    // 发送 Windows 错误通知
+    const errorMsg = error?.message || '签到失败，请稍后重试';
+    console.error('托盘签到过程发生错误:', error);
+    await window.api?.showNotification('签到失败', errorMsg);
   }
 };
 
@@ -434,6 +475,7 @@ const handleMenuClick = (action: string) => {
       break;
     case 'logout':
       authStore.logout();
+      gameDataStore.clearCache();
       activeComponent.value = 'GameData';
       break;
   }
@@ -470,6 +512,13 @@ onMounted(() => {
 
   // 注册键盘快捷键监听器
   document.addEventListener('keydown', handleKeyboardRefresh);
+
+  // 监听托盘签到请求
+  window.electron?.ipcRenderer?.on('tray-attendance-request', () => {
+    console.log('收到托盘签到请求');
+    // 调用托盘专用签到函数，只发送 Windows 通知
+    handleTrayAttendance();
+  });
 
   // 初始化认证状态
   authStore.restoreAuthState().then((isRestored) => {
@@ -510,6 +559,9 @@ onUnmounted(() => {
   document.removeEventListener('contextmenu', showContextMenu);
   document.removeEventListener('click', hideContextMenu);
   document.removeEventListener('keydown', handleKeyboardRefresh);
+
+  // 移除托盘签到事件监听
+  window.electron?.ipcRenderer?.removeAllListeners('tray-attendance-request');
 });
 
 // ==================== 动态组件映射 ====================
@@ -599,7 +651,7 @@ const componentMap: Record<string, any> = {
         <button
           class="user-icon-btn"
           @click="handleUserIconClick"
-          :title="authStore.isLogin ? '用户菜单' : '登录'"
+          :title="authStore.isLogin ? authStore.userName : '登录'"
         >
           <img alt="user" class="user-icon" src="@assets/icon_user.svg" />
           <!-- 已登录状态指示器 -->
@@ -1111,7 +1163,7 @@ body {
   flex: 1;
   padding: 20px;
   overflow-y: auto;
-  background: #1a1a1a url('@assets/6x6dotspace.png') repeat local 0 0 / auto;
+  background: #1a1a1a;
   -ms-overflow-style: none;
   scrollbar-width: none;
 }

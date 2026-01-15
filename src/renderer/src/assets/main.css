@@ -30,8 +30,6 @@ body {
   margin: 0;
   padding: 0;
   overflow: auto; /* 改为 auto 允许滚动 */
-  background-image: url('./6x6dotspace.png');
-  background-size: cover;
   user-select: none;
   display: block;
   font-family: 'FZYaSongGBK', 'Microsoft YaHei', sans-serif;

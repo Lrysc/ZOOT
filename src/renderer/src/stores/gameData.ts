@@ -347,6 +347,13 @@ export const useGameDataStore = defineStore('gameData', () => {
   // ========== 定时器 ==========
   let timeUpdateInterval: NodeJS.Timeout | null = null;
 
+  // ========== 理智上限通知 ==========
+  let apFullNotified = ref(false); // 是否已发送理智上限通知
+  let prevApValue = ref(0); // 上一次的理智值，用于检测变化
+
+  // ========== 周常刷新提醒 ==========
+  let weeklyReminderNotified = ref(false); // 是否已发送周常刷新提醒
+
   // ========== 数据验证函数 ==========
 
   const isValidPlayerData = (data: any): data is PlayerData => {
@@ -2264,15 +2271,165 @@ export const useGameDataStore = defineStore('gameData', () => {
 
     timeUpdateInterval = setInterval(() => {
       currentTime.value = Math.floor(Date.now() / 1000);
+
+      // 检查理智是否达到上限
+      checkApFull();
+
+      // 检查周常刷新提醒
+      checkWeeklyReminder();
     }, 1000);
 
     logger.info('时间更新定时器已启动');
+  };
+
+  /**
+   * 检查理智是否达到上限并发送通知
+   */
+  const checkApFull = (): void => {
+    try {
+      const apInfo = getActualApInfo.value;
+
+      // 只有在理智数据有效时才检查
+      if (apInfo.max <= 0) {
+        return;
+      }
+
+      // 当前理智值
+      const currentAp = apInfo.current;
+
+      // 检测理智达到上限（current >= max 且 remainSecs <= 0）
+      const isApFull = currentAp >= apInfo.max && apInfo.remainSecs <= 0;
+
+      if (isApFull) {
+        // 理智已达上限但还未发送通知
+        if (!apFullNotified.value) {
+          // 检查是否刚从不满状态变满（通过比较上一次的理智值）
+          if (prevApValue.value < apInfo.max) {
+            // 发送 Windows 通知
+            sendApFullNotification();
+            apFullNotified.value = true;
+            logger.info('理智已达到上限，已发送通知', {
+              current: currentAp,
+              max: apInfo.max
+            });
+          }
+        }
+      } else {
+        // 理智未满，重置通知标志
+        if (apFullNotified.value) {
+          apFullNotified.value = false;
+          logger.debug('理智未满，重置通知标志');
+        }
+      }
+
+      // 更新上一次的理智值
+      prevApValue.value = currentAp;
+    } catch (error) {
+      logger.error('检查理智上限状态失败', error);
+    }
+  };
+
+  /**
+   * 发送理智上限 Windows 通知
+   */
+  const sendApFullNotification = async (): Promise<void> => {
+    try {
+      const apInfo = getActualApInfo.value;
+      const message = `理智已回满！当前理智: ${apInfo.current}/${apInfo.max}`;
+
+      // 使用 preload 暴露的通知 API
+      if (window.api?.showNotification) {
+        await window.api.showNotification('理智回满提醒', message);
+        logger.info('理智上限通知已发送');
+      }
+    } catch (error) {
+      logger.error('发送理智上限通知失败', error);
+    }
+  };
+
+  /**
+   * 检查是否需要发送周常刷新提醒
+   */
+  const checkWeeklyReminder = (): void => {
+    try {
+      // 检查周常任务是否已完成
+      const weekly = playerData.value?.routine?.weekly;
+      const weeklyCompleted = weekly?.current || 0;
+      const weeklyTotal = weekly?.total || 0;
+
+      // 如果周常已完成，不需要提醒
+      if (weeklyTotal > 0 && weeklyCompleted >= weeklyTotal) {
+        if (weeklyReminderNotified.value) {
+          weeklyReminderNotified.value = false;
+          logger.debug('周常已完成，重置提醒标志');
+        }
+        return;
+      }
+
+      // 如果没有周常任务数据，不提醒
+      if (weeklyTotal <= 0) {
+        return;
+      }
+
+      // 计算距离下周一凌晨4点的时间
+      const now = new Date();
+      const nextMonday = new Date(now);
+      const dayOfWeek = now.getDay();
+      const daysUntilMonday = dayOfWeek === 1 ? 7 : (8 - dayOfWeek) % 7;
+      nextMonday.setDate(now.getDate() + daysUntilMonday);
+      nextMonday.setHours(4, 0, 0, 0);
+
+      const diffMs = nextMonday.getTime() - now.getTime();
+      const diffHours = diffMs / (1000 * 60 * 60);
+
+      // 只有在24小时内且还未发送提醒时才发送
+      if (diffHours > 0 && diffHours <= 24 && !weeklyReminderNotified.value) {
+        // 计算具体的小时和分钟
+        const hours = Math.floor(diffHours);
+        const minutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+
+        // 发送提醒
+        sendWeeklyReminderNotification(hours, minutes);
+        weeklyReminderNotified.value = true;
+        logger.info('周常刷新提醒已发送', { hours, minutes });
+      }
+
+      // 如果距离刷新超过24小时，重置提醒标志（以便下次进入24小时窗口时再次提醒）
+      if (diffHours > 24 && weeklyReminderNotified.value) {
+        weeklyReminderNotified.value = false;
+        logger.debug('距离周常刷新超过24小时，重置提醒标志');
+      }
+    } catch (error) {
+      logger.error('检查周常刷新提醒失败', error);
+    }
+  };
+
+  /**
+   * 发送周常刷新 Windows 通知
+   */
+  const sendWeeklyReminderNotification = async (hours: number, minutes: number): Promise<void> => {
+    try {
+      const message = `还剩下${hours}小时${minutes}分剿灭刷新，请记得完成剿灭！`;
+
+      // 使用 preload 暴露的通知 API
+      if (window.api?.showNotification) {
+        await window.api.showNotification('周常刷新提醒', message);
+        logger.info('周常刷新提醒通知已发送', { hours, minutes });
+      }
+    } catch (error) {
+      logger.error('发送周常刷新提醒通知失败', error);
+    }
   };
 
   const stopTimeUpdate = (): void => {
     if (timeUpdateInterval) {
       clearInterval(timeUpdateInterval);
       timeUpdateInterval = null;
+      // 重置理智通知标志
+      apFullNotified.value = false;
+      prevApValue.value = 0;
+      // 重置周常提醒标志
+      weeklyReminderNotified.value = false;
       logger.info('时间更新定时器已停止');
     } else {
       logger.debug('时间更新定时器未运行，无需停止');
@@ -2282,6 +2439,11 @@ export const useGameDataStore = defineStore('gameData', () => {
   const clearCache = (): void => {
     dataCache.value = null;
     efficiencyCache.clear();
+    // 重置理智通知标志
+    apFullNotified.value = false;
+    prevApValue.value = 0;
+    // 重置周常提醒标志
+    weeklyReminderNotified.value = false;
     logger.info('游戏数据缓存和效率缓存已清除');
   };
 

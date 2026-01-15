@@ -30,7 +30,13 @@ const api = {
     unmaximize: () => ipcRenderer.invoke('window-unmaximize'),
     close: () => ipcRenderer.invoke('window-close'),
     isMaximized: () => ipcRenderer.invoke('window-is-maximized')
-  }
+  },
+
+  // 森空岛签到
+  sklandAttendance: () => ipcRenderer.invoke('skland-attendance'),
+
+  // 发送系统通知
+  showNotification: (title: string, body: string) => ipcRenderer.invoke('show-notification', { title, body })
 }
 
 // Use `contextBridge` APIs to expose Electron APIs to

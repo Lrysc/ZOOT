@@ -12,6 +12,8 @@ interface WindowAPI {
     close: () => Promise<void>
     isMaximized: () => Promise<boolean>
   }
+  sklandAttendance: () => Promise<{ success: boolean; message?: string; awards?: string[] }>
+  showNotification: (title: string, body: string) => Promise<{ success: boolean }>
 }
 
 declare global {
