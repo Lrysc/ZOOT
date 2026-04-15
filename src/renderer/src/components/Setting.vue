@@ -34,7 +34,6 @@
                 {{ gameDataStore.gameUid }}
               </span>
             </p>
-            <p class="login-status">状态: <span class="status-online">已登录</span></p>
             <span class="registerTs">
               <span class="label">入职日期:
               <span class="value">{{ gameDataStore.formatTimestamp(gameDataStore.playerData?.status?.registerTs) || '--' }}</span>
@@ -1217,7 +1216,7 @@ onMounted(() => {
   color: #9feaf9;
 }
 
-.user-level, .user-uid, .login-status {
+.user-level, .user-uid {
   color: #ccc;
   font-size: 14px;
   line-height: 1.4;
@@ -1237,11 +1236,6 @@ onMounted(() => {
 
 .uid-value.copyable:hover {
   color: #4a90e2;
-}
-
-.status-online {
-  color: #4caf50;
-  font-weight: 500;
 }
 
 /* 基本信息卡片 */
