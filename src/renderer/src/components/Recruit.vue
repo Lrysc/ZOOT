@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, watch, onMounted } from 'vue'
+import { getSkinAvatarUrl } from '@utils/image'
 
 // 定义干员类型
 interface Operator {
@@ -105,13 +106,6 @@ const loadRecruitData = async () => {
   } finally {
     isLoading.value = false
   }
-}
-
-// 获取干员头像URL
-const getOperatorAvatarUrl = (skin: string): string => {
-  if (!skin) return ''
-  const baseUrl = 'https://raw.githubusercontent.com/yuanyan3060/ArknightsGameResource/main/avatar'
-  return `${baseUrl}/${skin}.png`
 }
 
 // 处理头像加载错误
@@ -345,7 +339,7 @@ onMounted(() => {
           >
             <div class="operator-avatar">
               <img
-                :src="getOperatorAvatarUrl(operator.skin)"
+                :src="getSkinAvatarUrl(operator.skin)"
                 :alt="operator.name"
                 class="avatar-img"
                 @error="handleAvatarError"

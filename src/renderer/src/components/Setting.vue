@@ -415,684 +415,79 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, watch, ref, computed, nextTick } from 'vue'
+import { onMounted, watch } from 'vue'
 import { useAuthStore } from '@stores/auth'
 import { useGameDataStore } from '@stores/gameData'
-import { logger, type LogEntry } from '@services/logger'
-import { showSuccess, showError, showWarning, showInfo } from '@services/toastService'
-import { updaterService, type UpdateInfo } from '@services/updater'
+import { logger } from '@services/logger'
+import { showError } from '@services/toastService'
+import { useCopy } from '@composables/useCopy'
+import { useLog } from '@composables/useLog'
+import { useUpdate } from '@composables/useUpdate'
+import { getProfessionIconUrl } from '@utils/profession'
+import { renderMarkdown, formatAboutContent } from '@utils/markdown'
 import packageJson from '../../../../package.json'
 
 // 版本号
-const version = ref(packageJson.version)
+const version = packageJson.version
 
-// ==================== Store实例 ====================
+// Store实例
 const authStore = useAuthStore()
 const gameDataStore = useGameDataStore()
 
-// ==================== 响应式数据 ====================
-const logs = ref<LogEntry[]>([])
-const showManualCopyModal = ref(false)
-const manualCopyContent = ref('')
-const manualCopyTextarea = ref<HTMLTextAreaElement>()
-const showClearConfirmModal = ref(false)
-const isOpening = ref(false)
-const isClosing = ref(false)
+// Composables
+const { copyToClipboard } = useCopy()
+const {
+  logs,
+  logCount,
+  lastLogTime,
+  showManualCopyModal,
+  manualCopyContent,
+  manualCopyTextarea,
+  showClearConfirmModal,
+  isOpening,
+  isClosing,
+  loadLogs,
+  exportLogs,
+  exportLogsAsJson,
+  selectAllText,
+  closeManualCopyModal,
+  showClearConfirm,
+  confirmClear,
+  cancelClear
+} = useLog()
 
-// 更新相关状态
-const isCheckingUpdate = ref(false)
+const {
+  updateInfo,
+  showUpdateDialog,
+  isCheckingUpdate,
+  showAboutDialog,
+  aboutContent,
+  checkForUpdates,
+  openGitHubRepo,
+  showAboutDialogFunc,
+  closeAboutDialog,
+  closeUpdateDialog,
+  downloadAndInstall
+} = useUpdate()
 
-// ==================== 计算属性 ====================
-
-/**
- * 日志条数统计
- */
-const logCount = computed(() => logs.value.length)
-
-/**
- * 最后日志时间
- */
-const lastLogTime = computed(() => {
-  if (logs.value.length === 0) return '无日志记录'
-  const lastTimestamp = logs.value[logs.value.length - 1].timestamp
-  return new Date(lastTimestamp).toLocaleString('zh-CN')
-})
-
-// ==================== 职业图标方法 ====================
-
-/**
- * 获取职业图标URL
- * @param profession 职业名称
- * @returns 图标URL
- */
-const getProfessionIconUrl = (profession: string): string => {
-  if (!profession) return ''
-
-  // 职业名称映射到文件名
-  const professionMap: { [key: string]: string } = {
-    'CASTER': 'caster',
-    'MEDIC': 'medic',
-    'PIONEER': 'pioneer',
-    'SNIPER': 'sniper',
-    'SPECIAL': 'special',
-    'SUPPORT': 'support',
-    'TANK': 'tank',
-    'WARRIOR': 'warrior'
-  }
-
-  const fileName = professionMap[profession] || profession.toLowerCase()
-  return new URL(`../assets/subProfession/${fileName}.svg`, import.meta.url).href
-}
-
-// ==================== 修复的复制功能 ====================
-
-/**
- * 高可靠性的复制到剪贴板函数
- * 结合多种方法确保复制成功
- */
-const copyToClipboard = async (text: string, itemName: string = '内容'): Promise<boolean> => {
-  if (!text || text.trim() === '') {
-    console.warn('复制内容为空')
-    return false
-  }
-
-  // 方法1: 使用现代 Clipboard API（首选）
-  if (navigator.clipboard && window.isSecureContext) {
-    try {
-      await navigator.clipboard.writeText(text)
-      console.log(`使用Clipboard API复制${itemName}成功`)
-      return true
-    } catch (error) {
-      console.warn(`Clipboard API失败:`, error)
-      // 继续尝试其他方法
-    }
-  }
-
-  // 方法2: 使用textarea元素和execCommand（兼容方案）
-  try {
-    const textArea = document.createElement('textarea')
-    textArea.value = text
-
-    // 确保元素在视口外但可聚焦
-    textArea.style.position = 'fixed'
-    textArea.style.top = '0'
-    textArea.style.left = '0'
-    textArea.style.width = '2em'
-    textArea.style.height = '2em'
-    textArea.style.padding = '0'
-    textArea.style.border = 'none'
-    textArea.style.outline = 'none'
-    textArea.style.boxShadow = 'none'
-    textArea.style.background = 'transparent'
-    textArea.style.opacity = '0'
-    textArea.style.zIndex = '-1'
-
-    document.body.appendChild(textArea)
-
-    // 选择文本 - 使用更兼容的方式
-    textArea.focus()
-    textArea.select()
-
-    // 尝试使用setSelectionRange作为备选
-    try {
-      textArea.setSelectionRange(0, textArea.value.length)
-    } catch (e) {
-      console.warn('setSelectionRange失败:', e)
-    }
-
-    // 执行复制命令
-    const successful = document.execCommand('copy')
-    document.body.removeChild(textArea)
-
-    if (successful) {
-      console.log(`使用execCommand复制${itemName}成功`)
-      return true
-    } else {
-      console.warn(`使用execCommand复制${itemName}失败`)
-      return false
-    }
-  } catch (error) {
-    console.error(`execCommand复制失败:`, error)
-    // 继续尝试最后的方法
-  }
-
-  // 方法3: 使用contenteditable div作为最后手段
-  try {
-    const div = document.createElement('div')
-    div.contentEditable = 'true'
-    div.textContent = text
-    div.style.position = 'fixed'
-    div.style.top = '0'
-    div.style.left = '0'
-    div.style.opacity = '0'
-    div.style.zIndex = '-1'
-
-    document.body.appendChild(div)
-
-    // 选择div内容
-    const range = document.createRange()
-    range.selectNodeContents(div)
-    const selection = window.getSelection()
-    if (selection) {
-      selection.removeAllRanges()
-      selection.addRange(range)
-    }
-
-    // 尝试复制
-    const successful = document.execCommand('copy')
-    if (selection) {
-      selection.removeAllRanges()
-    }
-    document.body.removeChild(div)
-
-    if (successful) {
-      console.log(`✅ 使用contenteditable复制${itemName}成功`)
-      return true
-    }
-  } catch (error) {
-    console.error(`contenteditable复制失败:`, error)
-  }
-
-  console.error(`❌ 所有复制方法都失败了`)
-  return false
-}
-
-/**
- * 强制复制功能 - 确保用户总能复制到内容
- */
-const forceCopyToClipboard = async (text: string, itemName: string = '内容'): Promise<boolean> => {
-  // 首先尝试常规复制
-  const success = await copyToClipboard(text, itemName)
-
-  if (success) {
-    return true
-  }
-
-  // 如果常规复制失败，提供手动复制选项
-  console.log(`常规复制失败，提供手动复制选项`)
-
-  // 对于短文本，直接显示在提示中让用户手动复制
-  if (text.length < 100) {
-    showWarning(`请手动复制${itemName}: ${text}`)
-    return false
-  }
-
-  // 对于长文本，显示模态框让用户手动复制
-  manualCopyContent.value = text
-  showManualCopyModal.value = true
-  await nextTick()
-
-  // 自动选择文本
-  if (manualCopyTextarea.value) {
-    manualCopyTextarea.value.select()
-    manualCopyTextarea.value.focus()
-  }
-
-  return false
-}
-
-
-/**
- * 处理UID复制 - 使用强制复制
- */
-const handleCopyUid = async () => {
-  const uid = gameDataStore.gameUid
-  if (!uid || uid === '未获取') {
-    showError('UID不可用，无法复制')
-    return
-  }
-
-  try {
-    const success = await forceCopyToClipboard(uid, 'UID')
-    if (success) {
-      showSuccess(`已复制 UID: ${uid}`)
-      logger.info('用户复制了UID', { uid })
-    } else {
-      // 已经在forceCopyToClipboard中处理了手动复制的情况
-      logger.info('UID复制需要手动操作', { uid })
-    }
-  } catch (error) {
-    console.error('复制UID过程中发生异常:', error)
-    showError(`复制失败，请手动复制UID: ${uid}`)
-    logger.error('复制UID过程中发生异常', error)
-  }
-}
-
-/**
- * 复制昵称 - 使用强制复制
- */
+// 复制昵称
 const copyNickname = async () => {
   const nickname = authStore.userName
-  if (!nickname || nickname === '未获取' || nickname === '未知用户') {
+  if (!nickname || nickname === '未获取') {
     showError('昵称不可用，无法复制')
     return
   }
-
-  try {
-    const success = await forceCopyToClipboard(nickname, '昵称')
-    if (success) {
-      showSuccess(`已复制昵称: ${nickname}`)
-      logger.info('用户复制了昵称', { nickname })
-    } else {
-      logger.info('昵称复制需要手动操作', { nickname })
-    }
-  } catch (error) {
-    console.error('复制昵称过程中发生异常:', error)
-    showError(`复制失败，请手动复制昵称: ${nickname}`)
-    logger.error('复制昵称过程中发生异常', error)
-  }
+  await copyToClipboard(nickname)
+  logger.info('用户复制了昵称', { nickname })
 }
 
-/**
- * 复制日志到剪贴板 - 使用强制复制
- */
-const copyLogsToClipboard = async () => {
-  try {
-    const logText = logger.exportLogs()
-
-    if (!logText || logText.trim() === '') {
-      showError('没有可复制的日志内容')
-      return
-    }
-
-    // 检查日志内容是否过长
-    if (logText.length > 100000) { // 100KB限制
-      if (!confirm('日志内容较大，复制可能需要较长时间，是否继续？')) {
-        return
-      }
-    }
-
-    const success = await forceCopyToClipboard(logText, '日志')
-
-    if (success) {
-      showSuccess('日志已复制到剪贴板')
-      logger.info('用户复制了日志到剪贴板', { logCount: logCount.value })
-    } else {
-      // 已经在forceCopyToClipboard中显示了手动复制模态框
-      logger.info('日志复制需要手动操作', { logCount: logCount.value })
-    }
-
-  } catch (error) {
-    console.error('复制日志失败:', error)
-    showError('复制日志失败，请尝试导出日志文件')
-    logger.error('复制日志到剪贴板失败', error)
-  }
-}
-
-// ==================== 其他方法 ====================
-
-/**
- * 加载日志数据
- */
-const loadLogs = () => {
-  logs.value = logger.getLogs()
-}
-
-/**
- * 导出日志为文本文件
- */
-const exportLogs = () => {
-  try {
-    const logText = logger.exportLogs()
-    const timestamp = new Date().toISOString().replace(/[:.]/g, '-')
-    downloadFile(logText, `ZOOT-System-logs-${timestamp}.txt`, 'text/plain')
-    showSuccess('日志导出成功')
-    logger.info('用户导出了日志文件', { logCount: logCount.value })
-  } catch (error) {
-    console.error('导出日志失败:', error)
-    showError('导出日志失败')
-    logger.error('导出日志文件失败', error)
-  }
-}
-
-/**
- * 导出日志为JSON格式
- */
-const exportLogsAsJson = () => {
-  try {
-    const jsonData = logger.exportAsJson()
-    const timestamp = new Date().toISOString().replace(/[:.]/g, '-')
-    downloadFile(jsonData, `ZOOT-System-logs-${timestamp}.json`, 'application/json')
-    showSuccess('JSON日志导出成功')
-    logger.info('用户导出了JSON格式日志', { logCount: logCount.value })
-  } catch (error) {
-    console.error('导出JSON日志失败:', error)
-    showError('导出JSON日志失败')
-    logger.error('导出JSON日志文件失败', error)
-  }
-}
-
-/**
- * 选择所有文本（用于手动复制模态框）
- */
-const selectAllText = () => {
-  if (manualCopyTextarea.value) {
-    manualCopyTextarea.value.select()
-    manualCopyTextarea.value.focus()
-  }
-}
-
-/**
- * 关闭手动复制模态框
- */
-const closeManualCopyModal = () => {
-  showManualCopyModal.value = false
-  manualCopyContent.value = ''
-}
-
-/**
- * 显示清除日志确认弹窗
- */
-const showClearConfirm = () => {
-  showClearConfirmModal.value = true
-  isOpening.value = true
-  isClosing.value = false
-
-  setTimeout(() => {
-    isOpening.value = false
-  }, 600)
-}
-
-/**
- * 确认清除日志
- */
-const confirmClear = () => {
-  isClosing.value = true
-  isOpening.value = false
-
-  setTimeout(() => {
-    const clearedCount = logCount.value
-    logger.clearLogs()
-    loadLogs()
-    showClearConfirmModal.value = false
-    isClosing.value = false
-    showSuccess('日志已清除')
-    logger.info('用户清除了所有日志', { clearedCount })
-  }, 500)
-}
-
-/**
- * 取消清除日志
- */
-const cancelClear = () => {
-  isClosing.value = true
-  isOpening.value = false
-
-  setTimeout(() => {
-    showClearConfirmModal.value = false
-    isClosing.value = false
-  }, 500)
-}
-
-/**
- * 下载文件工具函数
- */
-const downloadFile = (content: string, filename: string, mimeType: string) => {
-  try {
-    const blob = new Blob([content], { type: mimeType })
-    const url = URL.createObjectURL(blob)
-    const link = document.createElement('a')
-    link.href = url
-    link.download = filename
-    link.style.display = 'none'
-
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
-
-    URL.revokeObjectURL(url)
-  } catch (error) {
-    console.error('文件下载失败:', error)
-    throw error
-  }
-}
-
-// ==================== 更新功能方法 ====================
-
-// 更新相关状态
-const updateInfo = ref<UpdateInfo | null>(null)
-const showUpdateDialog = ref(false)
-
-/**
- * 检查更新
- */
-const checkForUpdates = async () => {
-  console.log('检查更新按钮被点击')
-  if (isCheckingUpdate.value) return
-
-  isCheckingUpdate.value = true
-
-  try {
-    console.log('开始检查更新...')
-    logger.info('用户手动检查更新')
-    const result: UpdateInfo = await updaterService.checkForUpdates(true) // 改为true，显示无更新提示
-    console.log('更新检查结果:', result)
-
-    updateInfo.value = result
-
-    if (result.hasUpdate && result.releaseInfo) {
-      // 显示自定义更新对话框
-      setTimeout(() => {
-        showUpdateDialog.value = true
-      }, 500)
-    }
-
-  } catch (error) {
-    console.error('检查更新异常:', error)
-    logger.error('检查更新失败', error)
-  } finally {
-    isCheckingUpdate.value = false
-  }
-}
-
-/**
- * 打开下载页面
- */
-const openDownloadPage = () => {
-  updaterService.openDownloadPage()
-}
-
-/**
- * 打开 GitHub 仓库
- */
-const openGitHubRepo = () => {
-  try {
-    window.open('https://github.com/Lrysc/prts', '_blank')
-    logger.info('用户访问 GitHub 仓库')
-    showSuccess('已打开 GitHub 仓库')
-  } catch (error) {
-    logger.error('打开 GitHub 仓库失败', error)
-    showError('打开 GitHub 仓库失败')
-  }
-}
-
-// 关于软件相关状态
-const showAboutDialog = ref(false)
-const aboutContent = ref('')
-
-/**
- * 显示关于对话框
- */
-const showAboutDialogFunc = async () => {
-  console.log('关于软件按钮被点击')
-  const versionInfo = await updaterService.getCurrentVersionInfo()
-
-  aboutContent.value = `
-# ZOOT备用系统
-
-## 版本信息
-- **当前版本**：${versionInfo.version}
-- **更新时间**：${versionInfo.buildTime || '未知'}
-
-## 问题反馈
-
-如有遇到问题需要反馈，请添加QQ群1063973541，或将本软件的日志及对应软件图片和游戏对应错误数据图片上传至邮箱255958053@qq.com
-
-## 软件声明
-
-### 使用限制
-- **禁止商业用途**：本软件仅供个人学习和研究使用，严禁用于任何商业目的。
-- **遵守协议要求**：使用本软件时，请严格遵守相关协议条款。
-- **禁止跳脸官方**：严禁使用本软件对游戏官方进行任何形式的挑衅或不当行为。
-
-### 免责声明
-本软件仅供学习和交流使用，使用者应自行承担使用风险。开发者不对因使用本软件而产生的任何后果承担责任。
-
-## 项目信息
-- **  开源地址  **：https://github.com/Lrysc/prts
-- **  问题反馈  **：请在GitHub Issues中提交问题和建议
-- **  技术支持  **：欢迎提交Pull Request参与项目开发
-
-  `.trim()
-
-  showAboutDialog.value = true
-  logger.info('用户查看关于信息')
-}
-
-/**
- * 关闭关于对话框
- */
-const closeAboutDialog = () => {
-  showAboutDialog.value = false
-}
-
-/**
- * 简单的 Markdown 渲染器
- */
-const renderMarkdown = (text: string): string => {
-  if (!text) return ''
-
-  // 限制显示长度
-  const maxLength = 300
-  const truncatedText = text.length > maxLength ? text.substring(0, maxLength) + '...' : text
-
-  let html = truncatedText
-
-  // 处理标题 (# ## ### ####)
-  html = html.replace(/^#### (.*$)/gim, '<h4 class="md-h4">$1</h4>')
-  html = html.replace(/^### (.*$)/gim, '<h3 class="md-h3">$1</h3>')
-  html = html.replace(/^## (.*$)/gim, '<h2 class="md-h2">$1</h2>')
-  html = html.replace(/^# (.*$)/gim, '<h1 class="md-h1">$1</h1>')
-
-  // 处理粗体 (**text**)
-  html = html.replace(/\*\*(.+?)\*\*/g, '<strong class="md-strong">$1</strong>')
-
-  // 处理斜体 (*text*)
-  html = html.replace(/\*(.+?)\*/g, '<em class="md-em">$1</em>')
-
-  // 处理代码块 (```code```)
-  html = html.replace(/```(.*?)```/gs, '<pre class="md-code-block"><code>$1</code></pre>')
-
-  // 处理行内代码 (`code`)
-  html = html.replace(/`(.+?)`/g, '<code class="md-inline-code">$1</code>')
-
-  // 处理链接 [text](url)
-  html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" class="md-link">$1</a>')
-
-  // 处理无序列表 (- item 或 * item)
-  html = html.replace(/^[\-\*] (.+)$/gim, '<li class="md-li">$1</li>')
-  html = html.replace(/(<li class="md-li">.*<\/li>)/s, '<ul class="md-ul">$1</ul>')
-
-  // 处理有序列表 (1. item)
-  html = html.replace(/^\d+\. (.+)$/gim, '<li class="md-li-ol">$1</li>')
-  html = html.replace(/(<li class="md-li-ol">.*<\/li>)/s, '<ol class="md-ol">$1</ol>')
-
-  // 处理换行
-  html = html.replace(/\n\n/g, '</p><p class="md-p">')
-  html = '<p class="md-p">' + html + '</p>'
-
-  // 清理空的段落标签
-  html = html.replace(/<p class="md-p"><\/p>/g, '')
-  html = html.replace(/<p class="md-p">(.*?)<\/p>/g, (_, p1) => {
-    if (p1.trim() === '') return ''
-    if (p1.includes('<h') || p1.includes('<ul') || p1.includes('<ol') || p1.includes('<pre')) {
-      return p1
-    }
-    return '<p class="md-p">' + p1 + '</p>'
-  })
-
-  return html
-}
-
-
-
-/**
- * 关闭更新对话框
- */
-const closeUpdateDialog = () => {
-  showUpdateDialog.value = false
-  updateInfo.value = null
-}
-
-/**
- * 格式化关于内容
- */
-const formatAboutContent = (content: string) => {
-  return content
-    .replace(/^# (.+)$/gm, '<h1 class="about-h1">$1</h1>')
-    .replace(/^## (.+)$/gm, '<h2 class="about-h2">$1</h2>')
-    .replace(/^### (.+)$/gm, '<h3 class="about-h3">$1</h3>')
-    .replace(/^\*\*(.+?)\*\*:/gm, '<strong class="about-strong">$1</strong>:')
-    .replace(/^\* (.+)$/gm, '<li class="about-li">$1</li>')
-    .replace(/^- (.+)$/gm, '<li class="about-li">$1</li>')
-    .replace(/\n\n/g, '</p><p class="about-p">')
-    .replace(/^/, '<p class="about-p">')
-    .replace(/$/, '</p>')
-    .replace(/<li class="about-li">/g, '<ul class="about-ul"><li class="about-li">')
-    .replace(/<\/li>/g, '</li></ul>')
-    .replace(/<\/ul><ul class="about-ul">/g, '')
-    .replace(/https:\/\/github\.com\/Lrysc\/prts/g, '<a href="https://github.com/Lrysc/prts" target="_blank" class="about-link">https://github.com/Lrysc/prts</a>')
-}
-
-/**
- * 下载并安装更新
- */
-const downloadAndInstall = async () => {
-  if (!updateInfo.value?.releaseInfo) return
-
-  try {
-    console.log('开始下载并安装更新...')
-    showInfo('正在准备下载更新...')
-
-    // 打开下载页面
-    updaterService.openDownloadPage()
-
-    // 关闭对话框
-    closeUpdateDialog()
-
-    // 显示提示
-    showSuccess('已打开下载页面，请下载最新版本进行安装')
-
-    logger.info('用户选择下载并安装更新', {
-      fromVersion: updateInfo.value.currentVersion,
-      toVersion: updateInfo.value.latestVersion
-    })
-
-  } catch (error) {
-    console.error('下载安装失败:', error)
-    showError('下载安装失败，请手动前往下载页面')
-    logger.error('下载安装更新失败', error)
-  }
-}
-
-
-
-// ==================== 生命周期和监听器 ====================
-
-/**
- * 监听 playerData 变化，更新头像
- */
+// 生命周期和监听器
 watch(
   () => gameDataStore.playerData,
-  () => {
-    gameDataStore.fetchUserAvatar()
-  },
+  () => { gameDataStore.fetchUserAvatar() },
   { deep: true, immediate: true }
 )
 
-/**
- * 监听登录状态变化
- */
 watch(
   () => authStore.isLogin,
   (newVal) => {
@@ -1111,14 +506,10 @@ watch(
   }
 )
 
-/**
- * 组件挂载时初始化
- */
 onMounted(() => {
   if (authStore.isLogin) {
     gameDataStore.fetchUserAvatar()
   }
-
   loadLogs()
   logger.info('用户访问设置页面')
 })

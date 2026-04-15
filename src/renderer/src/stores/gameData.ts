@@ -4,6 +4,7 @@ import { AuthAPI } from '@services/api';
 import { useAuthStore } from '@stores/auth';
 import { showSuccess, showError } from '@services/toastService';
 import { logger } from '@services/logger';
+import { processImageUrl, getOperatorPortraitUrl, getOperatorAvatarUrl } from '@utils/image';
 
 // ========== 完整类型定义 ==========
 
@@ -550,13 +551,6 @@ export const useGameDataStore = defineStore('gameData', () => {
 
   // ========== 头像相关功能 ==========
 
-  const processImageUrl = (url: string): string => {
-    if (!url) return '';
-    if (url.startsWith('http')) return url;
-    if (url.startsWith('/')) return `https://web.hycdn.cn${url}`;
-    return url;
-  };
-
   const getAvatarPlaceholder = (): string => {
     return authStore.userName ? authStore.userName.charAt(0) || '👤' : '👤';
   };
@@ -601,38 +595,6 @@ export const useGameDataStore = defineStore('gameData', () => {
   };
 
   // ========== 干员图片相关功能 ==========
-
-  const getOperatorPortraitUrl = (charId: string, evolvePhase: number): string => {
-    if (!charId || !charId.startsWith('char_')) return '';
-
-    try {
-      const baseUrl = 'https://raw.githubusercontent.com/yuanyan3060/ArknightsGameResource/main/portrait';
-      const portraitFileName = `${charId}_${evolvePhase}`;
-      const portraitUrl = `${baseUrl}/${portraitFileName}.png`;
-
-      logger.debug('生成干员半身像URL', { charId, evolvePhase, portraitFileName, portraitUrl });
-      return portraitUrl;
-    } catch (error) {
-      logger.error('生成干员半身像URL失败', { charId, evolvePhase, error });
-      return '';
-    }
-  };
-
-  const getOperatorAvatarUrl = (charId: string): string => {
-    if (!charId || !charId.startsWith('char_')) return '';
-
-    try {
-      const baseUrl = 'https://raw.githubusercontent.com/yuanyan3060/ArknightsGameResource/main/avatar';
-      const avatarFileName = charId;
-      const avatarUrl = `${baseUrl}/${avatarFileName}.png`;
-
-      logger.debug('生成干员头像URL', { charId, avatarFileName, avatarUrl });
-      return avatarUrl;
-    } catch (error) {
-      logger.error('生成干员头像URL失败', { charId, error });
-      return '';
-    }
-  };
 
   const handleOperatorImageError = (charId: string, type: string, event: Event): void => {
     const imgElement = event.target as HTMLImageElement;

@@ -274,45 +274,16 @@ import { ref, onMounted, watch, inject, computed, onUnmounted } from 'vue';
 import { useAuthStore } from '@stores/auth';
 import { useGameDataStore } from '@stores/gameData';
 import { showError } from '@services/toastService';
+import { getOperatorAvatarUrl } from '@utils/image';
 
 // ==================== Store实例初始化 ====================
-/**
- * 认证状态管理store
- * 负责用户登录状态、凭证信息的管理
- */
 const authStore = useAuthStore();
-
-/**
- * 游戏数据管理store
- * 负责游戏数据的获取、缓存、格式化等操作
- */
 const gameDataStore = useGameDataStore();
 
 // ==================== 头像获取方法 ====================
 
 /**
- * 获取干员头像URL
- * @param charId 干员ID
- * @returns 头像URL
- */
-const getOperatorAvatarUrl = (charId: string): string => {
-  if (!charId || !charId.startsWith('char_')) return '';
-  try {
-    const baseUrl = 'https://raw.githubusercontent.com/yuanyan3060/ArknightsGameResource/main/avatar';
-    const avatarFileName = charId;
-    const avatarUrl = `${baseUrl}/${avatarFileName}.png`;
-    return avatarUrl;
-  } catch (error) {
-    console.error('生成干员头像URL失败', { charId, error });
-    return '';
-  }
-};
-
-/**
  * 处理干员图片加载错误
- * @param charId 干员ID
- * @param type 图片类型
- * @param event 错误事件
  */
 const handleOperatorImageError = (charId: string, type: string, event: Event): void => {
   const imgElement = event.target as HTMLImageElement;

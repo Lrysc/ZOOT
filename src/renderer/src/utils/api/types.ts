@@ -55,6 +55,9 @@ export interface PlayerStatus {
     max: number;
     completeRecoveryTime: number;
   };
+  avatar?: {
+    url: string;
+  };
 }
 
 export interface BuildingData {

@@ -34,7 +34,7 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { useCopy } from '../composables/useCopy';
-import { useImage } from '../composables/useImage';
+import { handleImageError, handleImageLoad } from '@utils/image';
 
 // Props
 interface Props {
@@ -52,7 +52,6 @@ const props = withDefaults(defineProps<Props>(), {
 
 // Composables
 const { copyWithToast } = useCopy();
-const { handleImageError, handleImageLoad } = useImage();
 
 // Refs
 const avatarLoadError = ref(false);

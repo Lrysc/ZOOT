@@ -55,7 +55,7 @@
 
 <script setup lang="ts">
 import { ref } from 'vue';
-import { useImage } from '../composables/useImage';
+import { handleImageError, handleImageLoad } from '@utils/image';
 
 // Props
 interface Props {
@@ -86,9 +86,6 @@ const props = withDefaults(defineProps<Props>(), {
 const emit = defineEmits<{
   click: [];
 }>();
-
-// Composables
-const { handleImageError, handleImageLoad } = useImage();
 
 // Refs
 const portraitLoadError = ref(false);
