@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import GameData from '@components/GameData.vue'
 import Recruit from '@components/Recruit.vue'
-import Material from '@components/Material.vue'
+
 import LoginWindow from '@components/LoginWindow.vue'
 import Setting from '@components/Setting.vue'
 import ToastNotification from '@components/ToastNotification.vue'
@@ -100,10 +100,7 @@ const getRefreshMethod = () => {
       return async () => {
         console.log('公招计算页面无需刷新');
       };
-    case 'Material':
-      return async () => {
-        console.log('培养计算页面无需刷新');
-      };
+
     case 'HeadhuntingRecord':
       return async () => {
         console.log('=== 执行 HeadhuntingRecord 刷新 ===');
@@ -140,11 +137,7 @@ const currentRefreshMessage = computed(() => {
       success: '公招数据更新完成！',
       disabled: true // 公招计算无需刷新
     },
-    'Material': {
-      loading: '更新材料数据中...',
-      success: '材料数据更新完成！',
-      disabled: true // 培养计算无需刷新
-    },
+
     'HeadhuntingRecord': {
       loading: '更新寻访记录中...',
       success: '寻访记录更新完成！',
@@ -605,7 +598,7 @@ onUnmounted(() => {
 const componentMap: Record<string, any> = {
   'GameData': GameData,
   'Recruit': Recruit,
-  'Material': Material,
+  
   'HeadhuntingRecord': HeadhuntingRecord,
   'Setting': Setting
 };
@@ -737,12 +730,7 @@ const componentMap: Record<string, any> = {
               >
                 寻访记录
               </li>
-              <li
-                :class="['nav-item', { 'nav-item-active': activeComponent === 'Material' }]"
-                @click="switchComponent('Material')"
-              >
-                培养计算
-              </li>
+
             </ul>
           </div>
         </nav>
