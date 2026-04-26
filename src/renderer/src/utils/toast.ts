@@ -337,7 +337,6 @@ export const cleanupToastService = (): void => {
   // 清空监听器列表
   listeners.length = 0;
 
-  console.log('Toast service cleaned up successfully');
 };
 
 /**
@@ -348,32 +347,4 @@ export const resetToast = (): void => {
   hideToastImmediately();
   toastMessage = '';
   toastType = 'success';
-};
-
-// ==================== 演示和测试方法 ====================
-
-/**
- * 演示所有类型的提示（用于测试）
- */
-export const demoAllToastTypes = (): void => {
-  showSuccess('这是一个成功提示！');
-  setTimeout(() => {
-    showError('这是一个错误提示！');
-  }, 1000);
-  setTimeout(() => {
-    showWarning('这是一个警告提示！');
-  }, 2000);
-  setTimeout(() => {
-    showInfo('这是一个信息提示！');
-  }, 3000);
-};
-
-/**
- * 测试动态更新功能
- */
-export const testDynamicUpdate = (): void => {
-  showInfo('这条消息将会被更新...');
-  setTimeout(() => {
-    updateToastMessage('消息已成功更新！');
-  }, 1500);
 };

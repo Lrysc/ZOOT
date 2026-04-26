@@ -18,7 +18,8 @@
       "@utils/*": ["./src/renderer/src/utils/*"],
       "@stores/*": ["./src/renderer/src/stores/*"],
       "@services/*": ["./src/renderer/src/services/*"],
-      "@pages/*": ["./src/renderer/src/pages/*"]
+      "@pages/*": ["./src/renderer/src/pages/*"],
+      "@types/*": ["./src/renderer/src/types/*"]
     }
   }
 }

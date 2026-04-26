@@ -90,8 +90,7 @@
                         :src="char.skillIconUrl"
                         :alt="char.skillNumber"
                         class="skill-icon"
-                        @error="(event) => { const target = event.target as HTMLImageElement; console.log('Skill icon load error:', char.skillId, target.src); target.style.display = 'none'; }"
-                        @load="() => console.log('Skill icon loaded:', char.skillId)"
+                        @error="(event) => { const target = event.target as HTMLImageElement; target.style.display = 'none'; }"
                       />
                       <!-- 专精图标 - 三个白点组成三角形 -->
                       <div class="specialize-dots" v-if="char.specializeLevel > 0">
@@ -127,8 +126,7 @@
                         :src="getProfessionIconUrl(char.profession)"
                         :alt="char.profession"
                         class="char-profession-icon"
-                        @error="(event) => { const target = event.target as HTMLImageElement; console.log('Icon load error:', char.profession, target.src); target.style.display = 'none'; }"
-                        @load="() => console.log('Icon loaded:', char.profession)"
+                        @error="(event) => { const target = event.target as HTMLImageElement; target.style.display = 'none'; }"
                       />
                       {{ char.name }}
                     </div>

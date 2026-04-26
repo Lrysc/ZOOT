@@ -646,9 +646,6 @@ const executeGachaFlow = async () => {
     tokenPrefix: token.substring(0, 20) + '...'
   });
 
-  console.log('使用hgToken:', token.substring(0, 20) + '...');
-  console.log('使用UID:', uid);
-
   // 步骤2：OAuth2授权
   logger.gachaDebug('开始OAuth2授权流程', { step: 2 });
   const oauthData = await logger.gachaPerformanceAsync('OAuth2授权', async () => {

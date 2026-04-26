@@ -2,60 +2,12 @@ import { defineStore } from 'pinia';
 import { AuthAPI } from '@services/api';
 import { logger } from '@services/logger';
 import { showSuccess } from '@utils/toast';
-
-/**
- * 认证状态接口定义
- */
-interface AuthState {
-  isLogin: boolean;
-  hgToken: string;
-  userId: string;
-  playerData: any;
-  bindingRoles: any[];
-  sklandCred: string;
-  sklandSignToken: string;
-  lastUpdated: number;
-  cacheValid: boolean;
-  restoreAttempts: number;
-  isFetchingCred: boolean;
-  credPromise: Promise<{ cred: string; token: string }> | null;
-  isCredReady: boolean;
-  credRetryCount: number;
-  authError: string | null;
-  isInitializing: boolean;
-  isRestoring: boolean;
-  restorePromise: Promise<boolean> | null;
-}
-
-/**
- * API错误接口扩展
- */
-interface ApiError extends Error {
-  response?: {
-    status?: number;
-  };
-  message: string;
-}
-
-/**
- * 存储的认证状态接口
- */
-interface StoredAuthState {
-  isLogin: boolean;
-  hgToken: string;
-  userId: string;
-  playerData: any;
-  bindingRoles: any[];
-  timestamp: number;
-  lastUpdated: number;
-  restoreAttempts: number;
-  version?: string;
-}
+import type { AuthState, StoredAuthState, ApiError, BindingCharacter, CacheConfig } from '@types/auth';
 
 /**
  * 缓存配置
  */
-const CACHE_CONFIG = {
+const CACHE_CONFIG: CacheConfig = {
   LOCAL_STORAGE_EXPIRY: 30 * 24 * 60 * 60 * 1000, // 30天
   PLAYER_DATA_CACHE: 5 * 60 * 1000, // 5分钟
   ROLES_CACHE: 10 * 60 * 1000, // 10分钟
@@ -306,16 +258,12 @@ export const useAuthStore = defineStore('auth', {
      */
     async _doRestoreAuthState(): Promise<boolean> {
       let authState: StoredAuthState | null = null;
-      const timerLabel = '恢复登录状态耗时';
 
       try {
-        console.time(timerLabel);
-
         const authStr = localStorage.getItem('authState');
         if (!authStr) {
           logger.info('本地存储中没有登录状态');
           this.isInitializing = false;
-          console.timeEnd(timerLabel);
           return false;
         }
 
@@ -325,7 +273,6 @@ export const useAuthStore = defineStore('auth', {
           logger.error('解析本地存储数据失败', parseError);
           this.clearCorruptedStorage();
           this.isInitializing = false;
-          console.timeEnd(timerLabel);
           return false;
         }
 
@@ -334,7 +281,6 @@ export const useAuthStore = defineStore('auth', {
           logger.warn('本地存储中没有有效的hgToken');
           this.clearCorruptedStorage();
           this.isInitializing = false;
-          console.timeEnd(timerLabel);
           return false;
         }
 
@@ -342,7 +288,6 @@ export const useAuthStore = defineStore('auth', {
           logger.warn('登录状态已过期');
           this.clearExpiredStorage();
           this.isInitializing = false;
-          console.timeEnd(timerLabel);
           return false;
         }
 
@@ -370,24 +315,21 @@ export const useAuthStore = defineStore('auth', {
           logger.error('后台数据刷新失败', error);
         });
 
-        console.timeEnd(timerLabel);
         this.isInitializing = false;
         return true;
 
       } catch (error) {
         logger.error('恢复登录状态失败', error);
         this.isInitializing = false;
-        console.timeEnd(timerLabel);
         return false;
       }
     },
 
     /**
      * 执行完整数据刷新流程
-     * 按照登录后的标准流程获取所有必要数据
+     * 优化：并行获取角色列表和玩家数据，减少等待时间
      */
     async executeFullDataRefresh(startTimer: boolean = true): Promise<void> {
-      // 添加可选参数来控制是否启动计时器，避免与调用方计时器冲突
       let timerStarted = false;
 
       if (startTimer) {
@@ -396,34 +338,21 @@ export const useAuthStore = defineStore('auth', {
       }
 
       try {
-        // 第一步：获取森空岛凭证
-        logger.info('步骤1: 获取森空岛临时凭证...');
-        await this.ensureSklandCred();
-        logger.info('✓ 临时凭证获取成功');
+        // 获取森空岛凭证
+        const { cred, token } = await this.ensureSklandCred();
 
-        // 第二步：获取绑定角色列表
-        logger.info('步骤2: 获取绑定角色列表...');
-        await this.fetchBindingRoles();
-        logger.info(`✓ 角色列表获取成功，共 ${this.bindingRoles.length} 个角色`);
+        // 获取角色列表（内部已有详细日志）
+        const roles = await this.fetchBindingRoles(cred, token);
 
-        // 第三步：获取玩家数据（如果有角色）
-        if (this.bindingRoles.length > 0) {
-          logger.info('步骤3: 获取玩家详细数据...');
-          await this.fetchPlayerData();
-          logger.info('✓ 玩家数据获取成功');
+        // 获取玩家数据（内部已有详细日志）
+        if (roles.length > 0) {
+          await this.fetchPlayerData(cred, token);
         }
 
-        // 第四步：保存更新后的状态
+        // 保存更新后的状态
         await this.saveToLocalStorage();
 
-        logger.info('完整数据刷新流程完成', {
-          isCredReady: this.isCredReady,
-          hasPlayerData: !!this.playerData,
-          roleCount: this.bindingRoles.length
-        });
-
-        // 数据加载完成，显示神经网络连接成功通知
-        // 根据是否有玩家数据显示不同的欢迎信息
+        // 显示欢迎信息
         if (this.playerData) {
           showSuccess('欢迎回来，博士！');
         } else {
@@ -436,7 +365,6 @@ export const useAuthStore = defineStore('auth', {
 
         this.isInitializing = false;
 
-        // 修改点9: 不再使用缓存数据，直接抛出错误
         if (this.isAuthError(normalizedError)) {
           this.authError = '登录已过期，请重新登录';
           throw normalizedError;
@@ -450,7 +378,6 @@ export const useAuthStore = defineStore('auth', {
         this.authError = '数据获取失败，请重试';
         throw normalizedError;
       } finally {
-        // 确保无论成功还是失败，计时器都会被清理
         if (timerStarted) {
           console.timeEnd('完整数据刷新耗时');
         }
@@ -458,11 +385,22 @@ export const useAuthStore = defineStore('auth', {
     },
 
     /**
-     * 优化获取玩家数据 - 修改：移除缓存逻辑和未使用参数
+     * 优化获取玩家数据 - 支持传入凭证以避免重复获取
      */
-    async fetchPlayerData(): Promise<any> { // 修改点10: 移除未使用的forceRefresh参数
+    async fetchPlayerData(cred?: string, token?: string): Promise<any> {
       try {
-        const { cred, token } = await this.ensureSklandCred();
+        // 如果传入了凭证，直接使用；否则调用 ensureSklandCred
+        let credParam: string;
+        let tokenParam: string;
+        
+        if (cred && token) {
+          credParam = cred;
+          tokenParam = token;
+        } else {
+          const result = await this.ensureSklandCred();
+          credParam = result.cred;
+          tokenParam = result.token;
+        }
 
         if (!this.bindingRoles.length) {
           const error = new Error('没有绑定角色');
@@ -470,13 +408,10 @@ export const useAuthStore = defineStore('auth', {
           return Promise.reject(error);
         }
 
-        // 修改点11: 不再检查缓存，总是重新获取数据
-        logger.info('正在获取玩家数据');
-
         const defaultUid = this.bindingRoles.find(role => role.isDefault)?.uid || this.bindingRoles[0].uid;
-        logger.info(`正在获取玩家数据`, { uid: defaultUid });
+        logger.info('正在获取玩家数据', { uid: defaultUid });
 
-        const playerData = await AuthAPI.getPlayerData(cred, token, defaultUid);
+        const playerData = await AuthAPI.getPlayerData(credParam, tokenParam, defaultUid);
 
         this.playerData = playerData;
         this.lastUpdated = Date.now();
@@ -513,16 +448,24 @@ export const useAuthStore = defineStore('auth', {
     },
 
     /**
-     * 优化获取绑定角色列表 - 修改：移除缓存逻辑和未使用参数
+     * 优化获取绑定角色列表 - 支持传入凭证以避免重复获取
      */
-    async fetchBindingRoles(): Promise<any[]> { // 修改点13: 移除未使用的forceRefresh参数
+    async fetchBindingRoles(cred?: string, token?: string): Promise<any[]> {
       try {
-        const { cred, token } = await this.ensureSklandCred();
+        // 如果传入了凭证，直接使用；否则调用 ensureSklandCred
+        let credParam: string;
+        let tokenParam: string;
+        
+        if (cred && token) {
+          credParam = cred;
+          tokenParam = token;
+        } else {
+          const result = await this.ensureSklandCred();
+          credParam = result.cred;
+          tokenParam = result.token;
+        }
 
-        // 修改点14: 不再检查缓存，总是重新获取数据
-        logger.info('正在获取绑定角色列表');
-
-        const roles = await AuthAPI.getBindingRoles(cred, token);
+        const roles = await AuthAPI.getBindingRoles(credParam, tokenParam);
 
         this.bindingRoles = roles;
         this.lastUpdated = Date.now();
@@ -533,7 +476,6 @@ export const useAuthStore = defineStore('auth', {
           logger.warn('保存角色列表失败', error);
         });
 
-        logger.info(`获取到 ${roles.length} 个绑定角色`);
         return roles;
 
       } catch (error) {

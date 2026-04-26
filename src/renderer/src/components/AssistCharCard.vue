@@ -113,7 +113,7 @@ const handlePortraitError = (event: Event) => {
  * 处理半身像加载成功
  */
 const handlePortraitLoad = () => {
-  handleImageLoad(props.name, 'portrait');
+  handleImageLoad();
 };
 
 /**
@@ -121,7 +121,6 @@ const handlePortraitLoad = () => {
  */
 const handleSkillError = (event: Event) => {
   const target = event.target as HTMLImageElement;
-  console.log('Skill icon load error:', props.skillId, target.src);
   target.style.display = 'none';
 };
 </script>

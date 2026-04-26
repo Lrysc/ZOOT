@@ -25,7 +25,6 @@ export async function copyToClipboard(
   if (navigator.clipboard && window.isSecureContext) {
     try {
       await navigator.clipboard.writeText(text);
-      console.log(`使用Clipboard API复制${itemName}成功`);
       return true;
     } catch (error) {
       console.warn(`Clipboard API失败:`, error);
@@ -70,7 +69,6 @@ export async function copyToClipboard(
     document.body.removeChild(textArea);
 
     if (successful) {
-      console.log(`使用execCommand复制${itemName}成功`);
       return true;
     } else {
       console.warn(`使用execCommand复制${itemName}失败`);
@@ -110,7 +108,6 @@ export async function copyToClipboard(
     document.body.removeChild(div);
 
     if (successful) {
-      console.log(`✅ 使用contenteditable复制${itemName}成功`);
       return true;
     }
   } catch (error) {

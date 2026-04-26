@@ -56,7 +56,7 @@
             <div class="weekly-container">
               <div class="weekly-header">
                 <h4 class="weekly-title">周常</h4>
-                <span class="weekly-countdown">{{ weeklyCountdown }}</span>
+                <span class="weekly-countdown">{{ gameDataStore.getWeeklyCountdown }}</span>
               </div>
               <div class="weekly-content">
                 <div class="weekly-row">
@@ -144,13 +144,13 @@
               <div class="production-left">
                 <span class="production-label">贸易站</span>
                 <span class="production-value">{{ gameDataStore.getTradingOrderCount || '--' }}</span>
-                <span class="production-buff" v-if="getTradingBuff()">{{ getTradingBuff() }}</span>
+                <span class="production-buff" v-if="tradingBuff">{{ tradingBuff }}</span>
               </div>
               <div class="production-divider"></div>
               <div class="production-right">
                 <span class="production-label">制造站</span>
                 <span class="production-value">{{ gameDataStore.getManufactureStatus || '--' }}</span>
-                <span class="production-buff" v-if="getManufactureBuff()">{{ getManufactureBuff() }}</span>
+                <span class="production-buff" v-if="manufactureBuff">{{ manufactureBuff }}</span>
               </div>
             </div>
           </li>
@@ -349,22 +349,16 @@ const getRogueList = () => {
 const getRogueInfo = (rogueId: string) => {
   try {
     const playerData = gameDataStore.playerData;
-    console.log('获取肉鸽信息 - rogueId:', rogueId);
-    console.log('playerData:', playerData);
-    console.log('playerData.rogueInfoMap:', playerData?.rogueInfoMap);
 
     // 从API返回的rogueInfoMap中获取（在playerData根级别）
     if (playerData?.rogueInfoMap && playerData.rogueInfoMap[rogueId]) {
-      const info = playerData.rogueInfoMap[rogueId];
-      console.log('找到肉鸽信息:', info);
-      return info;
+      return playerData.rogueInfoMap[rogueId];
     }
   } catch (error) {
     console.error('从API获取肉鸽信息失败', error);
   }
 
   // 如果API中没有对应数据，返回默认值
-  console.log('未找到肉鸽信息，返回默认值');
   return { id: rogueId, name: '未知', picUrl: '', sort: 999 };
 };
 
@@ -387,9 +381,8 @@ const handleRogueImageError = (event: Event, url?: string, name?: string) => {
 /**
  * 处理肉鸽图片加载成功
  */
-const handleRogueImageLoad = (event: Event) => {
-  const imgElement = event.target as HTMLImageElement;
-  console.log('肉鸽图片加载成功', { src: imgElement.src, naturalWidth: imgElement.naturalWidth, naturalHeight: imgElement.naturalHeight });
+const handleRogueImageLoad = () => {
+  // 图片加载成功，无需额外处理
 };
 
 /**
@@ -420,34 +413,6 @@ const isWeeklyTaskCompleted = () => {
   }
 };
 
-// ==================== 周常刷新倒计时 ====================
-
-/**
- * 计算距离下周一凌晨4点的剩余时间
- */
-const weeklyCountdown = computed(() => {
-  const now = new Date();
-  // 获取下周一凌晨4点的时间戳
-  const nextMonday = new Date(now);
-  const dayOfWeek = now.getDay(); // 0 是周日, 1 是周一
-  const daysUntilMonday = dayOfWeek === 1 ? 7 : (8 - dayOfWeek) % 7;
-  nextMonday.setDate(now.getDate() + daysUntilMonday);
-  nextMonday.setHours(4, 0, 0, 0);
-  
-  const diff = nextMonday.getTime() - now.getTime();
-  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-  const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-  const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-  
-  if (days > 0) {
-    return `还有${days}天${hours}小时刷新`;
-  } else if (hours > 0) {
-    return `还有${hours}小时${minutes}分钟刷新`;
-  } else {
-    return `还有${minutes}分钟刷新`;
-  }
-});
-
 // 周常倒计时定时器
 let weeklyCountdownInterval: number | null = null;
 
@@ -458,35 +423,25 @@ let weeklyCountdownInterval: number | null = null;
  * 包括数据加载等
  */
 onMounted(async () => {
-  console.log('GameData组件挂载，开始初始化...');
-
   try {
     // 根据登录状态决定数据加载策略
     if (authStore.isLogin) {
-      console.log('用户已登录，直接加载游戏数据');
       await gameDataStore.fetchGameData();
     } else {
-      console.log('用户未登录，尝试恢复登录状态');
       const isRestored = await authStore.restoreAuthState();
       if (isRestored) {
-        console.log('登录状态恢复成功，加载游戏数据');
         await gameDataStore.fetchGameData();
-        // showSuccess('欢迎回来，博士！');
-      } else {
-        console.log('登录状态恢复失败，显示未登录状态');
-        // 不设置loading状态，让组件正常显示未登录状态
       }
     }
   } catch (error) {
     // 捕获错误但不阻止组件显示
     console.error('GameData组件初始化失败:', error);
-    // 组件会显示错误状态或空数据，保证用户体验
   }
 
   // 启动周常倒计时定时器（每分钟更新一次）
   weeklyCountdownInterval = window.setInterval(() => {
-    // 强制更新计算属性
-    weeklyCountdown.value;
+    // 触发依赖 currentTime 的计算属性更新
+    gameDataStore.currentTime;
   }, 60000);
 });
 
@@ -507,7 +462,6 @@ onUnmounted(() => {
 watch(() => authStore.isLogin, async (newLoginState, oldLoginState) => {
   // 只有当从未登录变为已登录时才执行
   if (newLoginState && !oldLoginState) {
-    console.log('检测到登录状态变化，清除缓存并重新加载数据');
     // 清除旧缓存数据
     gameDataStore.clearCache();
     try {
@@ -515,20 +469,7 @@ watch(() => authStore.isLogin, async (newLoginState, oldLoginState) => {
       await gameDataStore.fetchGameData();
     } catch (error) {
       console.error('登录状态变化后重新加载数据失败:', error);
-      // 不显示错误提示，让组件正常显示
     }
-  }
-});
-
-/**
- * 监听当前活动组件变化
- * 当切换到GameData页面时自动刷新数据（可选功能）
- */
-watch(() => currentActiveComponent?.value, (newComponent, oldComponent) => {
-  if (newComponent === 'GameData' && oldComponent !== 'GameData') {
-    console.log('切换到GameData页面，自动刷新数据');
-    // 可以在这里添加自动刷新逻辑，但为了避免频繁请求，暂时注释
-    // handleManualRefresh();
   }
 });
 
@@ -549,43 +490,18 @@ const apProgress = computed(() => {
   return circumference.value - progress;
 });
 
-/**
- * 获取贸易站效率加成
- */
-const getTradingBuff = () => {
-  try {
-    const tradingsData = gameDataStore.playerData?.building?.tradings || [];
-    let totalBuff = 0;
+// 贸易站和制造站buff计算（使用 store 统一方法）
+const tradingBuff = computed(() => {
+  const tradingsData = gameDataStore.playerData?.building?.tradings || [];
+  return gameDataStore.getBuildingBuff(tradingsData, 'TRADING');
+});
 
-    tradingsData.forEach(station => {
-      const { totalSpeedBuff } = gameDataStore.calculateBuildingEfficiency(station.chars || [], 'TRADING');
-      totalBuff = Math.max(totalBuff, totalSpeedBuff);
-    });
+const manufactureBuff = computed(() => {
+  const manufacturesData = gameDataStore.playerData?.building?.manufactures || [];
+  return gameDataStore.getBuildingBuff(manufacturesData, 'MANUFACTURE');
+});
 
-    return totalBuff > 0 ? `+${(totalBuff * 100).toFixed(1)}%` : '';
-  } catch (error) {
-    return '';
-  }
-};
-
-/**
- * 获取制造站效率加成
- */
-const getManufactureBuff = () => {
-  try {
-    const manufacturesData = gameDataStore.playerData?.building?.manufactures || [];
-    let totalBuff = 0;
-
-    manufacturesData.forEach(station => {
-      const { totalSpeedBuff } = gameDataStore.calculateBuildingEfficiency(station.chars || [], 'MANUFACTURE');
-      totalBuff = Math.max(totalBuff, totalSpeedBuff);
-    });
-
-    return totalBuff > 0 ? `+${(totalBuff * 100).toFixed(1)}%` : '';
-  } catch (error) {
-    return '';
-  }
-};
+// 使用 store 统一的 buff 计算方法
 
 // ==================== 暴露方法给模板 ====================
 /**
@@ -775,14 +691,8 @@ defineExpose({
 .task-container {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  width: 100%;
-}
-
-.task-container {
-  display: flex;
-  flex-direction: column;
   gap: 10px;
+  width: 100%;
   height: 100%;
 }
 

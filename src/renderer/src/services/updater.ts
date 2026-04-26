@@ -1,6 +1,7 @@
 import { logger } from './logger'
 import { showSuccess, showError, showInfo } from '@utils/toast'
 import packageJson from '../../../../package.json'
+import type { UpdateInfo } from '@types/common'
 
 interface GitHubRelease {
   tag_name: string
@@ -13,13 +14,6 @@ interface GitHubRelease {
     browser_download_url: string
     size: number
   }>
-}
-
-interface UpdateInfo {
-  hasUpdate: boolean
-  currentVersion: string
-  latestVersion: string
-  releaseInfo?: GitHubRelease
 }
 
 class UpdaterService {

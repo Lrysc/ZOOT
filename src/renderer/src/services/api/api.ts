@@ -14,16 +14,22 @@ const API_BASE = {
 // 通用工具函数
 // ============================================================================
 
-const getCommonHeaders = () => {
-  return {
-    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0',
-    'Accept-Encoding': 'gzip, deflate, br, zstd',
-    'Connection': 'close',
-    'Content-Type': 'application/json',
-    'Origin': isDev ? 'http://localhost:5173' : 'https://www.skland.com',
-    'Referer': isDev ? 'http://localhost:5173/' : 'https://www.skland.com/'
-  };
-};
+const getCommonHeaders = () => ({
+  'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0',
+  'Accept-Encoding': 'gzip, deflate, br, zstd',
+  'Connection': 'close',
+  'Content-Type': 'application/json',
+  'Origin': isDev ? 'http://localhost:5173' : 'https://www.skland.com',
+  'Referer': isDev ? 'http://localhost:5173/' : 'https://www.skland.com/'
+});
+
+// 获取带认证的请求头
+const getAuthHeaders = async () => ({
+  ...getCommonHeaders(),
+  'dId': await getDId(),
+  'platform': '3',
+  'vName': '1.0.0'
+});
 
 /**
  * 处理 API 响应，包含错误处理
@@ -42,7 +48,6 @@ const handleApiResponse = async (response: Response, apiName: string): Promise<a
   }
 
   const data = await response.json();
-  console.log(`${apiName} 响应:`, data);
 
   if (data.status !== 0 && data.code !== 0) {
     const errorMsg = data.msg || data.message || `${apiName} 业务逻辑错误`;
@@ -62,20 +67,11 @@ export const AuthAPI = {
    * 通过手机号和密码登录获取鹰角 token
    */
   loginByPassword: async (phone: string, password: string): Promise<string> => {
-    const dId = await getDId();
-    const url = `${API_BASE.hgAuth}/user/auth/v1/token_by_phone_password`;
-
-    const response = await fetch(url, {
+    const response = await fetch(`${API_BASE.hgAuth}/user/auth/v1/token_by_phone_password`, {
       method: 'POST',
-      headers: {
-        ...getCommonHeaders(),
-        'dId': dId,
-        'platform': '3',
-        'vName': '1.0.0'
-      },
+      headers: await getAuthHeaders(),
       body: JSON.stringify({ phone, password })
     });
-
     const data = await handleApiResponse(response, '密码登录');
     return data.data.token;
   },
@@ -84,20 +80,11 @@ export const AuthAPI = {
    * 发送短信验证码
    */
   sendSmsCode: async (phone: string): Promise<boolean> => {
-    const dId = await getDId();
-    const url = `${API_BASE.hgAuth}/general/v1/send_phone_code`;
-
-    const response = await fetch(url, {
+    const response = await fetch(`${API_BASE.hgAuth}/general/v1/send_phone_code`, {
       method: 'POST',
-      headers: {
-        ...getCommonHeaders(),
-        'dId': dId,
-        'platform': '3',
-        'vName': '1.0.0'
-      },
+      headers: await getAuthHeaders(),
       body: JSON.stringify({ phone, type: 2 })
     });
-
     await handleApiResponse(response, '发送验证码');
     return true;
   },
@@ -106,20 +93,11 @@ export const AuthAPI = {
    * 通过短信验证码登录获取鹰角 token
    */
   loginBySmsCode: async (phone: string, code: string): Promise<string> => {
-    const dId = await getDId();
-    const url = `${API_BASE.hgAuth}/user/auth/v2/token_by_phone_code`;
-
-    const response = await fetch(url, {
+    const response = await fetch(`${API_BASE.hgAuth}/user/auth/v2/token_by_phone_code`, {
       method: 'POST',
-      headers: {
-        ...getCommonHeaders(),
-        'dId': dId,
-        'platform': '3',
-        'vName': '1.0.0'
-      },
+      headers: await getAuthHeaders(),
       body: JSON.stringify({ phone, code })
     });
-
     const data = await handleApiResponse(response, '验证码登录');
     return data.data.token;
   },
@@ -128,24 +106,11 @@ export const AuthAPI = {
    * 获取 OAuth2 授权码
    */
   getGrantCode: async (hgToken: string): Promise<string> => {
-    const dId = await getDId();
-    const url = `${API_BASE.hgAuth}/user/oauth2/v2/grant`;
-
-    const response = await fetch(url, {
+    const response = await fetch(`${API_BASE.hgAuth}/user/oauth2/v2/grant`, {
       method: 'POST',
-      headers: {
-        ...getCommonHeaders(),
-        'dId': dId,
-        'platform': '3',
-        'vName': '1.0.0'
-      },
-      body: JSON.stringify({
-        token: hgToken,
-        appCode: '4ca99fa6b56cc2ba',
-        type: 0
-      })
+      headers: await getAuthHeaders(),
+      body: JSON.stringify({ token: hgToken, appCode: '4ca99fa6b56cc2ba', type: 0 })
     });
-
     const data = await handleApiResponse(response, '获取授权码');
     return data.data.code;
   },
@@ -154,20 +119,11 @@ export const AuthAPI = {
    * 获取森空岛认证凭证 (Cred)
    */
   getSklandCred: async (grantCode: string) => {
-    const dId = await getDId();
-    const url = `${API_BASE.skland}/api/v1/user/auth/generate_cred_by_code`;
-
-    const response = await fetch(url, {
+    const response = await fetch(`${API_BASE.skland}/api/v1/user/auth/generate_cred_by_code`, {
       method: 'POST',
-      headers: {
-        ...getCommonHeaders(),
-        'dId': dId,
-        'platform': '3',
-        'vName': '1.0.0'
-      },
+      headers: await getAuthHeaders(),
       body: JSON.stringify({ kind: 1, code: grantCode })
     });
-
     const data = await handleApiResponse(response, '获取 Cred');
     return data.data;
   },
@@ -179,8 +135,6 @@ export const AuthAPI = {
     const url = `${API_BASE.skland}/api/v1/game/player/binding`;
     const headers = getSignedHeaders(url, 'GET', null, cred, signToken);
 
-    console.log('获取绑定角色请求头:', headers);
-
     const response = await fetch(url, {
       method: 'GET',
       headers
@@ -188,12 +142,8 @@ export const AuthAPI = {
 
     const data = await handleApiResponse(response, '获取绑定角色');
 
-    console.log('绑定角色API完整响应:', JSON.stringify(data, null, 2));
-
     const arknightsBinding = data.data.list.find((item: any) => item.appCode === 'arknights');
     const bindingList = arknightsBinding?.bindingList || [];
-
-    console.log('明日方舟绑定列表:', JSON.stringify(bindingList, null, 2));
 
     return bindingList;
   },
@@ -204,8 +154,6 @@ export const AuthAPI = {
   getPlayerData: async (cred: string, signToken: string, uid: string) => {
     const url = `${API_BASE.skland}/api/v1/game/player/info?uid=${uid}`;
     const headers = getSignedHeaders(url, 'GET', null, cred, signToken);
-
-    console.log('获取玩家数据请求头:', headers);
 
     const response = await fetch(url, {
       method: 'GET',
@@ -250,9 +198,6 @@ export const AuthAPI = {
 
     const headers = getSignedHeaders(url, 'POST', requestBody, cred, signToken);
 
-    console.log('签到请求头:', headers);
-    console.log('签到请求体:', requestBody);
-
     const response = await fetch(url, {
       method: 'POST',
       headers,
@@ -260,7 +205,6 @@ export const AuthAPI = {
     });
 
     const data = await response.json();
-    console.log('签到响应:', data);
 
     if (data.code === 10001) {
       return {

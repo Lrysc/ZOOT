@@ -83,36 +83,28 @@ let refreshDebounceTimer: NodeJS.Timeout | null = null;
  * 根据当前活动组件返回对应的刷新方法
  */
 const getRefreshMethod = () => {
-  console.log('=== getRefreshMethod 被调用 ===', { activeComponent: activeComponent.value });
-
   switch (activeComponent.value) {
     case 'GameData':
       return async () => {
-        console.log('=== 执行 GameData 刷新 ===');
         await gameDataStore.refreshData();
       };
     case 'Recruit':
       return async () => {
-        console.log('公招计算页面无需刷新');
+        // 公招数据来自本地JSON，不需要刷新
       };
 
     case 'HeadhuntingRecord':
       return async () => {
-        console.log('=== 执行 HeadhuntingRecord 刷新 ===');
         if (currentComponentRef.value?.refreshGachaData) {
           await currentComponentRef.value.refreshGachaData();
-        } else {
-          console.log('寻访记录组件未暴露刷新方法');
         }
       };
     case 'Setting':
       return async () => {
-        console.log('设置页面无需刷新');
+        // 设置页面无需刷新
       };
     default:
-      return async () => {
-        console.log('未知组件，无法刷新');
-      };
+      return async () => {};
   }
 };
 
@@ -228,11 +220,6 @@ const openFeedback = () => {
  * 添加防抖机制防止频繁刷新
  */
 const handleGlobalRefresh = async () => {
-  console.log('=== handleGlobalRefresh 被调用 ===', {
-    currentComponent: activeComponent.value,
-    isRefreshing: isRefreshing.value
-  });
-
   // 如果正在刷新，直接返回
   if (isRefreshing.value) {
     showWarning('正在刷新中，请稍候...');
@@ -249,7 +236,6 @@ const handleGlobalRefresh = async () => {
 
   // 防抖延迟 500ms
   refreshDebounceTimer = setTimeout(async () => {
-    console.log('=== 开始执行刷新逻辑 ===');
     // 设置刷新状态
     isRefreshing.value = true;
 
@@ -265,7 +251,6 @@ const handleGlobalRefresh = async () => {
       showInfo(loading);
 
       // 调用当前组件的刷新方法
-      console.log('=== 准备调用刷新方法 ===', { activeComponent: activeComponent.value });
       const refreshMethod = getRefreshMethod();
       if (refreshMethod) {
         await refreshMethod();
@@ -358,9 +343,7 @@ const performAttendance = async () => {
   }
 
   // 第一步：验证cred有效性
-  console.log('=== 开始验证cred有效性 ===');
   const isCredValid = await AuthAPI.checkCred(authStore.sklandCred);
-  console.log('Cred有效性验证结果:', isCredValid);
 
   if (!isCredValid) {
     throw new Error('Cred已失效，请重新登录');
@@ -373,16 +356,7 @@ const performAttendance = async () => {
     throw new Error('未找到绑定的游戏角色');
   }
 
-  // 调试信息输出
-  console.log('=== 绑定角色详细信息 ===');
-  console.log('完整的绑定角色列表:', JSON.stringify(authStore.bindingRoles, null, 2));
-  console.log('选中的角色信息:', JSON.stringify(targetRole, null, 2));
-  console.log('角色UID:', targetRole.uid);
-  console.log('channelMasterId:', targetRole.channelMasterId);
-  console.log('========================');
-
   const gameId = targetRole.channelMasterId;
-  console.log('用于签到的gameId:', gameId);
 
   // 第三步：执行签到请求
   const attendanceData = await AuthAPI.attendance(
@@ -480,7 +454,6 @@ const switchComponent = (componentName: string) => {
  * 处理登录成功回调
  */
 const handleLoginSuccess = () => {
-  console.log('登录成功，切换到首页');
   activeComponent.value = 'GameData';
   showUserMenu.value = false;
 };
@@ -520,8 +493,6 @@ const handleClickOutside = (event: MouseEvent) => {
  * 组件挂载时的初始化操作
  */
 onMounted(() => {
-  console.log('App组件挂载，注册全局监听器');
-
   // 启动游戏数据时间更新定时器
   gameDataStore.startTimeUpdate();
 
@@ -536,7 +507,6 @@ onMounted(() => {
 
   // 监听托盘签到请求
   window.electron?.ipcRenderer?.on('tray-attendance-request', () => {
-    console.log('收到托盘签到请求');
     // 调用托盘专用签到函数，只发送 Windows 通知
     handleTrayAttendance();
   });
@@ -544,7 +514,6 @@ onMounted(() => {
   // 初始化认证状态
   authStore.restoreAuthState().then((isRestored) => {
     if (isRestored) {
-      console.log('神经连接成功');
       if (authStore.playerData) {
         // 数据已经完整，直接显示欢迎信息
         showSuccess('欢迎回来，博士！');
@@ -552,11 +521,8 @@ onMounted(() => {
         // 数据不完整，显示同步提示，数据加载完成后会显示连接成功通知
         showInfo('正在同步神经中枢...');
       }
-    } else {
-      console.log('未找到相关记忆');
     }
-  }).catch((error) => {
-    console.error('神经同步失败:', error);
+  }).catch(() => {
     // 不显示错误提示，避免每次打开都提示
   });
 });
@@ -565,8 +531,6 @@ onMounted(() => {
  * 组件卸载时的清理操作
  */
 onUnmounted(() => {
-  console.log('App组件卸载，移除全局监听器');
-
   // 停止游戏数据时间更新定时器
   gameDataStore.stopTimeUpdate();
 

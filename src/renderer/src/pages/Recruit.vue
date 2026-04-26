@@ -1,29 +1,10 @@
 <script setup lang="ts">
 import { ref, watch, onMounted } from 'vue'
 import { getSkinAvatarUrl } from '@utils/image'
+import type { RecruitOperator, RecruitData, RecruitResult } from '@types/recruit'
 
-// 定义干员类型
-interface Operator {
-  name: string
-  star: number
-  tag: string[]
-  skin: string
-}
-
-// 定义JSON数据结构
-interface RecruitData {
-  update: {
-    version: string
-    date: string
-  }
-  new_ope: {
-    name: string[]
-  }
-  operator_list: Operator[]
-  operator_high_list: Operator[]
-  operator_low_list: Operator[]
-  operator_robot_list: Operator[]
-}
+// 使用类型别名保持代码兼容性
+type Operator = RecruitOperator
 
 // 响应式数据
 const recruitData = ref<RecruitData | null>(null)
@@ -48,17 +29,11 @@ const loadRecruitData = async () => {
   loadError.value = null
 
   try {
-    console.log('开始加载公招数据...')
-
     // 方法1: 直接import（推荐）
     try {
-      // 注意：这里需要使用相对路径，根据你的文件结构调整
       const data = await import('@assets/json/recruit.json')
       recruitData.value = data.default
-      console.log('通过import加载成功:', recruitData.value)
     } catch (importError) {
-      console.log('import方式失败，尝试fetch方式:', importError)
-
       // 方法2: 使用fetch
       const response = await fetch('/src/assets/json/recruit.json')
       if (!response.ok) {
@@ -66,23 +41,7 @@ const loadRecruitData = async () => {
       }
       const jsonData = await response.json()
       recruitData.value = jsonData
-      console.log('通过fetch加载成功:', recruitData.value)
     }
-
-    // 验证数据
-    if (recruitData.value) {
-      console.log('数据验证:')
-      console.log('- operator_list数量:', recruitData.value.operator_list?.length)
-      console.log('- operator_high_list数量:', recruitData.value.operator_high_list?.length)
-      console.log('- operator_low_list数量:', recruitData.value.operator_low_list?.length)
-      console.log('- operator_robot_list数量:', recruitData.value.operator_robot_list?.length)
-
-      // 检查前几个干员的数据
-      if (recruitData.value.operator_list && recruitData.value.operator_list.length > 0) {
-        console.log('前3个干员:', recruitData.value.operator_list.slice(0, 3))
-      }
-    }
-
   } catch (error) {
     console.error('加载公招数据失败:', error)
     loadError.value = `加载失败: ${error instanceof Error ? error.message : '未知错误'}`
@@ -122,28 +81,21 @@ const toggleTag = (tag: string) => {
   } else if (selectedTags.value.length < 5) {
     selectedTags.value.push(tag)
   }
-  console.log('当前选中标签:', selectedTags.value)
 }
 
 // 清空所有标签
 const clearAllTags = () => {
   selectedTags.value = []
-  console.log('已清空所有标签')
 }
 
 // 计算可能出现的干员
 const calculateResults = () => {
-  console.log('=== 开始计算 ===')
-  console.log('选中标签:', selectedTags.value)
-
   if (!recruitData.value) {
-    console.log('数据未加载')
     calculationResults.value = []
     return
   }
 
   if (selectedTags.value.length === 0) {
-    console.log('未选择标签')
     calculationResults.value = []
     return
   }
@@ -156,8 +108,6 @@ const calculateResults = () => {
     ...(recruitData.value.operator_robot_list || [])
   ]
 
-  console.log('总干员数量:', allOperators.length)
-
   let results: Operator[] = []
 
   const hasSenior = selectedTags.value.includes('资深干员')
@@ -168,21 +118,15 @@ const calculateResults = () => {
     !['资深干员', '高级资深干员', '新手'].includes(tag)
   )
 
-  console.log('特殊标签:', { hasHighSenior, hasSenior, hasNewbie })
-  console.log('普通标签:', normalTags)
-
   // 筛选逻辑
   if (hasHighSenior) {
-    console.log('使用高资干员列表筛选')
     const sourceList = recruitData.value.operator_high_list || []
     results = sourceList.filter(operator => {
       const hasAllNormalTags = normalTags.length === 0 ||
         normalTags.every(tag => operator.tag && operator.tag.includes(tag))
-      console.log(`高资干员 ${operator.name}: 标签${operator.tag}, 匹配${hasAllNormalTags}`)
       return hasAllNormalTags
     })
   } else if (hasSenior) {
-    console.log('使用资深干员列表筛选 - 只显示5星干员')
     // 只选择5星干员，不包括6星
     const seniorOperators = [
       ...(recruitData.value.operator_list || []).filter(op => op.star === 5)
@@ -190,11 +134,9 @@ const calculateResults = () => {
     results = seniorOperators.filter(operator => {
       const hasAllNormalTags = normalTags.length === 0 ||
         normalTags.every(tag => operator.tag && operator.tag.includes(tag))
-      console.log(`资深干员 ${operator.name}: 星级${operator.star}, 标签${operator.tag}, 匹配${hasAllNormalTags}`)
       return hasAllNormalTags
     })
   } else if (hasNewbie) {
-    console.log('使用新手干员列表筛选')
     const newbieOperators = [
       ...(recruitData.value.operator_low_list || []),
       ...(recruitData.value.operator_robot_list || [])
@@ -205,20 +147,13 @@ const calculateResults = () => {
       return hasAllNormalTags
     })
   } else if (normalTags.length > 0) {
-    console.log('使用普通标签筛选')
     results = allOperators.filter(operator => {
       const hasAllNormalTags = normalTags.every(tag => operator.tag && operator.tag.includes(tag))
-      if (hasAllNormalTags) {
-        console.log(`干员 ${operator.name} 匹配, 标签: ${operator.tag}`)
-      }
       return hasAllNormalTags
     })
   } else {
-    console.log('无有效标签，显示所有干员')
     results = allOperators
   }
-
-  console.log('筛选后结果数量:', results.length)
 
   // 去重和排序
   calculationResults.value = results
@@ -231,10 +166,6 @@ const calculateResults = () => {
       }
       return a.name.localeCompare(b.name, 'zh-CN')
     })
-
-  console.log('最终结果数量:', calculationResults.value.length)
-  console.log('最终结果:', calculationResults.value.map(op => ({ name: op.name, star: op.star, tags: op.tag })))
-  console.log('=== 计算结束 ===')
 }
 
 // 重新加载数据
@@ -266,14 +197,12 @@ watch(selectedTags, calculateResults, { deep: true })
 // 监听数据加载完成
 watch(recruitData, (newData) => {
   if (newData) {
-    console.log('数据已加载，重新计算')
     calculateResults()
   }
 })
 
 // 组件挂载时加载数据
 onMounted(() => {
-  console.log('组件挂载')
   loadRecruitData()
 })
 </script>

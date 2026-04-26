@@ -20,7 +20,8 @@ export default defineConfig({
         '@utils': resolve('src/renderer/src/utils'),
         '@stores': resolve('src/renderer/src/stores'),
         '@services': resolve('src/renderer/src/services'),
-        '@pages': resolve('src/renderer/src/pages')
+        '@pages': resolve('src/renderer/src/pages'),
+        '@types': resolve('src/renderer/src/types')
       }
     },
     plugins: [vue()],

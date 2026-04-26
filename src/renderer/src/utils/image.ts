@@ -54,13 +54,12 @@ export function getSkinAvatarUrl(skin: string): string {
  */
 export function handleImageError(charId: string | undefined, imageType: string, event: Event): void {
   const target = event.target as HTMLImageElement;
-  console.log(`${imageType} load error:`, charId, target.src);
   target.style.display = 'none';
 }
 
 /**
  * 处理图片加载成功
  */
-export function handleImageLoad(charId: string | undefined, imageType: string): void {
-  console.log(`${imageType} loaded:`, charId);
+export function handleImageLoad(): void {
+  // 图片加载成功，无需额外处理
 }

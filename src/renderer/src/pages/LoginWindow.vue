@@ -92,8 +92,6 @@ const loadSavedAccounts = () => {
 
         // 保存到新的多账号格式
         localStorage.setItem('hg_accounts', JSON.stringify(savedAccounts.value));
-
-        console.log('已迁移旧账号数据到新的多账号格式');
       }
     }
   } catch (error) {

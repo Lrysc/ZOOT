@@ -6,327 +6,32 @@ import { logger } from '@services/logger';
 import { processImageUrl, getOperatorPortraitUrl, getOperatorAvatarUrl, handleImageError, handleImageLoad } from '@utils/image';
 import { copyToClipboard } from '@utils/copy';
 import { formatTimestamp as formatTimestampUtil, formatRecoveryTime as formatRecoveryTimeUtil, setDateLogger } from '@utils/date';
+import type {
+  ApInfo,
+  TrainingInfo,
+  RecruitInfo,
+  HireInfo,
+  RecruitSlotDetail,
+  TradingDetail,
+  ManufactureDetail,
+  AssistCharDetail,
+  AssistCharStatus,
+  DataCache
+} from '@types/game';
+import type {
+  TradingStation,
+  TradingsInfo,
+  ManufactureStation,
+  ManufacturesInfo,
+  LaborInfo,
+  DormitoriesInfo,
+  TiredInfo,
+  BuildingEfficiency
+} from '@types/building';
+import type { PlayerData } from '@types/api';
 
 // 设置日期工具的日志记录器
 setDateLogger(logger);
-
-// ========== 完整类型定义 ==========
-
-interface ApInfo {
-  current: number;
-  max: number;
-  remainSecs: number;
-  recoverTime: number;
-}
-
-interface TrainingInfo {
-  isNull: boolean;
-  traineeIsNull: boolean;
-  trainerIsNull: boolean;
-  status: number;
-  remainSecs: number;
-  completeTime: number;
-  trainee: string;
-  trainer: string;
-  profession: string;
-  targetSkill: number;
-  totalPoint: number;
-  remainPoint: number;
-  changeRemainSecsIrene: number;
-  changeTimeIrene: number;
-  changeRemainSecsLogos: number;
-  changeTimeLogos: number;
-}
-
-interface RecruitInfo {
-  isNull: boolean;
-  max: number;
-  complete: number;
-  remainSecs: number;
-  completeTime: number;
-}
-
-interface HireInfo {
-  isNull: boolean;
-  count: number;
-  max: number;
-  remainSecs: number;
-  completeTime: number;
-}
-
-interface TradingStation {
-  strategy: string;
-  max: number;
-  current: number;
-  completeTime: number;
-  remainSecs: number;
-}
-
-interface TradingsInfo {
-  isNull: boolean;
-  current: number;
-  max: number;
-  remainSecs: number;
-  completeTime: number;
-  tradings: TradingStation[];
-}
-
-interface ManufactureStation {
-  formula: string;
-  max: number;
-  current: number;
-  completeTime: number;
-  remainSecs: number;
-}
-
-interface ManufacturesInfo {
-  isNull: boolean;
-  current: number;
-  max: number;
-  remainSecs: number;
-  completeTime: number;
-  manufactures: ManufactureStation[];
-}
-
-interface LaborInfo {
-  current: number;
-  max: number;
-  remainSecs: number;
-  recoverTime: number;
-}
-
-interface DormitoriesInfo {
-  isNull: boolean;
-  current: number;
-  max: number;
-}
-
-interface TiredInfo {
-  current: number;
-  remainSecs: number;
-}
-
-interface RecruitSlot {
-  slotIndex: number;
-  state: number;
-  status: string;
-  startTime: string;
-  finishTime: string;
-  startTs: number;
-  finishTs: number;
-}
-
-interface TradingDetail {
-  stationIndex: number;
-  strategy: string;
-  strategyName: string;
-  current: number;
-  max: number;
-  progress: number;
-  remainSecs: number;
-  remainingTime: string;
-  completeTime: string;
-}
-
-interface ManufactureDetail {
-  stationIndex: number;
-  formula: string;
-  current: number;
-  max: number;
-  progress: number;
-  remainSecs: number;
-  remainingTime: string;
-  completeTime: string;
-}
-
-interface AssistCharDetail {
-  charId: string;
-  name: string;
-  level: number;
-  evolvePhase: number;
-  evolvePhaseText: string;
-  skillId: string;
-  skillNumber: string;
-  skillText: string;
-  mainSkillLvl: number;
-  potentialRank: number;
-  potentialText: string;
-  specializeLevel: number;
-  moduleText: string;
-  skinId: string;
-  subProfessionId: string;
-  profession: string;
-  portraitUrl: string;
-  avatarUrl: string;
-  originalData: any;
-}
-
-// 玩家数据接口 - 基于实际API响应
-interface PlayerData {
-  status?: {
-    level?: number;
-    mainStageProgress?: string;
-    registerTs?: number;
-    ap?: {
-      max?: number;
-      current?: number;
-      completeRecoveryTime?: number;
-      lastApAddTime?: number;
-      remainSecs?: number;
-    };
-    avatar?: {
-      url: string;
-      id: string;
-    };
-    portrait?: {
-      url: string;
-    };
-  };
-  chars?: any[];
-  building?: {
-    hire?: {
-      refreshCount?: number;
-      completeWorkTime?: number;
-      lastUpdateTime?: number;
-      chars?: any[];
-    };
-    meeting?: {
-      clue?: {
-        board?: any[];
-        own?: number;
-      };
-      ownClues?: any[];
-      chars?: any[];
-    };
-    furniture?: {
-      total?: number;
-    };
-    labor?: {
-      maxValue?: number;
-      value?: number;
-      remainSecs?: number;
-      lastUpdateTime?: number;
-    };
-    dormitories?: Array<{
-      level?: number;
-      comfort?: number;
-      chars?: Array<{
-        charId: string;
-        ap?: number;
-        lastApAddTime?: number;
-      }>;
-    }>;
-    training?: {
-      trainee?: {
-        charId: string;
-        targetSkill?: number;
-      };
-      trainer?: {
-        charId: string;
-      };
-      remainSecs?: number;
-      lastUpdateTime?: number;
-      speed?: number;
-    };
-    tradings?: Array<{
-      strategy: string;
-      stockLimit: number;
-      stock?: any[];
-      completeWorkTime: number;
-      lastUpdateTime: number;
-      chars?: any[];
-    }>;
-    manufactures?: Array<{
-      formulaId: string;
-      capacity: number;
-      complete: number;
-      completeWorkTime: number;
-      lastUpdateTime: number;
-      chars?: any[];
-      speed?: number;
-      weight?: number;
-      level?: number;
-      remain?: number;
-      slotId?: string;
-    }>;
-    tiredChars?: any[];
-    control?: {
-      chars?: any[];
-    };
-    powers?: Array<{
-      chars?: any[];
-    }>;
-  };
-  recruit?: Array<{
-    state: number;
-    startTs: number;
-    finishTs: number;
-    tags?: any[];
-  }>;
-  routine?: {
-    daily?: {
-      current?: number;
-      total?: number;
-    };
-    weekly?: {
-      current?: number;
-      total?: number;
-    };
-  };
-  campaign?: {
-    reward?: {
-      current?: number;
-      total?: number;
-    };
-  };
-  tower?: {
-    reward?: {
-      lowerItem?: {
-        current?: number;
-        total?: number;
-      };
-      higherItem?: {
-        current?: number;
-        total?: number;
-      };
-    };
-  };
-  assistChars?: Array<{
-    charId: string;
-    level: number;
-    evolvePhase: number;
-    skillId?: string;
-    mainSkillLvl?: number;
-    potentialRank?: number;
-    specializeLevel?: number;
-    skinId?: string;
-  }>;
-  skins?: any[];
-  rogue?: {
-    relicCnt?: number;
-    records?: any[];
-  };
-  rogueInfoMap?: Record<string, {
-    id: string;
-    name: string;
-    picUrl: string;
-    sort: number;
-  }>;
-  charInfoMap?: Record<string, {
-    name: string;
-    profession?: string;
-    subProfessionId?: string;
-  }>;
-  manufactureFormulaInfoMap?: Record<string, {
-    weight?: number;
-  }>;
-}
-
-// 缓存接口
-interface DataCache {
-  data: PlayerData;
-  timestamp: number;
-}
 
 /**
  * 游戏数据状态管理Store
@@ -442,9 +147,9 @@ export const useGameDataStore = defineStore('gameData', () => {
    * 计算基建总效率加成
    */
   // 基建效率计算缓存
-  const efficiencyCache = new Map<string, { totalSpeedBuff: number; totalLimitBuff: number }>();
+  const efficiencyCache = new Map<string, BuildingEfficiency>();
 
-  const calculateBuildingEfficiency = (chars: any[], roomType: string): { totalSpeedBuff: number; totalLimitBuff: number } => {
+  const calculateBuildingEfficiency = (chars: unknown[], roomType: string): BuildingEfficiency => {
     // 数据验证
     if (!chars || !Array.isArray(chars) || chars.length === 0) {
       return { totalSpeedBuff: 0, totalLimitBuff: 0 };
@@ -507,39 +212,71 @@ export const useGameDataStore = defineStore('gameData', () => {
     return formatTimestampUtil(ts, { emptyValue: '未知', enableValidation: false });
   };
 
-  const formatRecoveryTimeFromSeconds = (seconds: number): string => {
-    if (seconds <= 0) return '已完成';
+  // ========== 统一的时间格式化工具 ==========
 
+  /**
+   * 统一的时间格式化函数
+   * @param seconds 秒数
+   * @returns 格式化后的时间字符串
+   */
+  const formatTimeFromSeconds = (seconds: number): string => {
+    if (seconds <= 0) return '已完成';
     try {
       const hours = Math.floor(seconds / 3600);
       const minutes = Math.floor((seconds % 3600) / 60);
-
       if (hours > 0) return `${hours}小时${minutes}分钟`;
       return `${minutes}分钟`;
     } catch (error) {
-      logger.error('格式化恢复时间失败', { seconds, error });
+      logger.error('格式化时间失败', { seconds, error });
       return '计算中';
     }
   };
 
+  const formatRecoveryTimeFromSeconds = formatTimeFromSeconds;
+
   const formatRecoveryTime = (recoveryTs?: number): string => {
     if (!recoveryTs || recoveryTs <= 0) return '已回满';
-
     try {
       const now = getCurrentTimestamp();
       const diff = recoveryTs - now;
-
       if (diff <= 0) return '已回满';
-
-      const hours = Math.floor(diff / 3600);
-      const minutes = Math.floor((diff % 3600) / 60);
-
-      if (hours > 0) return `${hours}小时${minutes}分钟`;
-      return `${minutes}分钟`;
+      return formatTimeFromSeconds(diff);
     } catch (error) {
       logger.error('格式化理智恢复时间失败', { recoveryTs, error });
       return '计算中';
     }
+  };
+
+  // ========== 统一的buff计算工具 ==========
+
+  /**
+   * 统一的buff计算函数
+   * @param data 站点数据数组
+   * @param roomType 房间类型
+   * @returns 格式化后的buff字符串
+   */
+  const getBuildingBuff = (data: any[], roomType: string): string => {
+    try {
+      if (!data || !Array.isArray(data)) return '';
+      let totalBuff = 0;
+      data.forEach(station => {
+        const { totalSpeedBuff } = calculateBuildingEfficiency(station.chars || [], roomType);
+        totalBuff = Math.max(totalBuff, totalSpeedBuff);
+      });
+      return totalBuff > 0 ? `+${(totalBuff * 100).toFixed(1)}%` : '';
+    } catch (error) {
+      return '';
+    }
+  };
+
+  const getTradingBuff = () => {
+    const tradingsData = playerData.value?.building?.tradings || [];
+    return getBuildingBuff(tradingsData, 'TRADING');
+  };
+
+  const getManufactureBuff = () => {
+    const manufacturesData = playerData.value?.building?.manufactures || [];
+    return getBuildingBuff(manufacturesData, 'MANUFACTURE');
   };
 
   // ========== 头像相关功能 ==========
@@ -753,7 +490,7 @@ export const useGameDataStore = defineStore('gameData', () => {
               result.changeTimeLogos = currentTs + Math.floor(secs);
             }
           } else {
-            logger.warn('训练速度无效', { speed: training.speed });
+            logger.debug('训练速度无效', { speed: training.speed });
             result.remainPoint = 0;
             result.totalPoint = 1;
           }
@@ -916,10 +653,10 @@ export const useGameDataStore = defineStore('gameData', () => {
           const strategy = node.strategy || 'UNKNOWN';
           const max = node.stockLimit || TRADING_CONFIG.PHASES[0].orderLimit;
           
-          // 验证时间戳
+          // 验证时间戳 - 使用debug级别避免每秒刷屏
           if (!node.completeWorkTime || !node.lastUpdateTime || 
               node.completeWorkTime <= 0 || node.lastUpdateTime <= 0) {
-            logger.warn('贸易站时间戳无效', { stationIndex, completeWorkTime: node.completeWorkTime, lastUpdateTime: node.lastUpdateTime });
+            logger.debug('贸易站时间戳无效', { stationIndex, completeWorkTime: node.completeWorkTime, lastUpdateTime: node.lastUpdateTime });
             tradings.push({ strategy, max, current: 0, completeTime: -1, remainSecs: -1 });
             return;
           }
@@ -933,9 +670,9 @@ export const useGameDataStore = defineStore('gameData', () => {
           const speedMultiplier = Math.max(0.1, 1 + totalSpeedBuff); // 防止除零和负数
           const targetPoint = Math.floor(baseTime / speedMultiplier);
           
-          // 验证计算结果
+          // 验证计算结果 - 使用debug级别避免每秒刷屏
           if (targetPoint <= 0) {
-            logger.warn('贸易站生产时间计算异常', { stationIndex, strategy, baseTime, totalSpeedBuff, targetPoint });
+            logger.debug('贸易站生产时间计算异常', { stationIndex, strategy, baseTime, totalSpeedBuff, targetPoint });
             tradings.push({ strategy, max, current: 0, completeTime: -1, remainSecs: -1 });
             return;
           }
@@ -943,7 +680,7 @@ export const useGameDataStore = defineStore('gameData', () => {
           // 计算当前库存，基于官方算法 - 添加边界检查
           const timeDiff = node.completeWorkTime - node.lastUpdateTime;
           if (timeDiff < 0) {
-            logger.warn('贸易站时间差为负数', { stationIndex, completeWorkTime: node.completeWorkTime, lastUpdateTime: node.lastUpdateTime });
+            logger.debug('贸易站时间差为负数', { stationIndex, completeWorkTime: node.completeWorkTime, lastUpdateTime: node.lastUpdateTime });
             tradings.push({ strategy, max, current: 0, completeTime: -1, remainSecs: -1 });
             return;
           }
@@ -1067,9 +804,9 @@ export const useGameDataStore = defineStore('gameData', () => {
           const formulaInfo = formulaMap[formulaId];
           const weight = formulaInfo?.weight || 1;
           
-          // 验证基础数据
+          // 验证基础数据 - 使用debug级别避免每秒刷屏
           if (!node.capacity || node.capacity <= 0 || weight <= 0) {
-            logger.warn('制造站容量或权重无效', { index, capacity: node.capacity, weight });
+            logger.debug('制造站容量或权重无效', { index, capacity: node.capacity, weight });
             manufactures.push({ 
               formula: formulaId, 
               max: 0, 
@@ -1088,10 +825,10 @@ export const useGameDataStore = defineStore('gameData', () => {
           let completeTime = -1;
           let remainSecs = -1;
 
-          // 验证时间戳
+          // 验证时间戳 - 使用debug级别避免每秒刷屏
           if (!node.completeWorkTime || !node.lastUpdateTime || 
               node.completeWorkTime <= 0 || node.lastUpdateTime <= 0) {
-            logger.warn('制造站时间戳无效', { index, completeWorkTime: node.completeWorkTime, lastUpdateTime: node.lastUpdateTime });
+            logger.debug('制造站时间戳无效', { index, completeWorkTime: node.completeWorkTime, lastUpdateTime: node.lastUpdateTime });
             manufactures.push({ 
               formula: formulaId, 
               max, 
@@ -1124,9 +861,9 @@ export const useGameDataStore = defineStore('gameData', () => {
               const totalBuff = Math.max(0.1, 1 + totalSpeedBuff + (speed - 1)); // 防止除零和负数
               const adjustedCostPoint = Math.floor(baseCostPoint / totalBuff);
               
-              // 验证计算结果
+              // 验证计算结果 - 使用debug级别避免每秒刷屏
               if (adjustedCostPoint <= 0) {
-                logger.warn('制造站生产时间计算异常', { index, formulaId, baseCostPoint, totalBuff, adjustedCostPoint });
+                logger.debug('制造站生产时间计算异常', { index, formulaId, baseCostPoint, totalBuff, adjustedCostPoint });
               } else {
                 // 基于官方算法计算当前产量
                 const progressRatio = Math.min(1, Math.max(0, elapsedTime / totalTime));
@@ -1485,7 +1222,7 @@ export const useGameDataStore = defineStore('gameData', () => {
     }
   });
 
-  const getRecruitDetails = computed((): RecruitSlot[] => {
+  const getRecruitDetails = computed((): RecruitSlotDetail[] => {
     try {
       const recruitData = playerData.value?.recruit;
       if (!recruitData || !Array.isArray(recruitData)) return [];
@@ -1834,7 +1571,7 @@ export const useGameDataStore = defineStore('gameData', () => {
     }
   });
 
-  const getAssistCharArrayStatus = computed((): any[] => {
+  const getAssistCharArrayStatus = computed((): AssistCharStatus[] => {
     try {
       const details = getAssistCharDetails.value;
       if (details.length === 0) return [{
@@ -2041,6 +1778,29 @@ export const useGameDataStore = defineStore('gameData', () => {
     }
   });
 
+  // ========== 周常倒计时计算 ==========
+
+  /**
+   * 计算距离下周一凌晨4点的剩余时间
+   */
+  const getWeeklyCountdown = computed((): string => {
+    const now = new Date();
+    const nextMonday = new Date(now);
+    const dayOfWeek = now.getDay();
+    const daysUntilMonday = dayOfWeek === 1 ? 7 : (8 - dayOfWeek) % 7;
+    nextMonday.setDate(now.getDate() + daysUntilMonday);
+    nextMonday.setHours(4, 0, 0, 0);
+
+    const diff = nextMonday.getTime() - now.getTime();
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+
+    if (days > 0) return `还有${days}天${hours}小时刷新`;
+    if (hours > 0) return `还有${hours}小时${minutes}分钟刷新`;
+    return `还有${minutes}分钟刷新`;
+  });
+
   // ========== 调试功能 ==========
 
   const debugData = (): void => {
@@ -2104,19 +1864,15 @@ export const useGameDataStore = defineStore('gameData', () => {
 
       logger.debug('检查绑定角色列表');
       if (!authStore.bindingRoles || authStore.bindingRoles.length === 0) {
-        logger.info('没有绑定角色，正在获取角色列表...');
         try {
+          // fetchBindingRoles 内部已有日志
           await authStore.fetchBindingRoles();
-          logger.info('角色列表获取成功');
         } catch (error: any) {
           errorMsg.value = '获取角色列表失败: ' + (error.message || '未知错误');
           logger.error('获取角色列表失败', error);
           return;
         }
       }
-
-      const roleCount = authStore.bindingRoles.length;
-      logger.debug(`当前绑定角色数量: ${roleCount}`);
 
       const targetRole = authStore.bindingRoles.find((role: any) => role.isDefault) || authStore.bindingRoles[0];
 
@@ -2125,11 +1881,6 @@ export const useGameDataStore = defineStore('gameData', () => {
         logger.error('未找到绑定的游戏角色');
         return;
       }
-
-      logger.info(`使用角色获取数据`, {
-        name: targetRole.nickName,
-        uid: targetRole.uid
-      });
 
       const data = await AuthAPI.getPlayerData(
         authStore.sklandCred,
@@ -2141,10 +1892,7 @@ export const useGameDataStore = defineStore('gameData', () => {
         throw new Error('API返回的数据格式不正确');
       }
 
-      logger.info('玩家数据获取成功', {
-        hasData: !!data,
-        dataKeys: data ? Object.keys(data) : []
-      });
+      logger.debug('玩家数据获取成功', { dataKeys: data ? Object.keys(data) : [] });
 
       playerData.value = data;
       lastUpdateTime.value = Date.now();
@@ -2439,6 +2187,7 @@ export const useGameDataStore = defineStore('gameData', () => {
     getWeeklyTaskProgress,
     getTowerLowerItem,
     getTowerHigherItem,
+    getWeeklyCountdown,
 
     // 方法
     fetchGameData,
@@ -2446,6 +2195,8 @@ export const useGameDataStore = defineStore('gameData', () => {
     formatTimestamp,
     formatRecoveryTime,
     formatRecoveryTimeFromSeconds,
+    formatTimeFromSeconds,
+    getBuildingBuff,
     debugData,
     startTimeUpdate,
     stopTimeUpdate,

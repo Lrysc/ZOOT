@@ -1,4 +1,4 @@
-import type { GachaCategory, GachaHistoryResponse } from './types';
+import type { GachaCategory, GachaHistoryResponse } from '@types/gacha';
 
 // ============================================================================
 // 基础配置
@@ -67,9 +67,6 @@ const getCommonHeaders = () => {
  * 处理鹰角API响应（使用status字段）
  */
 const handleHgApiResponse = async (response: Response, apiName: string): Promise<any> => {
-  console.log(`${apiName} 响应状态:`, response.status, response.statusText);
-  console.log(`${apiName} 响应头:`, Object.fromEntries(response.headers.entries()));
-
   if (!response.ok) {
     const errorText = await response.text();
     console.error(`${apiName} 错误响应内容:`, errorText);
@@ -77,7 +74,6 @@ const handleHgApiResponse = async (response: Response, apiName: string): Promise
   }
 
   const data = await response.json();
-  console.log(`${apiName} 响应:`, data);
 
   if (data.status !== 0) {
     throw new Error(data.msg || `${apiName} 业务逻辑错误`);
@@ -90,9 +86,6 @@ const handleHgApiResponse = async (response: Response, apiName: string): Promise
  * 处理游戏API响应（使用code字段）
  */
 const handleApiResponse = async (response: Response, apiName: string): Promise<any> => {
-  console.log(`${apiName} 响应状态:`, response.status, response.statusText);
-  console.log(`${apiName} 响应头:`, Object.fromEntries(response.headers.entries()));
-
   if (!response.ok) {
     const errorText = await response.text();
     console.error(`${apiName} 错误响应内容:`, errorText);
@@ -100,7 +93,6 @@ const handleApiResponse = async (response: Response, apiName: string): Promise<a
   }
 
   const data = await response.json();
-  console.log(`${apiName} 响应:`, data);
 
   if (data.code !== 0) {
     throw new Error(data.msg || `${apiName} 业务逻辑错误`);
@@ -134,13 +126,6 @@ export const getTokenByPhonePassword = async (phone: string, password: string): 
  */
 export const getOAuth2Grant = async (token: string): Promise<{ token: string; hgId: string }> => {
   const url = `${API_BASE.web}/user/oauth2/v2/grant`;
-
-  console.log('OAuth2授权请求URL:', url);
-  console.log('OAuth2授权请求体:', {
-    token: token.substring(0, 20) + '...',
-    appCode: 'be36d44aa36bfb5b',
-    type: 1
-  });
 
   const response = await makeRequest(url, {
     method: 'POST',
@@ -178,14 +163,6 @@ export const getU8TokenByUid = async (token: string, uid: string): Promise<strin
 export const roleLogin = async (token: string): Promise<string> => {
   const url = `${API_BASE.ak}/user/api/role/login`;
 
-  console.log('角色登录请求URL:', url);
-  console.log('角色登录请求体:', {
-    token: token.substring(0, 20) + '...',
-    source_from: '',
-    share_type: '',
-    share_by: ''
-  });
-
   const response = await makeRequest(url, {
     method: 'POST',
     headers: getCommonHeaders(),
@@ -213,30 +190,15 @@ export const roleLogin = async (token: string): Promise<string> => {
     });
 
     if (apiResult.cookie) {
-      console.log('从IPC代理获取到cookie:', apiResult.cookie.substring(0, 50) + '...');
       return apiResult.cookie;
     }
   }
 
-  console.log('检查响应体中的cookie:', {
-    hasData: !!data.data,
-    hasCookie: !!(data.data && data.data.cookie),
-    dataKeys: data.data ? Object.keys(data.data) : []
-  });
-
   if (data.data && data.data.cookie) {
-    console.log('从响应体获取到cookie:', data.data.cookie.substring(0, 50) + '...');
     return data.data.cookie;
   }
 
   let setCookieHeader: string | null = null;
-
-  console.log('检查响应头中的cookie:', {
-    isDev: isDev,
-    allHeaders: Object.fromEntries(response.headers.entries()),
-    hasSetCookie: response.headers.has('set-cookie'),
-    hasSetCookieCaps: response.headers.has('Set-Cookie')
-  });
 
   setCookieHeader = response.headers.get('set-cookie');
 
@@ -245,8 +207,6 @@ export const roleLogin = async (token: string): Promise<string> => {
   }
 
   if (setCookieHeader) {
-    console.log('从响应头获取到set-cookie:', setCookieHeader);
-
     let cookieString = setCookieHeader;
     if (Array.isArray(setCookieHeader)) {
       cookieString = setCookieHeader.join('; ');
@@ -255,7 +215,6 @@ export const roleLogin = async (token: string): Promise<string> => {
     const match = cookieString.match(/ak-user-center=([^;]+)/);
     if (match) {
       const cookie = decodeURIComponent(match[1]);
-      console.log('成功提取到ak-user-center cookie值:', cookie.substring(0, 50) + '...');
       return cookie;
     }
   }
@@ -334,8 +293,6 @@ export const getGachaHistory = async (
   });
 
   const data = await handleApiResponse(response, '获取抽卡记录');
-  console.log('getGachaHistory 完整响应 data:', data);
-  console.log('getGachaHistory 返回的 data.data:', data.data);
 
   if (!data.data) {
     console.error('getGachaHistory data.data 为空:', data.data);
