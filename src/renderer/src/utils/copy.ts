@@ -3,6 +3,8 @@
  * 提供高可靠性的复制功能
  */
 
+import { showSuccess, showError } from '@utils/toast';
+
 /**
  * 高可靠性的复制到剪贴板函数
  * 结合多种方法确保复制成功
@@ -117,6 +119,49 @@ export async function copyToClipboard(
 
   console.error(`❌ 所有复制方法都失败了`);
   return false;
+}
+
+/**
+ * 带 Toast 提示的复制函数
+ * @param text 要复制的文本
+ * @param itemName 复制项的名称（用于提示）
+ * @returns 是否复制成功
+ */
+export async function copyWithToast(text: string, itemName: string = '内容'): Promise<boolean> {
+  if (!text?.trim()) {
+    showError(`${itemName}为空，无法复制`);
+    return false;
+  }
+  try {
+    const success = await copyToClipboard(text, itemName);
+    if (success) {
+      showSuccess(`已复制${itemName}`);
+      return true;
+    } else {
+      showError(`复制失败，请手动复制${itemName}`);
+      return false;
+    }
+  } catch (error) {
+    console.error('复制过程中发生异常:', error);
+    showError(`复制失败: ${error instanceof Error ? error.message : '未知错误'}`);
+    return false;
+  }
+}
+
+/**
+ * 静默复制（无提示）
+ * @param text 要复制的文本
+ * @param itemName 复制项的名称
+ * @returns 是否复制成功
+ */
+export async function copySilent(text: string, itemName: string = '内容'): Promise<boolean> {
+  if (!text?.trim()) return false;
+  try {
+    return await copyToClipboard(text, itemName);
+  } catch (error) {
+    console.error('复制失败:', error);
+    return false;
+  }
 }
 
 /**

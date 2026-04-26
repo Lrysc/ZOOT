@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia';
 import { AuthAPI } from '@services/api';
 import { logger } from '@services/logger';
-import { showSuccess } from '@services/toastService';
+import { showSuccess } from '@utils/toast';
 
 /**
  * 认证状态接口定义

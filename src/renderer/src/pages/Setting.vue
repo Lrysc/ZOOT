@@ -11,8 +11,8 @@
               :src="gameDataStore.userAvatar"
               alt="用户头像"
               class="avatar-img"
-              @error="gameDataStore.handleAvatarError"
-              @load="gameDataStore.handleAvatarLoad"
+              @error="handleUserAvatarError"
+              @load="handleUserAvatarLoad"
             />
             <img
               v-else
@@ -209,12 +209,11 @@
             </button>
 
             <button
-              @click="copyLogsToClipboard"
-              :disabled="logCount === 0"
-              class="log-btn copy-btn"
-              title="复制日志内容到剪贴板"
+              @click="handleClearCache"
+              class="log-btn clear-cache-btn"
+              title="清除游戏数据缓存"
             >
-              <span class="btn-text">复制日志</span>
+              <span class="btn-text">清除缓存</span>
             </button>
 
             <button
@@ -419,10 +418,10 @@ import { onMounted, watch } from 'vue'
 import { useAuthStore } from '@stores/auth'
 import { useGameDataStore } from '@stores/gameData'
 import { logger } from '@services/logger'
-import { showError } from '@services/toastService'
-import { useCopy } from '@composables/useCopy'
-import { useLog } from '@composables/useLog'
-import { useUpdate } from '@composables/useUpdate'
+import { showError } from '@utils/toast'
+import { copyToClipboard } from '@utils/copy'
+import { logUtils } from '@utils/log'
+import { updateUtils } from '@utils/update'
 import { getProfessionIconUrl } from '@utils/profession'
 import { renderMarkdown, formatAboutContent } from '@utils/markdown'
 import packageJson from '../../../../package.json'
@@ -434,8 +433,7 @@ const version = packageJson.version
 const authStore = useAuthStore()
 const gameDataStore = useGameDataStore()
 
-// Composables
-const { copyToClipboard } = useCopy()
+// 日志工具
 const {
   logs,
   logCount,
@@ -454,8 +452,9 @@ const {
   showClearConfirm,
   confirmClear,
   cancelClear
-} = useLog()
+} = logUtils
 
+// 更新工具
 const {
   updateInfo,
   showUpdateDialog,
@@ -468,7 +467,13 @@ const {
   closeAboutDialog,
   closeUpdateDialog,
   downloadAndInstall
-} = useUpdate()
+} = updateUtils
+
+// 清除缓存
+const handleClearCache = (): void => {
+  gameDataStore.clearCache()
+  logger.info('用户手动清除缓存')
+}
 
 // 复制昵称
 const copyNickname = async () => {
@@ -480,6 +485,27 @@ const copyNickname = async () => {
   await copyToClipboard(nickname)
   logger.info('用户复制了昵称', { nickname })
 }
+
+// 用户头像加载错误处理
+const handleUserAvatarError = (event: Event): void => {
+  const target = event.target as HTMLImageElement;
+  logger.warn('Setting页面头像加载失败', {
+    src: target.src,
+    userAvatar: gameDataStore.userAvatar,
+    avatarLoadError: gameDataStore.avatarLoadError
+  });
+  // 如果 userAvatar 有值但加载失败，保留 URL 供调试
+  // 同时不显示默认头像
+  if (gameDataStore.userAvatar) {
+    logger.info('头像URL有效但加载失败，将尝试保留显示', { url: gameDataStore.userAvatar });
+  }
+};
+
+// 用户头像加载成功处理
+const handleUserAvatarLoad = (event: Event): void => {
+  const target = event.target as HTMLImageElement;
+  logger.info('Setting页面头像加载成功', { src: target.src });
+};
 
 // 生命周期和监听器
 watch(

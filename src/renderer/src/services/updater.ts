@@ -1,5 +1,5 @@
 import { logger } from './logger'
-import { showSuccess, showError, showInfo } from './toastService'
+import { showSuccess, showError, showInfo } from '@utils/toast'
 import packageJson from '../../../../package.json'
 
 interface GitHubRelease {

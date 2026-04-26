@@ -5,7 +5,7 @@ import {
   removeToastListener,
   hideToast,
   type ToastType
-} from '@services/toastService';
+} from '@utils/toast';
 
 // ==================== 组件状态 ====================
 

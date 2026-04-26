@@ -1,242 +1,19 @@
-import { getDId, getSignedHeaders } from '../utils/api/security';
+import { getDId, getSignedHeaders } from './types';
 
 // ============================================================================
-// 类型定义区
+// 基础配置
 // ============================================================================
 
-/**
- * API 响应基础类型
- */
-export interface ApiResponse<T = any> {
-  code: number;
-  message: string;
-  data: T;
-}
-
-/**
- * 鹰角网络账号信息响应类型
- */
-export interface HypergryphAccountResponse {
-  code: number;
-  data: {
-    content: string; // 这就是抽卡用的 token
-  };
-  msg: string;
-}
-
-/**
- * 验证码发送响应类型
- */
-export interface SmsCodeResponse {
-  status: number;
-  msg: string;
-}
-
-/**
- * OAuth2 授权码响应类型
- */
-export interface GrantCodeResponse {
-  code: string;
-}
-
-/**
- * 森空岛认证凭证响应类型
- */
-export interface SklandCredResponse {
-  cred: string;
-  token: string;
-  userId: string;
-}
-
-/**
- * 绑定角色信息类型
- */
-export interface BindingCharacter {
-  uid: string;
-  isOfficial: boolean;
-  isDefault: boolean;
-  channelMasterId: string;
-  channelName: string;
-  nickName: string;
-  isDelete: boolean;
-  roleToken?: string; // 添加role token字段，用于官网抽卡API
-}
-
-/**
- * 绑定列表类型
- */
-export interface BindingList {
-  appCode: string;
-  appName: string;
-  bindingList: BindingCharacter[];
-  defaultUid: string;
-}
-
-/**
- * 绑定角色响应类型
- */
-export interface BindingResponse {
-  list: BindingList[];
-}
-
-/**
- * 玩家状态信息类型
- */
-export interface PlayerStatus {
-  name: string;
-  level: number;
-  registerTs: number;
-  mainStageProgress: string;
-  ap: {
-    current: number;
-    max: number;
-    completeRecoveryTime: number;
-  };
-}
-
-/**
- * 基建数据信息类型
- */
-export interface BuildingData {
-  furniture: {
-    total: number;
-  };
-  hire: {
-    slots: any[];
-    refreshCount: number;
-  };
-  manufactures: any[];
-  tradings: any[];
-  dormitories: any[];
-  meeting: {
-    clue: {
-      board: any[];
-    };
-    ownClues: any[];
-  };
-  training: {
-    trainee: any[];
-  };
-  labor: {
-    value?: number;
-    count?: number;
-    current?: number;
-    maxValue?: number;
-    max?: number;
-  };
-  tiredChars: any[];
-}
-
-/**
- * 日常周常任务数据
- */
-export interface RoutineData {
-  daily?: {
-    completed?: number;
-    total?: number;
-  };
-  weekly?: {
-    completed?: number;
-    total?: number;
-  };
-}
-
-/**
- * 活动数据
- */
-export interface CampaignData {
-  reward: {
-    current: number;
-    total: number;
-  };
-}
-
-/**
- * 危机合约数据
- */
-export interface TowerData {
-  reward: {
-    current: number;
-    total: number;
-    lowerItem: {
-      current: number;
-      total: number;
-    };
-    higherItem: {
-      current: number;
-      total: number;
-    };
-  };
-}
-
-/**
- * 肉鸽数据
- */
-export interface RogueData {
-  relicCnt: number;
-}
-
-/**
- * 完整玩家数据类型
- */
-export interface PlayerData {
-  status: PlayerStatus;
-  chars: any[];
-  assistChars: any[];
-  skins: any[];
-  building: BuildingData;
-  routine: RoutineData;
-  campaign: CampaignData;
-  tower: TowerData;
-  rogue: RogueData;
-}
-
-/**
- * 理智信息计算类型
- */
-export interface ApInfo {
-  current: number;
-  max: number;
-  remainSecs: number;
-  recoverTime: number;
-}
-
-
-
-/**
- * 签到响应类型
- */
-export interface AttendanceResponse {
-  awards: Array<{
-    resource: {
-      id: string;
-      name: string;
-      type: string;
-    };
-    count: number;
-    type: string;
-  }>;
-  totalCount: number;
-}
-
-// ============================================================================
-// 基础配置和工具函数
-// ============================================================================
-
-/**
- * API 基础配置
- */
 const isDev = import.meta.env.DEV;
 const API_BASE = {
   hgAuth: isDev ? '/api/hg' : 'https://as.hypergryph.com',
-  skland: isDev ? '/api/skland' : 'https://zonai.skland.com',
-  webApi: isDev ? '/api/web' : 'https://web-api.skland.com'
+  skland: isDev ? '/api/skland' : 'https://zonai.skland.com'
 };
 
-/**
- * 获取通用请求头
- * @returns 通用请求头对象
- */
+// ============================================================================
+// 通用工具函数
+// ============================================================================
+
 const getCommonHeaders = () => {
   return {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0',
@@ -248,14 +25,8 @@ const getCommonHeaders = () => {
   };
 };
 
-
-
 /**
  * 处理 API 响应，包含错误处理
- * @param response - fetch 响应对象
- * @param apiName - API 名称，用于错误信息
- * @returns 解析后的 JSON 数据
- * @throws 当 HTTP 状态码非 200 或 API 返回错误码时抛出错误
  */
 const handleApiResponse = async (response: Response, apiName: string): Promise<any> => {
   if (!response.ok) {
@@ -273,7 +44,6 @@ const handleApiResponse = async (response: Response, apiName: string): Promise<a
   const data = await response.json();
   console.log(`${apiName} 响应:`, data);
 
-  // 检查业务逻辑错误码
   if (data.status !== 0 && data.code !== 0) {
     const errorMsg = data.msg || data.message || `${apiName} 业务逻辑错误`;
     console.error(`${apiName} 业务错误:`, data);
@@ -287,18 +57,9 @@ const handleApiResponse = async (response: Response, apiName: string): Promise<a
 // 认证相关 API
 // ============================================================================
 
-/**
- * 认证相关 API 接口
- */
 export const AuthAPI = {
-
-
   /**
    * 通过手机号和密码登录获取鹰角 token
-   * @param phone - 手机号码
-   * @param password - 密码
-   * @returns 鹰角网络 token
-   * @throws 当登录失败时抛出错误
    */
   loginByPassword: async (phone: string, password: string): Promise<string> => {
     const dId = await getDId();
@@ -321,9 +82,6 @@ export const AuthAPI = {
 
   /**
    * 发送短信验证码
-   * @param phone - 手机号码
-   * @returns 发送是否成功
-   * @throws 当发送失败时抛出错误
    */
   sendSmsCode: async (phone: string): Promise<boolean> => {
     const dId = await getDId();
@@ -346,10 +104,6 @@ export const AuthAPI = {
 
   /**
    * 通过短信验证码登录获取鹰角 token
-   * @param phone - 手机号码
-   * @param code - 短信验证码
-   * @returns 鹰角网络 token
-   * @throws 当登录失败时抛出错误
    */
   loginBySmsCode: async (phone: string, code: string): Promise<string> => {
     const dId = await getDId();
@@ -372,9 +126,6 @@ export const AuthAPI = {
 
   /**
    * 获取 OAuth2 授权码
-   * @param hgToken - 鹰角网络 token
-   * @returns OAuth2 授权码
-   * @throws 当获取授权码失败时抛出错误
    */
   getGrantCode: async (hgToken: string): Promise<string> => {
     const dId = await getDId();
@@ -390,7 +141,7 @@ export const AuthAPI = {
       },
       body: JSON.stringify({
         token: hgToken,
-        appCode: '4ca99fa6b56cc2ba', // 森空岛 App Code
+        appCode: '4ca99fa6b56cc2ba',
         type: 0
       })
     });
@@ -401,11 +152,8 @@ export const AuthAPI = {
 
   /**
    * 获取森空岛认证凭证 (Cred)
-   * @param grantCode - OAuth2 授权码
-   * @returns 森空岛认证凭证信息
-   * @throws 当获取凭证失败时抛出错误
    */
-  getSklandCred: async (grantCode: string): Promise<SklandCredResponse> => {
+  getSklandCred: async (grantCode: string) => {
     const dId = await getDId();
     const url = `${API_BASE.skland}/api/v1/user/auth/generate_cred_by_code`;
 
@@ -426,12 +174,8 @@ export const AuthAPI = {
 
   /**
    * 获取绑定角色列表
-   * @param cred - 森空岛认证凭证
-   * @param signToken - 签名 token
-   * @returns 绑定角色列表
-   * @throws 当获取角色列表失败时抛出错误
    */
-  getBindingRoles: async (cred: string, signToken: string): Promise<BindingCharacter[]> => {
+  getBindingRoles: async (cred: string, signToken: string) => {
     const url = `${API_BASE.skland}/api/v1/game/player/binding`;
     const headers = getSignedHeaders(url, 'GET', null, cred, signToken);
 
@@ -445,25 +189,19 @@ export const AuthAPI = {
     const data = await handleApiResponse(response, '获取绑定角色');
 
     console.log('绑定角色API完整响应:', JSON.stringify(data, null, 2));
-    
-    // 查找明日方舟游戏的角色绑定列表
-    const arknightsBinding = data.data.list.find((item: BindingList) => item.appCode === 'arknights');
+
+    const arknightsBinding = data.data.list.find((item: any) => item.appCode === 'arknights');
     const bindingList = arknightsBinding?.bindingList || [];
-    
+
     console.log('明日方舟绑定列表:', JSON.stringify(bindingList, null, 2));
-    
+
     return bindingList;
   },
 
   /**
    * 获取玩家数据
-   * @param cred - 森空岛认证凭证
-   * @param signToken - 签名 token
-   * @param uid - 玩家 UID (游戏内UID)
-   * @returns 玩家数据
-   * @throws 当获取玩家数据失败时抛出错误
    */
-  getPlayerData: async (cred: string, signToken: string, uid: string): Promise<PlayerData> => {
+  getPlayerData: async (cred: string, signToken: string, uid: string) => {
     const url = `${API_BASE.skland}/api/v1/game/player/info?uid=${uid}`;
     const headers = getSignedHeaders(url, 'GET', null, cred, signToken);
 
@@ -480,8 +218,6 @@ export const AuthAPI = {
 
   /**
    * 校验 Cred 有效性
-   * @param cred - 森空岛认证凭证
-   * @returns 校验是否通过
    */
   checkCred: async (cred: string): Promise<boolean> => {
     const url = `${API_BASE.skland}/api/v1/user/check`;
@@ -505,26 +241,13 @@ export const AuthAPI = {
 
   /**
    * 执行签到操作
-   * @param cred - 森空岛认证凭证
-   * @param signToken - 签名 token
-   * @param uid - 玩家 UID (游戏内UID)
-   * @param gameId - 游戏 ID
-   * @returns 签到结果
-   * @throws 当签到失败时抛出错误
    */
-  attendance: async (
-    cred: string,
-    signToken: string,
-    uid: string,
-    gameId: string
-  ): Promise<AttendanceResponse & { alreadyAttended?: boolean; message?: string }> => {
+  attendance: async (cred: string, signToken: string, uid: string, gameId: string) => {
     const url = `${API_BASE.skland}/api/v1/game/attendance`;
 
-    // 确保 gameId 是数字类型
     const gameIdNum = parseInt(gameId);
     const requestBody = { uid, gameId: gameIdNum };
 
-    // 使用正确的请求体进行签名
     const headers = getSignedHeaders(url, 'POST', requestBody, cred, signToken);
 
     console.log('签到请求头:', headers);
@@ -539,7 +262,6 @@ export const AuthAPI = {
     const data = await response.json();
     console.log('签到响应:', data);
 
-    // 特殊处理重复签到的情况
     if (data.code === 10001) {
       return {
         message: '今日已签到',
@@ -571,62 +293,4 @@ export const AuthAPI = {
   }
 };
 
-
-
-
-
-// ============================================================================
-// 工具函数
-// ============================================================================
-
-/**
- * 计算理智信息
- * @param playerData - 玩家数据
- * @returns 理智信息
- */
-export const calculateApInfo = (playerData: PlayerData): ApInfo => {
-  const { current, max, completeRecoveryTime } = playerData.status.ap;
-  const currentTime = Math.floor(Date.now() / 1000);
-  const remainSecs = Math.max(0, completeRecoveryTime - currentTime);
-  const recoverTime = completeRecoveryTime * 1000;
-
-  return {
-    current,
-    max,
-    remainSecs,
-    recoverTime
-  };
-};
-
-/**
- * 获取日常周常任务进度
- * @param routine - 日常周常数据
- * @returns 任务进度信息
- */
-export const getRoutineProgress = (routine: RoutineData) => {
-  const dailyCompleted = routine.daily?.completed || 0;
-  const dailyTotal = routine.daily?.total || 0;
-  const weeklyCompleted = routine.weekly?.completed || 0;
-  const weeklyTotal = routine.weekly?.total || 0;
-
-  return {
-    daily: {
-      completed: dailyCompleted,
-      total: dailyTotal,
-      progress: dailyTotal > 0 ? (dailyCompleted / dailyTotal) * 100 : 0
-    },
-    weekly: {
-      completed: weeklyCompleted,
-      total: weeklyTotal,
-      progress: weeklyTotal > 0 ? (weeklyCompleted / weeklyTotal) * 100 : 0
-    }
-  };
-};
-
-
-
-export default {
-  AuthAPI,
-  calculateApInfo,
-  getRoutineProgress
-};
+export default AuthAPI;

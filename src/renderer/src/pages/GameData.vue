@@ -191,7 +191,7 @@
                     :src="getOperatorAvatarUrl(gameDataStore.getTrainingDetails.traineeCharId)"
                     :alt="gameDataStore.getTrainingDetails.trainee"
                     class="training-avatar"
-                    @error="handleOperatorImageError(gameDataStore.getTrainingDetails.traineeCharId, 'avatar', $event)"
+                    @error="handleImageError(gameDataStore.getTrainingDetails.traineeCharId, 'avatar', $event)"
                   />
                   <span class="operator-name">{{ gameDataStore.getTrainingDetails.trainee }}</span>
                   <span class="operator-role">训练干员</span>
@@ -208,7 +208,7 @@
                     :src="getOperatorAvatarUrl(gameDataStore.getTrainingDetails.trainerCharId)"
                     :alt="gameDataStore.getTrainingDetails.trainer"
                     class="training-avatar"
-                    @error="handleOperatorImageError(gameDataStore.getTrainingDetails.trainerCharId, 'avatar', $event)"
+                    @error="handleImageError(gameDataStore.getTrainingDetails.trainerCharId, 'avatar', $event)"
                   />
                   <span class="operator-name">{{ gameDataStore.getTrainingDetails.trainer }}</span>
                   <span class="operator-role">协助者</span>
@@ -273,23 +273,12 @@
 import { ref, onMounted, watch, inject, computed, onUnmounted } from 'vue';
 import { useAuthStore } from '@stores/auth';
 import { useGameDataStore } from '@stores/gameData';
-import { showError } from '@services/toastService';
-import { getOperatorAvatarUrl } from '@utils/image';
+import { showError } from '@utils/toast';
+import { getOperatorAvatarUrl, handleImageError } from '@utils/image';
 
 // ==================== Store实例初始化 ====================
 const authStore = useAuthStore();
 const gameDataStore = useGameDataStore();
-
-// ==================== 头像获取方法 ====================
-
-/**
- * 处理干员图片加载错误
- */
-const handleOperatorImageError = (charId: string, type: string, event: Event): void => {
-  const imgElement = event.target as HTMLImageElement;
-  console.warn('干员图片加载失败', { charId, type, imgSrc: imgElement.src });
-  imgElement.style.display = 'none';
-};
 
 // ==================== 注入全局刷新方法 ====================
 /**

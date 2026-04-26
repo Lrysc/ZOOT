@@ -484,9 +484,13 @@ import {
   getGachaHistory,
   type GachaCategory,
   type GachaRecord
-} from '@services/Gacha';
-import { showToast } from '@services/toastService';
+} from '@services/api';
+import { showToast } from '@utils/toast';
 import { logger } from '@services/logger';
+import { formatTimestamp, setDateLogger } from '@utils/date';
+
+// 设置日期工具的日志记录器
+setDateLogger(logger);
 
 // 状态管理
 const authStore = useAuthStore();
@@ -912,74 +916,9 @@ const getRarityText = (rarity: number) => {
   return rarityMap[rarity] || `${rarity}星`;
 };
 
-// 格式化时间 - 在模板中使用
+// 格式化时间 - 使用统一的日期工具（包含秒数）
 const formatTime = (timestamp: string | number) => {
-  // 调试信息
-  logger.debug('格式化时间戳', {
-    timestamp: timestamp,
-    type: typeof timestamp
-  });
-
-  // 处理不同格式的时间戳
-  let date: Date;
-  let ts: number;
-
-  // 统一转换为数字
-  if (typeof timestamp === 'string') {
-    ts = parseFloat(timestamp);
-  } else {
-    ts = timestamp;
-  }
-
-  // 检查是否为有效数字
-  if (isNaN(ts)) {
-    logger.warn('无效的时间戳格式', { timestamp });
-    return '时间格式错误';
-  }
-
-  // 判断是毫秒还是秒时间戳
-  // 10位数 = 秒级（约1973-2286年）
-  // 13位数 = 毫秒级（约1970-2286年）
-  if (ts > 1000000000000) {
-    // 毫秒级时间戳
-    date = new Date(ts);
-    logger.debug('使用毫秒级时间戳', { timestamp, parsedDate: date.toISOString() });
-  } else if (ts > 1000000000) {
-    // 秒级时间戳，转换为毫秒
-    date = new Date(ts * 1000);
-    logger.debug('使用秒级时间戳', { timestamp, parsedDate: date.toISOString() });
-  } else {
-    logger.warn('时间戳超出合理范围', { timestamp });
-    return '时间戳异常';
-  }
-
-  // 检查日期是否有效
-  if (isNaN(date.getTime())) {
-    logger.warn('无效的日期', { timestamp, date });
-    return '日期无效';
-  }
-
-  // 检查日期是否合理（不能是未来时间，不能太早）
-  const now = Date.now();
-  const minDate = new Date('2020-01-01').getTime();
-
-  if (date.getTime() > now) {
-    logger.warn('时间戳是未来时间', { timestamp, date: date.toISOString() });
-  } else if (date.getTime() < minDate) {
-    logger.warn('时间戳过早', { timestamp, date: date.toISOString() });
-  }
-
-  const formatted = date.toLocaleString('zh-CN', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit'
-  });
-
-  logger.debug('时间戳格式化完成', { timestamp, formatted });
-  return formatted;
+  return formatTimestamp(timestamp, { includeSeconds: true, emptyValue: '时间格式错误' });
 };
 
 // 格式化文件大小

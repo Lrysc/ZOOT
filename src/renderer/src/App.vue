@@ -1,21 +1,16 @@
 <script setup lang="ts">
-import GameData from '@components/GameData.vue'
-import Recruit from '@components/Recruit.vue'
+import GameData from '@pages/GameData.vue'
+import Recruit from '@pages/Recruit.vue'
 
-import LoginWindow from '@components/LoginWindow.vue'
-import Setting from '@components/Setting.vue'
+import LoginWindow from '@pages/LoginWindow.vue'
+import Setting from '@pages/Setting.vue'
 import ToastNotification from '@components/ToastNotification.vue'
-import HeadhuntingRecord from '@components/headhuntingrecord.vue'
+import HeadhuntingRecord from '@pages/HeadhuntingRecord.vue'
 import TitleBar from '@components/TitleBar.vue'
 import { useAuthStore } from '@stores/auth'
 import { useGameDataStore } from '@stores/gameData'
+import { showSuccess, showError, showInfo, showWarning } from '@utils/toast'
 import { ref, onMounted, onUnmounted, provide, computed } from 'vue'
-import {
-  showSuccess,
-  showError,
-  showInfo,
-  showWarning
-} from '@services/toastService'
 import { AuthAPI } from '@services/api'
 
 // ==================== Store实例初始化 ====================

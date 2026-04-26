@@ -1,3 +1,5 @@
+import type { GachaCategory, GachaHistoryResponse } from './types';
+
 // ============================================================================
 // 基础配置
 // ============================================================================
@@ -9,15 +11,17 @@ const API_BASE = {
   web: isDev ? '/api/hg' : 'https://as.hypergryph.com'
 };
 
+// ============================================================================
+// 工具函数
+// ============================================================================
+
 /**
  * 统一的请求处理函数
  */
 const makeRequest = async (url: string, options: RequestInit = {}): Promise<Response> => {
   if (isDev) {
-    // 开发环境：使用 Vite 代理，直接发送 fetch 请求
     return fetch(url, options);
   } else {
-    // 生产环境：使用 Electron IPC 代理
     const result = await (window as any).api.apiRequest(url, {
       method: options.method || 'GET',
       headers: options.headers,
@@ -28,7 +32,6 @@ const makeRequest = async (url: string, options: RequestInit = {}): Promise<Resp
       throw new Error(result.error || `HTTP ${result.status}`);
     }
 
-    // 模拟 Response 对象
     return {
       ok: true,
       status: 200,
@@ -61,7 +64,7 @@ const getCommonHeaders = () => {
 };
 
 /**
- * 处理鹰角API响应（流程1-3，使用status字段）
+ * 处理鹰角API响应（使用status字段）
  */
 const handleHgApiResponse = async (response: Response, apiName: string): Promise<any> => {
   console.log(`${apiName} 响应状态:`, response.status, response.statusText);
@@ -76,7 +79,6 @@ const handleHgApiResponse = async (response: Response, apiName: string): Promise
   const data = await response.json();
   console.log(`${apiName} 响应:`, data);
 
-  // 鹰角API使用status字段
   if (data.status !== 0) {
     throw new Error(data.msg || `${apiName} 业务逻辑错误`);
   }
@@ -85,7 +87,7 @@ const handleHgApiResponse = async (response: Response, apiName: string): Promise
 };
 
 /**
- * 处理游戏API响应（流程4-6，使用code字段）
+ * 处理游戏API响应（使用code字段）
  */
 const handleApiResponse = async (response: Response, apiName: string): Promise<any> => {
   console.log(`${apiName} 响应状态:`, response.status, response.statusText);
@@ -100,7 +102,6 @@ const handleApiResponse = async (response: Response, apiName: string): Promise<a
   const data = await response.json();
   console.log(`${apiName} 响应:`, data);
 
-  // 游戏API使用code字段
   if (data.code !== 0) {
     throw new Error(data.msg || `${apiName} 业务逻辑错误`);
   }
@@ -109,32 +110,7 @@ const handleApiResponse = async (response: Response, apiName: string): Promise<a
 };
 
 // ============================================================================
-// 类型定义
-// ============================================================================
-
-export interface GachaCategory {
-  id: string;
-  name: string;
-}
-
-export interface GachaRecord {
-  poolId: string;
-  poolName: string;
-  charId: string;
-  charName: string;
-  rarity: number;
-  isNew: boolean;
-  gachaTs: string;
-  pos: number;
-}
-
-export interface GachaHistoryResponse {
-  list: GachaRecord[];
-  hasMore: boolean;
-}
-
-// ============================================================================
-// 抽卡API实现 - 基于md文件流程
+// 抽卡API实现
 // ============================================================================
 
 /**
@@ -213,7 +189,6 @@ export const roleLogin = async (token: string): Promise<string> => {
   const response = await makeRequest(url, {
     method: 'POST',
     headers: getCommonHeaders(),
-    // 在生产环境中，credentials 由 IPC 代理处理
     ...(isDev ? { credentials: 'include' } : {}),
     body: JSON.stringify({
       token,
@@ -225,9 +200,7 @@ export const roleLogin = async (token: string): Promise<string> => {
 
   const data = await handleApiResponse(response, '角色登录');
 
-  // 在生产环境中，cookie应该通过IPC代理的特殊方式传递
   if (!isDev) {
-    // 检查是否有通过IPC代理传递的cookie
     const apiResult = await (window as any).api.apiRequest(url, {
       method: 'POST',
       headers: getCommonHeaders(),
@@ -245,21 +218,19 @@ export const roleLogin = async (token: string): Promise<string> => {
     }
   }
 
-  // 优先从响应体中获取cookie（通过代理处理）
   console.log('检查响应体中的cookie:', {
     hasData: !!data.data,
     hasCookie: !!(data.data && data.data.cookie),
     dataKeys: data.data ? Object.keys(data.data) : []
   });
-  
+
   if (data.data && data.data.cookie) {
     console.log('从响应体获取到cookie:', data.data.cookie.substring(0, 50) + '...');
     return data.data.cookie;
   }
 
-  // 备用方案：尝试从响应头获取（可能由于CORS限制而失败）
   let setCookieHeader: string | null = null;
-  
+
   console.log('检查响应头中的cookie:', {
     isDev: isDev,
     allHeaders: Object.fromEntries(response.headers.entries()),
@@ -267,10 +238,8 @@ export const roleLogin = async (token: string): Promise<string> => {
     hasSetCookieCaps: response.headers.has('Set-Cookie')
   });
 
-  // 直接从响应头获取set-cookie
   setCookieHeader = response.headers.get('set-cookie');
-  
-  // 如果没有找到，尝试其他可能的大小写组合
+
   if (!setCookieHeader) {
     setCookieHeader = response.headers.get('Set-Cookie');
   }
@@ -278,7 +247,6 @@ export const roleLogin = async (token: string): Promise<string> => {
   if (setCookieHeader) {
     console.log('从响应头获取到set-cookie:', setCookieHeader);
 
-    // 处理可能为数组的set-cookie
     let cookieString = setCookieHeader;
     if (Array.isArray(setCookieHeader)) {
       cookieString = setCookieHeader.join('; ');
@@ -292,7 +260,6 @@ export const roleLogin = async (token: string): Promise<string> => {
     }
   }
 
-  // 如果以上都失败，尝试从makeRequest的返回结果中获取
   console.error('所有cookie提取方式都失败了，响应详情:', {
     status: response.status,
     headers: Object.fromEntries(response.headers.entries()),
@@ -370,17 +337,14 @@ export const getGachaHistory = async (
   console.log('getGachaHistory 完整响应 data:', data);
   console.log('getGachaHistory 返回的 data.data:', data.data);
 
-  // 检查 data.data 是否存在且包含必要字段
   if (!data.data) {
     console.error('getGachaHistory data.data 为空:', data.data);
-    // 返回一个默认的空结构，而不是抛出错误
     return {
       list: [],
       hasMore: false
     };
   }
 
-  // 如果 data.data 不是预期的格式，尝试直接返回
   if (!data.data.hasOwnProperty('list') || !data.data.hasOwnProperty('hasMore')) {
     console.warn('getGachaHistory data.data 格式异常，可能为空响应:', data.data);
     return {
@@ -390,4 +354,13 @@ export const getGachaHistory = async (
   }
 
   return data.data;
+};
+
+export default {
+  getTokenByPhonePassword,
+  getOAuth2Grant,
+  getU8TokenByUid,
+  roleLogin,
+  getGachaCategories,
+  getGachaHistory
 };

@@ -33,7 +33,7 @@
 
 <script setup lang="ts">
 import { ref } from 'vue';
-import { useCopy } from '../composables/useCopy';
+import { copyWithToast } from '@utils/copy';
 import { handleImageError, handleImageLoad } from '@utils/image';
 
 // Props
@@ -49,9 +49,6 @@ const props = withDefaults(defineProps<Props>(), {
   userAvatar: '',
   registerTs: 0
 });
-
-// Composables
-const { copyWithToast } = useCopy();
 
 // Refs
 const avatarLoadError = ref(false);

@@ -19,9 +19,8 @@ export default defineConfig({
         '@api': resolve('src/renderer/src/api'),
         '@utils': resolve('src/renderer/src/utils'),
         '@stores': resolve('src/renderer/src/stores'),
-        '@types': resolve('src/renderer/src/types.ts'),
         '@services': resolve('src/renderer/src/services'),
-        '@composables': resolve('src/renderer/src/composables')
+        '@pages': resolve('src/renderer/src/pages')
       }
     },
     plugins: [vue()],

@@ -2,9 +2,13 @@ import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
 import { AuthAPI } from '@services/api';
 import { useAuthStore } from '@stores/auth';
-import { showSuccess, showError } from '@services/toastService';
 import { logger } from '@services/logger';
-import { processImageUrl, getOperatorPortraitUrl, getOperatorAvatarUrl } from '@utils/image';
+import { processImageUrl, getOperatorPortraitUrl, getOperatorAvatarUrl, handleImageError, handleImageLoad } from '@utils/image';
+import { copyToClipboard } from '@utils/copy';
+import { formatTimestamp as formatTimestampUtil, formatRecoveryTime as formatRecoveryTimeUtil, setDateLogger } from '@utils/date';
+
+// 设置日期工具的日志记录器
+setDateLogger(logger);
 
 // ========== 完整类型定义 ==========
 
@@ -498,20 +502,9 @@ export const useGameDataStore = defineStore('gameData', () => {
     return currentTime.value;
   };
 
+  // 使用统一的日期格式化工具，保持空值返回 '未知' 的语义
   const formatTimestamp = (ts?: number): string => {
-    if (!ts || ts <= 0) return '未知';
-    try {
-      return new Date(ts * 1000).toLocaleString('zh-CN', {
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit',
-        hour: '2-digit',
-        minute: '2-digit'
-      });
-    } catch (error) {
-      logger.error('格式化时间戳失败', { ts, error });
-      return '未知';
-    }
+    return formatTimestampUtil(ts, { emptyValue: '未知', enableValidation: false });
   };
 
   const formatRecoveryTimeFromSeconds = (seconds: number): string => {
@@ -557,7 +550,11 @@ export const useGameDataStore = defineStore('gameData', () => {
 
   const handleAvatarError = (): void => {
     logger.warn('头像加载失败，使用默认占位符');
-    avatarLoadError.value = true;
+    // 只有当 userAvatar 有值时才设置为错误状态
+    // 这样可以避免在 URL 还未设置完成时就显示默认头像
+    if (userAvatar.value) {
+      avatarLoadError.value = true;
+    }
   };
 
   const handleAvatarLoad = (): void => {
@@ -565,27 +562,60 @@ export const useGameDataStore = defineStore('gameData', () => {
     avatarLoadError.value = false;
   };
 
+  // 头像加载超时定时器
+  let avatarLoadTimeout: NodeJS.Timeout | null = null;
+
   const fetchUserAvatar = (): void => {
-    if (!authStore.isLogin || !playerData.value?.status?.avatar) {
+    if (!authStore.isLogin) {
       userAvatar.value = '';
       avatarLoadError.value = true;
-      logger.debug('无法获取用户头像：未登录或没有头像数据');
+      logger.debug('无法获取用户头像：用户未登录');
       return;
     }
 
     try {
-      const avatarData = playerData.value.status.avatar;
-      if (avatarData?.url) {
-        userAvatar.value = processImageUrl(avatarData.url);
-        avatarLoadError.value = false;
-        logger.debug('用户头像URL处理成功', {
-          originalUrl: avatarData.url,
-          processedUrl: userAvatar.value
-        });
+      const avatarData = playerData.value?.status?.avatar;
+      let url = '';
+      
+      // 处理 avatar 是对象 { url: string } 的情况
+      if (avatarData && typeof avatarData === 'object' && 'url' in avatarData) {
+        url = avatarData.url;
+      }
+      // 处理 avatar 直接是字符串 URL 的情况
+      else if (typeof avatarData === 'string') {
+        url = avatarData;
+      }
+      
+      // 只有当 URL 有效时才更新头像
+      if (url && typeof url === 'string' && url.trim()) {
+        const processedUrl = processImageUrl(url);
+        // 只有 URL 真正变化了才更新，避免不必要的重新渲染
+        if (userAvatar.value !== processedUrl) {
+          userAvatar.value = processedUrl;
+          avatarLoadError.value = false; // 重置错误状态
+          logger.debug('用户头像URL处理成功', {
+            originalUrl: url,
+            processedUrl: userAvatar.value
+          });
+          
+          // 清除之前的超时定时器
+          if (avatarLoadTimeout) {
+            clearTimeout(avatarLoadTimeout);
+          }
+          
+          // 设置一个安全超时，如果图片在 5 秒内没有加载成功，则显示默认头像
+          avatarLoadTimeout = setTimeout(() => {
+            if (avatarLoadError.value && userAvatar.value) {
+              logger.warn('头像加载超时，保留当前头像URL');
+              // 超时后不清除头像，只是记录日志
+            }
+          }, 5000);
+        }
       } else {
+        // 没有头像数据
         userAvatar.value = '';
         avatarLoadError.value = true;
-        logger.warn('头像数据不完整', { avatarData });
+        logger.debug('用户头像数据为空或无效', { avatarData });
       }
     } catch (error) {
       logger.error('获取用户头像失败', error);
@@ -595,15 +625,7 @@ export const useGameDataStore = defineStore('gameData', () => {
   };
 
   // ========== 干员图片相关功能 ==========
-
-  const handleOperatorImageError = (charId: string, type: string, event: Event): void => {
-    const imgElement = event.target as HTMLImageElement;
-    logger.warn('干员图片加载失败', { charId, type, imgSrc: imgElement.src });
-  };
-
-  const handleOperatorImageLoad = (charId: string, type: string): void => {
-    logger.debug('干员图片加载成功', { charId, type });
-  };
+  // handleImageError, handleImageLoad 已从 @utils/image 导入
 
   // ========== 核心计算逻辑 ==========
 
@@ -1296,69 +1318,22 @@ export const useGameDataStore = defineStore('gameData', () => {
     }
   };
 
-  // ========== 剪贴板功能 ==========
-
-  const copyToClipboard = async (text: string): Promise<boolean> => {
-    try {
-      if (navigator.clipboard && window.isSecureContext) {
-        await navigator.clipboard.writeText(text);
-        logger.debug('使用现代剪贴板API复制成功');
-        return true;
-      } else {
-        const textArea = document.createElement('textarea');
-        textArea.value = text;
-        textArea.style.position = 'fixed';
-        textArea.style.top = '0';
-        textArea.style.left = '0';
-        textArea.style.width = '2em';
-        textArea.style.height = '2em';
-        textArea.style.padding = '0';
-        textArea.style.border = 'none';
-        textArea.style.outline = 'none';
-        textArea.style.boxShadow = 'none';
-        textArea.style.background = 'transparent';
-        textArea.style.opacity = '0';
-
-        document.body.appendChild(textArea);
-
-        try {
-          textArea.select();
-          textArea.setSelectionRange(0, textArea.value.length);
-
-          if (navigator.clipboard) {
-            await navigator.clipboard.writeText(text);
-            logger.debug('使用降级方案的剪贴板API复制成功');
-            return true;
-          } else {
-            logger.warn('剪贴板API不可用，需要用户手动复制');
-            return false;
-          }
-        } finally {
-          document.body.removeChild(textArea);
-        }
-      }
-    } catch (error) {
-      logger.error('复制到剪贴板失败', error);
-      return false;
-    }
-  };
+  // ========== 复制功能（使用统一工具）==========
+  // copyToClipboard 已从 @utils/copy 导入
 
   const copyUid = async (uid: string): Promise<void> => {
     if (!uid || uid === '未获取') {
       logger.warn('复制UID失败', new Error('UID不可用，无法复制'));
-      showError('UID不可用，无法复制');
       return;
     }
 
     try {
       logger.info('用户尝试复制UID', { uid });
-      const success = await copyToClipboard(uid);
+      const success = await copyToClipboard(uid, 'UID');
       if (success) {
         logger.info('UID复制成功', { uid });
-        showSuccess(`已复制 UID ${uid}`);
       } else {
         logger.warn('UID复制失败，提供手动复制选项');
-        showError('复制失败，请手动选择并复制UID');
         const selection = window.getSelection();
         const range = document.createRange();
         const elements = document.querySelectorAll('.uid-value.copyable');
@@ -1371,29 +1346,20 @@ export const useGameDataStore = defineStore('gameData', () => {
       }
     } catch (error) {
       logger.error('复制UID过程中发生异常', error);
-      showError('复制失败，请手动复制UID');
     }
   };
 
   const copyNickname = async (nickname: string): Promise<void> => {
     if (!nickname || nickname === '未获取' || nickname === '未知用户') {
-      showError('昵称不可用，无法复制');
       return;
     }
 
     try {
       logger.info('用户尝试复制昵称', { nickname });
-      const success = await copyToClipboard(nickname);
-      if (success) {
-        logger.info('昵称复制成功', { nickname });
-        showSuccess(`已复制昵称 ${nickname}`);
-      } else {
-        logger.warn('昵称复制失败');
-        showError('复制失败，请手动复制');
-      }
+      await copyToClipboard(nickname, '昵称');
+      logger.info('昵称复制成功', { nickname });
     } catch (error) {
       logger.error('复制昵称过程中发生异常', error);
-      showError('复制失败，请手动复制');
     }
   };
 
@@ -2496,11 +2462,11 @@ export const useGameDataStore = defineStore('gameData', () => {
     handleAvatarLoad,
     fetchUserAvatar,
 
-    // 干员图片相关方法
+    // 干员图片相关方法（统一使用 utils/image）
     getOperatorPortraitUrl,
     getOperatorAvatarUrl,
-    handleOperatorImageError,
-    handleOperatorImageLoad,
+    handleImageError,
+    handleImageLoad,
 
     // 剪贴板相关方法
     copyUid,
