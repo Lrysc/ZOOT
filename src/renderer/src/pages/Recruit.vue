@@ -1,10 +1,29 @@
 <script setup lang="ts">
 import { ref, watch, onMounted } from 'vue'
 import { getSkinAvatarUrl } from '@utils/image'
-import type { RecruitOperator, RecruitData, RecruitResult } from '@types/recruit'
 
-// 使用类型别名保持代码兼容性
-type Operator = RecruitOperator
+// 定义干员类型
+interface Operator {
+  name: string
+  star: number
+  tag: string[]
+  skin: string
+}
+
+// 定义JSON数据结构
+interface RecruitData {
+  update: {
+    version: string
+    date: string
+  }
+  new_ope: {
+    name: string[]
+  }
+  operator_list: Operator[]
+  operator_high_list: Operator[]
+  operator_low_list: Operator[]
+  operator_robot_list: Operator[]
+}
 
 // 响应式数据
 const recruitData = ref<RecruitData | null>(null)

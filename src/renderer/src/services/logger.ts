@@ -17,7 +17,7 @@ export interface LogEntry {
   timestamp: string;
   level: LogLevel;
   message: string;
-  context?: unknown;
+  context?: any;
   stack?: string;
 }
 
@@ -955,12 +955,35 @@ if (import.meta.env?.DEV) {
       return sum;
     });
 
+    // 处理异步Promise避免警告
+    logger.performanceAsync('异步性能测试', async () => {
+      await new Promise(resolve => setTimeout(resolve, 10));
+      return '异步测试完成';
+    }).then((result) => {
+      // Promise被正确处理
+      console.log('异步性能测试结果:', result);
+    }).catch((error) => {
+      // 错误处理
+      console.error('异步性能测试失败:', error);
+    });
+
+    // 记录使用情况以避免控制台警告
+    console.log('开发环境日志测试完成', {
+      logsCount: logs.length,
+      errorLogsCount: errorLogs.length,
+      recentLogsCount: recentLogs.length,
+      hasErrors,
+      lastError: lastError?.message,
+      config,
+      jsonExportLength: jsonExport.length,
+      performanceResult
+    });
   };
 
-  // 开发环境日志测试（已禁用，避免影响正常使用）
-  // if (import.meta.env.DEV) {
-  //   setTimeout(devUsage, 100);
-  // }
+  // 只在开发环境执行
+  if (import.meta.env.DEV) {
+    setTimeout(devUsage, 100);
+  }
 }
 
 // 在开发环境下将logger挂载到window，方便调试

@@ -2,12 +2,60 @@ import { defineStore } from 'pinia';
 import { AuthAPI } from '@services/api';
 import { logger } from '@services/logger';
 import { showSuccess } from '@utils/toast';
-import type { AuthState, StoredAuthState, ApiError, BindingCharacter, CacheConfig } from '@types/auth';
+
+/**
+ * 认证状态接口定义
+ */
+interface AuthState {
+  isLogin: boolean;
+  hgToken: string;
+  userId: string;
+  playerData: any;
+  bindingRoles: any[];
+  sklandCred: string;
+  sklandSignToken: string;
+  lastUpdated: number;
+  cacheValid: boolean;
+  restoreAttempts: number;
+  isFetchingCred: boolean;
+  credPromise: Promise<{ cred: string; token: string }> | null;
+  isCredReady: boolean;
+  credRetryCount: number;
+  authError: string | null;
+  isInitializing: boolean;
+  isRestoring: boolean;
+  restorePromise: Promise<boolean> | null;
+}
+
+/**
+ * API错误接口扩展
+ */
+interface ApiError extends Error {
+  response?: {
+    status?: number;
+  };
+  message: string;
+}
+
+/**
+ * 存储的认证状态接口
+ */
+interface StoredAuthState {
+  isLogin: boolean;
+  hgToken: string;
+  userId: string;
+  playerData: any;
+  bindingRoles: any[];
+  timestamp: number;
+  lastUpdated: number;
+  restoreAttempts: number;
+  version?: string;
+}
 
 /**
  * 缓存配置
  */
-const CACHE_CONFIG: CacheConfig = {
+const CACHE_CONFIG = {
   LOCAL_STORAGE_EXPIRY: 30 * 24 * 60 * 60 * 1000, // 30天
   PLAYER_DATA_CACHE: 5 * 60 * 1000, // 5分钟
   ROLES_CACHE: 10 * 60 * 1000, // 10分钟
@@ -258,12 +306,16 @@ export const useAuthStore = defineStore('auth', {
      */
     async _doRestoreAuthState(): Promise<boolean> {
       let authState: StoredAuthState | null = null;
+      const timerLabel = '恢复登录状态耗时';
 
       try {
+        console.time(timerLabel);
+
         const authStr = localStorage.getItem('authState');
         if (!authStr) {
           logger.info('本地存储中没有登录状态');
           this.isInitializing = false;
+          console.timeEnd(timerLabel);
           return false;
         }
 
@@ -273,6 +325,7 @@ export const useAuthStore = defineStore('auth', {
           logger.error('解析本地存储数据失败', parseError);
           this.clearCorruptedStorage();
           this.isInitializing = false;
+          console.timeEnd(timerLabel);
           return false;
         }
 
@@ -281,6 +334,7 @@ export const useAuthStore = defineStore('auth', {
           logger.warn('本地存储中没有有效的hgToken');
           this.clearCorruptedStorage();
           this.isInitializing = false;
+          console.timeEnd(timerLabel);
           return false;
         }
 
@@ -288,6 +342,7 @@ export const useAuthStore = defineStore('auth', {
           logger.warn('登录状态已过期');
           this.clearExpiredStorage();
           this.isInitializing = false;
+          console.timeEnd(timerLabel);
           return false;
         }
 
@@ -315,12 +370,14 @@ export const useAuthStore = defineStore('auth', {
           logger.error('后台数据刷新失败', error);
         });
 
+        console.timeEnd(timerLabel);
         this.isInitializing = false;
         return true;
 
       } catch (error) {
         logger.error('恢复登录状态失败', error);
         this.isInitializing = false;
+        console.timeEnd(timerLabel);
         return false;
       }
     },

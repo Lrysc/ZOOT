@@ -1,4 +1,4 @@
-import type { GachaCategory, GachaHistoryResponse } from '@types/gacha';
+import type { GachaCategory, GachaHistoryResponse } from './types';
 
 // ============================================================================
 // 基础配置

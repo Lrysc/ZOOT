@@ -1,16 +1,14 @@
-/**
- * 组件通用类型定义
- * @deprecated 请使用 @types/common 中的类型
- */
+// ============================================================================
+// 通用类型定义
+// ============================================================================
 
-// 从新的 types 文件夹重新导出所有类型
+// 类型已移至 @types/common，此文件仅作兼容导出
+// 新代码请直接使用 @types/common
+
 export type {
   DataItem,
   MenuItem,
   PaginationInfo,
   LoadingState,
-  ValidationResult,
-  ToastType,
-  ToastOptions,
-  ToastState
-} from '@types/common'
+  ValidationResult
+} from '@types/common';

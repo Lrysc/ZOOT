@@ -1,82 +1,41 @@
-/**
- * 认证相关类型定义
- */
-
-import type { PlayerData } from './api'
-
 // ============================================================================
-// 认证状态类型
+// 认证相关类型
 // ============================================================================
 
-export interface AuthState {
-  isLogin: boolean
-  hgToken: string
-  userId: string
-  playerData: PlayerData | null
-  bindingRoles: BindingCharacter[]
-  sklandCred: string
-  sklandSignToken: string
-  lastUpdated: number
-  cacheValid: boolean
-  restoreAttempts: number
-  isFetchingCred: boolean
-  credPromise: Promise<{ cred: string; token: string }> | null
-  isCredReady: boolean
-  credRetryCount: number
-  authError: string | null
-  isInitializing: boolean
-  isRestoring: boolean
-  restorePromise: Promise<boolean> | null
+export interface LoginResult {
+  success: boolean;
+  error?: string;
+  token?: string;
+  cred?: string;
+  userId?: string;
+  grantCode?: string;
 }
 
-export interface BindingCharacter {
-  uid: string
-  isOfficial: boolean
-  isDefault: boolean
-  channelMasterId: string
-  channelName: string
-  nickName: string
-  isDelete: boolean
-  roleToken?: string
+export interface HypergryphAccountResponse {
+  code: number;
+  data: {
+    content: string;
+  };
+  msg: string;
 }
 
-// ============================================================================
-// 存储相关类型
-// ============================================================================
-
-export interface StoredAuthState {
-  isLogin: boolean
-  hgToken: string
-  userId: string
-  playerData: unknown
-  bindingRoles: BindingCharacter[]
-  timestamp: number
-  lastUpdated: number
-  restoreAttempts: number
-  version?: string
+export interface SmsCodeResponse {
+  status: number;
+  msg: string;
 }
 
-// ============================================================================
-// 错误相关类型
-// ============================================================================
-
-export interface ApiError extends Error {
-  response?: {
-    status?: number
-  }
-  message: string
+export interface GrantCodeResponse {
+  code: string;
 }
 
-// ============================================================================
-// 缓存配置
-// ============================================================================
+export interface SklandCredResponse {
+  cred: string;
+  token: string;
+  userId: string;
+}
 
-export interface CacheConfig {
-  LOCAL_STORAGE_EXPIRY: number
-  PLAYER_DATA_CACHE: number
-  ROLES_CACHE: number
-  CRED_CACHE: number
-  MAX_RESTORE_ATTEMPTS: number
-  MAX_CRED_RETRY: number
-  CRED_RETRY_DELAY: number
+export interface LoginForm {
+  phone: string;
+  password: string;
+  verificationCode?: string;
 }
