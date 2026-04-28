@@ -20,10 +20,11 @@
               alt="默认头像"
               class="avatar-img default-avatar"
             />
+            <!-- 等级标签 -->
+            <div class="level-badge">{{ gameDataStore.userLevel }}</div>
           </div>
           <div class="user-details">
             <p class="user-name" @click="copyNickname" title="点击复制昵称">{{ authStore.userName }}</p>
-            <p class="user-level">Lv: {{ gameDataStore.userLevel }}</p>
             <p class="user-uid">
               UID:
               <span
@@ -571,6 +572,28 @@ onMounted(() => {
   overflow: hidden;
   flex-shrink: 0;
   border: 2px solid #4a4a4a;
+  position: relative;
+}
+
+/* 等级标签 */
+.level-badge {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 28px;
+  height: 28px;
+  background: #000;
+  border: 3px solid #ffd700;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  font-family: "Microsoft YaHei", "SimHei", "黑体", sans-serif;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
+  z-index: 2;
 }
 
 .avatar-img {
