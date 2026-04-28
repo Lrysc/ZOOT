@@ -64,95 +64,75 @@
           </div>
         </div>
 
-        <!-- 助战干员板块 - 居中横向排列 -->
+        <!-- 助战干员板块 - 横向条形排列 -->
         <div class="assist-chars-section" v-if="authStore.isLogin">
           <h3>助战干员</h3>
           <div class="assist-chars-card">
-            <!-- 居中横向排列 -->
-            <div class="assist-chars-container">
+            <!-- 横向条形列表 -->
+            <div class="assist-chars-list">
               <div
                 v-for="(char, index) in gameDataStore.getAssistCharArrayStatus"
                 :key="index"
-                class="assist-char-wrapper"
+                class="assist-char-row"
               >
-                <!-- 单个干员容器，包含半身像和详细信息 -->
-                <div class="assist-char-item">
-                  <!-- 半身像容器 -->
-                  <div class="char-portrait-container">
-                    <!-- 等级标签 - 左上角白色圆圈 -->
-                    <div class="char-level-badge">
-                      {{ char.level }}
-                    </div>
+                <!-- 左侧头像 -->
+                <div class="char-avatar-wrapper">
+                  <img
+                    :src="char.avatarUrl"
+                    :alt="char.name"
+                    class="char-avatar"
+                    @error="(event) => gameDataStore.handleOperatorImageError(char.charId, 'avatar', event)"
+                    @load="() => gameDataStore.handleOperatorImageLoad(char.charId, 'avatar')"
+                  />
+                  <!-- 等级角标 -->
+                  <div class="char-level-badge">{{ char.level }}</div>
+                </div>
 
-                    <!-- 技能图标 - 左下角，展开时显示 -->
-                    <div class="skill-icon-container" v-if="char.skillIconUrl">
-                      <img
-                        :src="char.skillIconUrl"
-                        :alt="char.skillNumber"
-                        class="skill-icon"
-                        @error="(event) => { const target = event.target as HTMLImageElement; target.style.display = 'none'; }"
-                      />
-                      <!-- 专精图标 - 三个白点组成三角形 -->
-                      <div class="specialize-dots" v-if="char.specializeLevel > 0">
-                        <div class="dots-background">
-                          <div class="dot dot-top" :class="{ 'dot-active': char.specializeLevel >= 1 }"></div>
-                          <div class="dot dot-bottom-left" :class="{ 'dot-active': char.specializeLevel >= 2 }"></div>
-                          <div class="dot dot-bottom-right" :class="{ 'dot-active': char.specializeLevel >= 3 }"></div>
-                        </div>
-                      </div>
-                      <!-- 普通技能等级标签 -->
-                      <div class="skill-level-badge" v-else>
-                        <span class="skill-level">Lv{{ char.mainSkillLvl }}</span>
-                      </div>
-                    </div>
-
+                <!-- 中间信息 -->
+                <div class="char-info">
+                  <div class="char-name-row">
                     <img
-                      :src="char.portraitUrl"
-                      :alt="char.name"
-                      class="char-portrait"
-                      @error="(event) => gameDataStore.handleOperatorImageError(char.charId, 'portrait', event)"
-                      @load="() => gameDataStore.handleOperatorImageLoad(char.charId, 'portrait')"
+                      v-if="char.profession"
+                      :src="getProfessionIconUrl(char.profession)"
+                      :alt="char.profession"
+                      class="char-profession-icon"
+                      @error="(event) => { const target = event.target as HTMLImageElement; target.style.display = 'none'; }"
                     />
-
-                    <!-- 交叉淡化遮罩 -->
-                    <div class="portrait-fade-mask"></div>
+                    <span class="char-name">{{ char.name }}</span>
                   </div>
+                  <div class="char-stats-row">
+                    <span class="char-stat" v-if="char.evolvePhase > 0">精{{ char.evolvePhase === 1 ? '一' : '二' }}</span>
+                    <span class="char-stat">技能{{ char.mainSkillLvl }}级</span>
+                    <span class="char-stat" :class="{ 'potential-max': char.potentialRank === 5 }">{{ char.potentialRank === 5 ? '满潜' : char.potentialRank + '潜' }}</span>
+                    <span class="char-stat module-stat" :class="{ 'module-active': char.specializeLevel > 0 }">
+                      {{ char.specializeLevel > 0 ? `模组${char.specializeLevel}级` : '无模组' }}
+                    </span>
+                  </div>
+                </div>
 
-                  <!-- 干员信息 - 显示在半身像下方，带淡入效果 -->
-                  <div class="char-details">
-                    <div class="char-name">
-                      <img
-                        v-if="char.profession"
-                        :src="getProfessionIconUrl(char.profession)"
-                        :alt="char.profession"
-                        class="char-profession-icon"
-                        @error="(event) => { const target = event.target as HTMLImageElement; target.style.display = 'none'; }"
-                      />
-                      {{ char.name }}
-                    </div>
-
-                    <div class="char-level-line">
-                      <span v-if="char.evolvePhase > 0" class="char-elite">精{{ char.evolvePhase === 1 ? '一' : '二' }}</span>
-                      <span class="char-potential">{{ char.potentialRank === 5 ? '满' : char.potentialRank }}潜能</span>
-                    </div>
-
-
-
-                    <div class="char-module">
-                      {{ char.specializeLevel > 0 ? `模组${char.specializeLevel}级` : '未开启模组' }}
+                <!-- 右侧技能图标 -->
+                <div class="char-skill-wrapper" v-if="char.skillIconUrl">
+                  <img
+                    :src="char.skillIconUrl"
+                    :alt="char.skillNumber"
+                    class="skill-icon"
+                    @error="(event) => { const target = event.target as HTMLImageElement; target.style.display = 'none'; }"
+                  />
+                  <!-- 专精图标 - 三角形布局 -->
+                  <div class="specialize-dots" v-if="char.specializeLevel > 0">
+                    <div class="dots-background">
+                      <div class="dot dot-top" :class="{ 'dot-active': char.specializeLevel >= 1 }"></div>
+                      <div class="dot dot-bottom-left" :class="{ 'dot-active': char.specializeLevel >= 2 }"></div>
+                      <div class="dot dot-bottom-right" :class="{ 'dot-active': char.specializeLevel >= 3 }"></div>
                     </div>
                   </div>
                 </div>
               </div>
 
               <!-- 无助战干员状态 -->
-              <div v-if="!gameDataStore.getAssistCharArrayStatus || gameDataStore.getAssistCharArrayStatus.length === 0" class="no-assist-wrapper">
-                <div class="no-assist-char">
-                  <div class="no-char-portrait">
-                    <img src="@assets/avatar/Avatar_def_01.png" alt="无助战干员" class="empty-portrait" />
-                  </div>
-                  <div class="no-char-text">无助战干员</div>
-                </div>
+              <div v-if="!gameDataStore.getAssistCharArrayStatus || gameDataStore.getAssistCharArrayStatus.length === 0" class="no-assist-row">
+                <div class="no-assist-icon">?</div>
+                <span class="no-assist-text">暂无助战干员</span>
               </div>
             </div>
 
@@ -708,7 +688,7 @@ onMounted(() => {
   font-weight: 600;
 }
 
-/* 助战干员板块样式 - 居中横向排列 */
+/* 助战干员板块样式 - 横向条形排列 */
 .assist-chars-section {
   margin-bottom: 15px;
 }
@@ -721,389 +701,221 @@ onMounted(() => {
 
 .assist-chars-card {
   background: #3a3a3a;
-
   border: 1px solid #4a4a4a;
   padding: 15px;
 }
 
-/* 助战干员容器 - 居中横向排列 */
-.assist-chars-container {
+/* 横向条形列表 */
+.assist-chars-list {
   display: flex;
-  justify-content: center;
-  align-items: flex-start;
-  flex-wrap: wrap;
-  gap: 20px;
+  flex-direction: column;
+  gap: 8px;
   margin-bottom: 12px;
   width: 100%;
 }
 
-/* 单个干员包装器 */
-.assist-char-wrapper {
+/* 单个干员横向条 */
+.assist-char-row {
   display: flex;
-  flex-direction: column;
-}
-
-/* 助战干员卡片 - 作为一个整体容器 */
-.assist-char-item {
-  background: #333333;
-  border: 1px solid #404040;
-  padding: 8px;
-  display: flex;
-  flex-direction: column;
   align-items: center;
-  gap: 6px;
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  position: relative;
-  width: 180px;
-  min-height: 180px;
-  overflow: hidden;
+  gap: 12px;
+  padding: 10px 12px;
+  background: #2d2d2d;
+  border: 1px solid #404040;
+  transition: all 0.3s ease;
   cursor: pointer;
 }
 
-.assist-char-item:hover {
-  background: #2d2d2d;
-  min-height: 300px;
-  z-index: 10;
-  box-shadow:
-    0 12px 30px rgba(0, 0, 0, 0.4),
-    0 6px 15px rgba(0, 0, 0, 0.3),
-    0 0 0 1px rgba(159, 234, 249, 0.3);
-  transform: scale(1.02);
+.assist-char-row:hover {
+  background: #3a3a3a;
+  transform: translateX(4px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
-/* 半身像容器 - 带交叉淡化效果 */
-.char-portrait-container {
+/* 头像容器 */
+.char-avatar-wrapper {
   position: relative;
-  width: 100px;
-  height: 120px;
-  display: flex;
-  justify-content: center;
-  overflow: hidden;
-
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  width: 50px;
+  height: 50px;
+  flex-shrink: 0;
 }
 
-/* 等级标签 - 左上角白色圆环 */
-.char-level-badge {
-  position: absolute;
-  top: 4px;
-  left: 4px;
-  width: 26px;
-  height: 26px;
-  background: rgba(0, 0, 0, 0.7);
-  color: #ffffff;
-  border: 3px solid rgba(255, 255, 255, 1);
-  border-radius: 50%;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 13px;
-  font-weight: 900;
-  font-family: "Microsoft YaHei", "微软雅黑", "SimHei", "黑体", Arial, sans-serif;
-  z-index: 10;
-  box-shadow:
-    0 0 20px rgba(255, 255, 255, 0.9),
-    0 0 12px rgba(255, 200, 100, 0.6),
-    0 3px 8px rgba(0, 0, 0, 0.6),
-    inset 0 0 6px rgba(255, 255, 255, 0.4);
-  text-shadow:
-    0 0 8px rgba(255, 255, 255, 1),
-    0 0 4px rgba(255, 200, 100, 0.8),
-    0 2px 3px rgba(0, 0, 0, 1);
-  backdrop-filter: blur(3px);
-  animation: levelGlow 2s ease-in-out infinite alternate;
-}
-
-/* 等级标签呼吸动画 */
-@keyframes levelGlow {
-  0% {
-    box-shadow:
-      0 0 20px rgba(255, 255, 255, 0.9),
-      0 0 12px rgba(255, 200, 100, 0.6),
-      0 3px 8px rgba(0, 0, 0, 0.6),
-      inset 0 0 6px rgba(255, 255, 255, 0.4);
-  }
-  100% {
-    box-shadow:
-      0 0 25px rgba(255, 255, 255, 1),
-      0 0 18px rgba(255, 200, 100, 0.8),
-      0 3px 8px rgba(0, 0, 0, 0.6),
-      inset 0 0 8px rgba(255, 255, 255, 0.6);
-  }
-}
-
-/* 交叉淡化遮罩 */
-.portrait-fade-mask {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 40px;
-  background: linear-gradient(
-    to bottom,
-    transparent 0%,
-    rgba(51, 51, 51, 0.8) 50%,
-    rgba(51, 51, 51, 1) 100%
-  );
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  pointer-events: none;
-  opacity: 1;
-}
-
-.assist-char-item:hover .portrait-fade-mask {
-  opacity: 0;
-  height: 0;
-}
-
-.assist-char-item:hover .char-portrait-container {
-  height: 200px;
-  transform: scale(1.05);
-}
-
-.char-portrait {
+.char-avatar {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  object-position: top center;
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 2px solid #404040;
 }
 
-.assist-char-item:hover .char-portrait {
-  object-position: center center;
-  transform: scale(1.1);
+.char-avatar-wrapper .char-level-badge {
+  position: absolute;
+  bottom: -6px;
+  right: -6px;
+  width: 24px;
+  height: 24px;
+  background: linear-gradient(135deg, #ffd700, #ffaa00);
+  color: #000;
+  font-size: 11px;
+  font-weight: 700;
+  font-family: "Microsoft YaHei", "SimHei", "黑体", sans-serif;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
 }
 
-/* 干员信息详情 - 带交叉淡化效果 */
-.char-details {
-  width: 100%;
+/* 干员信息 */
+.char-info {
+  flex: 1;
   display: flex;
   flex-direction: column;
   gap: 4px;
-  text-align: center;
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  opacity: 1;
-  transform: translateY(0);
+  min-width: 0;
 }
 
-.assist-char-item:hover .char-details {
-  opacity: 0.9;
-  transform: translateY(8px);
-}
-
-.char-name {
-  font-size: 20px;
-  font-weight: 600;
-  color: #9feaf9;
-  line-height: 1.2;
-  margin-bottom: 2px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  transition: all 0.3s ease;
+.char-name-row {
   display: flex;
   align-items: center;
   gap: 6px;
-  justify-content: center;
+}
+
+.char-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .char-profession-icon {
-  width: 20px;
-  height: 20px;
-  filter: brightness(0) saturate(100%) invert(100%) sepia(0%) saturate(0%) hue-rotate(0deg) brightness(100%) contrast(100%);
+  width: 16px;
+  height: 16px;
   flex-shrink: 0;
-  min-width: 20px;
+  filter: brightness(0) saturate(100%) invert(100%) sepia(0%) saturate(7500%) hue-rotate(345deg) brightness(107%) contrast(106%);
 }
 
-.assist-char-item:hover .char-name {
-  color: #ffffff;
-  text-shadow: 0 0 8px rgba(159, 234, 249, 0.5);
-}
-
-/* 基础信息行 */
-.char-level-line {
+.char-stats-row {
   display: flex;
-  justify-content: center;
-  gap: 4px;
-  font-size: 18px;
-  line-height: 1.2;
+  align-items: center;
+  gap: 8px;
   flex-wrap: wrap;
-  transition: all 0.3s ease;
 }
 
-.char-level {
-  color: #fad000;
-  font-weight: 500;
+.char-stat {
+  font-size: 11px;
+  color: #999;
+  padding: 1px 4px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 2px;
 }
 
-.char-elite {
-  color: #ffa726;
-  font-weight: 500;
+.char-stat.module-stat {
+  color: #888;
 }
 
-.char-potential {
-  color: #ff6b6b;
-  font-weight: 500;
+.char-stat.module-active {
+  color: #ba68c8;
+  background: rgba(186, 104, 200, 0.15);
 }
 
-/* 技能图标容器 - 定位在半身像下方居中位置，默认隐藏 */
-.char-portrait-container .skill-icon-container {
+.char-stat.potential-max {
+  color: #ffd700;
+  background: rgba(255, 215, 0, 0.15);
+  text-shadow: 0 0 4px rgba(255, 215, 0, 0.5);
+}
+
+/* 技能图标容器 */
+.char-skill-wrapper {
+  position: relative;
+  width: 50px;
+  height: 50px;
+  flex-shrink: 0;
+}
+
+.char-skill-wrapper .skill-icon {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border: 2px solid #404040;
+  border-radius: 6px;
+}
+
+.char-skill-wrapper .specialize-dots {
   position: absolute;
-  bottom: -5px;
-  left: 50%;
-  transform: translateX(-50%) scale(0.8);
-  z-index: 5;
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  opacity: 0;
-  pointer-events: none;
-}
-
-/* 展开时显示技能图标 */
-.assist-char-item:hover .char-portrait-container .skill-icon-container {
-  opacity: 1;
-  transform: translateX(-50%) scale(1);
-  pointer-events: auto;
-}
-
-.char-portrait-container .skill-icon {
-  width: 48px;
-  height: 48px;
-
-  background: rgba(0, 0, 0, 0.8);
-  border: 1px solid rgba(255, 255, 255, 0.4);
-  transition: all 0.3s ease;
-  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.5);
-}
-
-.char-portrait-container .skill-icon:hover {
-  transform: scale(1.1);
-  border-color: rgba(255, 255, 255, 0.6);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.7);
-}
-
-/* 普通技能等级标签 */
-.char-portrait-container .skill-level-badge {
-  position: absolute;
-  top: 0px;
-  left: 0px;
-  background: linear-gradient(135deg, #2196f3, #42a5f5);
-  color: white;
-
-  padding: 2px 4px;
-  font-size: 9px;
-  font-weight: 600;
-  line-height: 1;
-  min-width: 18px;
-  text-align: center;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-}
-
-/* 专精三个白点图标 */
-.char-portrait-container .specialize-dots {
-  position: absolute;
-  top: 0px;
-  left: 0px;
-  width: 20px;
-  height: 20px;
-  z-index: 11;
+  top: -6px;
+  left: -6px;
+  width: 24px;
+  height: 24px;
 }
 
 .dots-background {
   width: 100%;
   height: 100%;
-  background-color: #808080;
+  background-color: #666;
   border-radius: 4px;
   position: relative;
 }
 
-.char-portrait-container .dot {
+.char-skill-wrapper .dot {
   position: absolute;
-  width: 6px;
-  height: 6px;
+  width: 7px;
+  height: 7px;
   border-radius: 50%;
-  background-color: #666;
+  background-color: #444;
   transition: all 0.3s ease;
 }
 
 /* 等边三角形布局 */
 .dot-top {
-  top: 4px;
+  top: 5px;
   left: 50%;
   transform: translateX(-50%);
 }
 
 .dot-bottom-left {
-  top: 10px;
+  bottom: 5px;
   left: 4px;
 }
 
 .dot-bottom-right {
-  top: 10px;
+  bottom: 5px;
   right: 4px;
 }
 
-.char-portrait-container .dot-active {
-  background-color: white;
-  box-shadow: 0 0 4px rgba(255, 255, 255, 0.8);
-}
-
-/* 模组信息 */
-.char-module {
-  font-size: 14px;
-  color: #ba68c8;
-  background: rgba(186, 104, 200, 0.1);
-  padding: 1px 4px;
-
-  font-weight: 500;
-  line-height: 1.2;
-  transition: all 0.3s ease;
-}
-
-.assist-char-item:hover .char-module {
-  background: rgba(186, 104, 200, 0.3);
-  transform: scale(1.05);
+.char-skill-wrapper .dot-active {
+  background-color: #fff;
+  box-shadow: 0 0 6px rgba(255, 255, 255, 0.9);
 }
 
 /* 无助战干员状态 */
-.no-assist-wrapper {
+.no-assist-row {
   display: flex;
-  justify-content: center;
-}
-
-.no-assist-char {
-  display: flex;
-  flex-direction: column;
   align-items: center;
-  gap: 8px;
+  justify-content: center;
+  gap: 12px;
   padding: 20px;
-  background: #333333;
-  border: 1px solid #404040;
-
-  width: 120px;
+  background: #2d2d2d;
+  border: 1px dashed #404040;
 }
 
-.no-char-portrait {
-  width: 60px;
-  height: 72px;
+.no-assist-icon {
+  width: 40px;
+  height: 40px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #2d2d2d;
-
-  border: 2px solid #404040;
-  overflow: hidden;
+  background: #333;
+  border: 1px solid #404040;
+  border-radius: 4px;
+  font-size: 20px;
+  color: #666;
 }
 
-.empty-portrait {
-  width: 30px;
-  height: 30px;
-  opacity: 0.5;
-}
-
-.no-char-text {
-  color: #999;
-  font-size: 12px;
+.no-assist-text {
+  color: #888;
+  font-size: 14px;
 }
 
 /* 助战统计 */
@@ -1244,6 +1056,14 @@ onMounted(() => {
 
 .clear-btn {
   background: linear-gradient(135deg, #dc3545, #c82333);
+}
+
+.clear-cache-btn {
+  background: linear-gradient(135deg, #17a2b8, #138496);
+}
+
+.clear-cache-btn:not(:disabled):hover {
+  box-shadow: 0 4px 12px rgba(23, 162, 184, 0.4);
 }
 
 .btn-text {

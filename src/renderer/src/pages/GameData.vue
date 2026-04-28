@@ -45,7 +45,7 @@
                 </div>
                 <div class="ap-recovery-info">
                   <span class="sub-value" v-if="gameDataStore.getActualApInfo?.remainSecs > 0">
-                    {{ gameDataStore.formatRecoveryTime(gameDataStore.getActualApInfo?.recoverTime) }} 回满
+                    {{ gameDataStore.formatRecoveryTime(gameDataStore.getActualApInfo?.recoverTime, gameDataStore.currentTime) }} 回满
                   </span>
                   <span class="sub-value" v-else-if="gameDataStore.getActualApInfo">已回满</span>
                 </div>

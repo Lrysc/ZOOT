@@ -1,53 +1,34 @@
 <template>
   <div class="assist-char-card" @click="handleClick" :title="`${name} - ${skillName}`">
-    <!-- 半身像容器 -->
-    <div class="char-portrait-container">
-      <!-- 等级标签 -->
-      <div class="char-level-badge">{{ level }}</div>
-
-      <!-- 技能图标 -->
-      <div v-if="skillIconUrl" class="skill-icon-container">
-        <img
-          :src="skillIconUrl"
-          :alt="skillName"
-          class="skill-icon"
-          @error="handleSkillError"
-        />
-        <!-- 专精图标 -->
-        <div v-if="specializeLevel > 0" class="specialize-dots">
-          <div class="dots-background">
-            <div class="dot dot-top" :class="{ 'dot-active': specializeLevel >= 1 }"></div>
-            <div class="dot dot-bottom-left" :class="{ 'dot-active': specializeLevel >= 2 }"></div>
-            <div class="dot dot-bottom-right" :class="{ 'dot-active': specializeLevel >= 3 }"></div>
-          </div>
-        </div>
-      </div>
-
-      <!-- 半身像 -->
-      <img
-        :src="portraitUrl"
-        :alt="name"
-        class="char-portrait"
-        @error="handlePortraitError"
-        @load="handlePortraitLoad"
-      />
-
-      <!-- 遮罩 -->
-      <div class="portrait-fade-mask"></div>
-    </div>
+    <!-- 头像 -->
+    <img
+      :src="portraitUrl"
+      :alt="name"
+      class="char-avatar"
+      @error="handlePortraitError"
+      @load="handlePortraitLoad"
+    />
 
     <!-- 干员信息 -->
     <div class="char-details">
-      <div class="char-name">
-        <img v-if="professionIcon" :src="professionIcon" :alt="profession" class="profession-icon" />
-        {{ name }}
-      </div>
+      <div class="char-name">{{ name }}</div>
       <div class="char-stats">
-        <span v-if="evolvePhase > 0" class="char-elite">精{{ evolvePhase === 1 ? '一' : '二' }}</span>
-        <span class="char-potential">{{ potentialRank === 5 ? '满' : potentialRank }}潜能</span>
-      </div>
-      <div class="char-module">
-        {{ specializeLevel > 0 ? `模组${specializeLevel}级` : '未开启模组' }}
+        <span class="stat-item">
+          <span class="stat-label">等级</span>
+          <span class="stat-value">{{ level }}</span>
+        </span>
+        <span class="stat-item">
+          <span class="stat-label">技能</span>
+          <span class="stat-value">{{ mainSkillLvl || 1 }}级</span>
+        </span>
+        <span class="stat-item">
+          <span class="stat-label">潜能</span>
+          <span class="stat-value">{{ potentialRank === 6 ? '满' : potentialRank }}</span>
+        </span>
+        <span class="stat-item">
+          <span class="stat-label">模组</span>
+          <span class="stat-value">{{ specializeLevel > 0 ? `${specializeLevel}级` : '-' }}</span>
+        </span>
       </div>
     </div>
   </div>
@@ -127,186 +108,71 @@ const handleSkillError = (event: Event) => {
 
 <style scoped>
 .assist-char-card {
-  background: #333333;
-  border: 1px solid #404040;
-  padding: 8px;
   display: flex;
-  flex-direction: column;
   align-items: center;
-  gap: 6px;
-  border-radius: 8px;
-  overflow: hidden;
-  cursor: pointer;
+  padding: 10px 12px;
+  margin-bottom: 6px;
+  border: 1px solid #404040;
+  background: #2d2d2d;
   transition: all 0.3s ease;
-  position: relative;
+  cursor: pointer;
+  border-radius: 6px;
 }
 
 .assist-char-card:hover {
-  background: #2d2d2d;
-  transform: translateY(-4px);
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  border-color: #4a4a4a;
 }
 
-.char-portrait-container {
-  position: relative;
-  width: 100px;
-  height: 120px;
-  display: flex;
-  justify-content: center;
-  overflow: hidden;
-}
-
-.char-level-badge {
-  position: absolute;
-  top: 4px;
-  left: 4px;
-  width: 26px;
-  height: 26px;
-  background: rgba(0, 0, 0, 0.7);
-  color: #ffffff;
-  border: 3px solid rgba(255, 255, 255, 1);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 13px;
-  font-weight: 900;
-  z-index: 10;
-}
-
-.skill-icon-container {
-  position: absolute;
-  bottom: -5px;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 5;
-  transition: all 0.3s ease;
-}
-
-.skill-icon {
-  width: 48px;
-  height: 48px;
-  background: rgba(0, 0, 0, 0.8);
-  border: 1px solid rgba(255, 255, 255, 0.4);
-  border-radius: 8px;
-}
-
-.char-portrait {
-  width: 100%;
-  height: 100%;
+.char-avatar {
+  width: 50px;
+  height: 50px;
   object-fit: cover;
   object-position: top center;
-}
-
-.portrait-fade-mask {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 40px;
-  background: linear-gradient(to bottom, transparent 0%, rgba(51, 51, 51, 0.8) 50%, rgba(51, 51, 51, 1) 100%);
-  pointer-events: none;
+  border: 2px solid #404040;
+  flex-shrink: 0;
+  border-radius: 6px;
 }
 
 .char-details {
-  width: 100%;
+  flex: 1;
   display: flex;
-  flex-direction: column;
-  gap: 4px;
-  text-align: center;
+  align-items: center;
+  gap: 16px;
+  margin-left: 12px;
+  flex-wrap: wrap;
 }
 
 .char-name {
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 600;
-  color: #9feaf9;
-  line-height: 1.2;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  justify-content: center;
-}
-
-.profession-icon {
-  width: 18px;
-  height: 18px;
-  filter: brightness(0) saturate(100%) invert(100%);
+  color: #ffffff;
+  flex-shrink: 0;
+  min-width: 60px;
 }
 
 .char-stats {
   display: flex;
-  justify-content: center;
-  gap: 8px;
-  font-size: 14px;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
 }
 
-.char-elite {
-  color: #ffa726;
-  font-weight: 500;
+.stat-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
 
-.char-potential {
-  color: #ff6b6b;
-  font-weight: 500;
+.stat-label {
+  font-size: 11px;
+  color: #888;
 }
 
-.char-module {
+.stat-value {
   font-size: 12px;
-  color: #ba68c8;
-  background: rgba(186, 104, 200, 0.1);
-  padding: 2px 6px;
-  border-radius: 4px;
-  font-weight: 500;
-}
-
-/* 专精三个白点图标 */
-.specialize-dots {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 20px;
-  height: 20px;
-  z-index: 11;
-}
-
-.dots-background {
-  width: 100%;
-  height: 100%;
-  background-color: #808080;
-  border-radius: 4px;
-  position: relative;
-}
-
-.dot {
-  position: absolute;
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background-color: #666;
-  transition: all 0.3s ease;
-}
-
-.dot-top {
-  top: 4px;
-  left: 50%;
-  transform: translateX(-50%);
-}
-
-.dot-bottom-left {
-  top: 10px;
-  left: 4px;
-}
-
-.dot-bottom-right {
-  top: 10px;
-  right: 4px;
-}
-
-.dot-active {
-  background-color: white;
-  box-shadow: 0 0 4px rgba(255, 255, 255, 0.8);
+  font-weight: 600;
+  color: #ccc;
 }
 </style>

@@ -188,3 +188,27 @@ export function formatSeconds(seconds: number): string {
  * 兼容旧接口，与 formatTimestamp 完全兼容
  */
 export const formatTime = formatTimestamp;
+
+/**
+ * 格式化时间（自然语言格式）
+ * @param seconds 秒数
+ * @returns 格式化的时间字符串，如 "1小时30分钟" 或 "30分钟"
+ */
+export function formatTimeFromSeconds(seconds: number): string {
+  if (seconds <= 0) return '已完成';
+  try {
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    if (hours > 0) return `${hours}小时${minutes}分钟`;
+    return `${minutes}分钟`;
+  } catch (error) {
+    console.error('格式化时间失败:', error);
+    return '计算中';
+  }
+}
+
+/**
+ * @deprecated 请使用 formatTimeFromSeconds
+ * 兼容旧接口
+ */
+export const formatRecoveryTimeFromSeconds = formatTimeFromSeconds;
