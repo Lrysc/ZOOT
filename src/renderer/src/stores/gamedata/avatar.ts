@@ -9,10 +9,25 @@ import { processImageUrl } from '@utils/image';
 // 头像加载超时定时器
 let avatarLoadTimeout: NodeJS.Timeout | null = null;
 
+// 通过 IPC 代理获取图片
+const fetchImageViaProxy = async (url: string): Promise<string | null> => {
+  try {
+    const result = await (window as any).api.fetchImage(url);
+    if (result.success && result.data) {
+      return result.data;
+    }
+    logger.warn('代理获取图片失败', { url, error: result.error });
+    return null;
+  } catch (error) {
+    logger.error('代理获取图片异常', error);
+    return null;
+  }
+};
+
 /**
  * 创建头像相关状态和方法
  */
-export const createAvatarModule = (authStore: any) => {
+export const createAvatarModule = (authStore: any, getPlayerData: () => any) => {
   const userAvatar = ref('');
   const avatarLoadError = ref(false);
 
@@ -32,7 +47,7 @@ export const createAvatarModule = (authStore: any) => {
     avatarLoadError.value = false;
   };
 
-  const fetchUserAvatar = (playerData: any): void => {
+  const fetchUserAvatar = async (): Promise<void> => {
     if (!authStore.isLogin) {
       userAvatar.value = '';
       avatarLoadError.value = true;
@@ -41,6 +56,7 @@ export const createAvatarModule = (authStore: any) => {
     }
 
     try {
+      const playerData = getPlayerData();
       const avatarData = playerData?.status?.avatar;
       let url = '';
 
@@ -56,27 +72,38 @@ export const createAvatarModule = (authStore: any) => {
       // 只有当 URL 有效时才更新头像
       if (url && typeof url === 'string' && url.trim()) {
         const processedUrl = processImageUrl(url);
-        // 只有 URL 真正变化了才更新，避免不必要的重新渲染
-        if (userAvatar.value !== processedUrl) {
+
+        // 通过代理获取图片（解决防盗链问题）
+        const base64Image = await fetchImageViaProxy(processedUrl);
+
+        if (base64Image) {
+          userAvatar.value = base64Image;
+          avatarLoadError.value = false;
+          logger.debug('用户头像获取成功（通过代理）', {
+            originalUrl: url,
+            dataLength: base64Image.length
+          });
+        } else {
+          // 代理失败时使用原始 URL
           userAvatar.value = processedUrl;
-          avatarLoadError.value = false; // 重置错误状态
+          avatarLoadError.value = false;
           logger.debug('用户头像URL处理成功', {
             originalUrl: url,
             processedUrl: userAvatar.value
           });
-
-          // 清除之前的超时定时器
-          if (avatarLoadTimeout) {
-            clearTimeout(avatarLoadTimeout);
-          }
-
-          // 设置一个安全超时，如果图片在 5 秒内没有加载成功，则显示默认头像
-          avatarLoadTimeout = setTimeout(() => {
-            if (avatarLoadError.value && userAvatar.value) {
-              logger.warn('头像加载超时，保留当前头像URL');
-            }
-          }, 5000);
         }
+
+        // 清除之前的超时定时器
+        if (avatarLoadTimeout) {
+          clearTimeout(avatarLoadTimeout);
+        }
+
+        // 设置一个安全超时
+        avatarLoadTimeout = setTimeout(() => {
+          if (avatarLoadError.value && userAvatar.value) {
+            logger.warn('头像加载超时');
+          }
+        }, 5000);
       } else {
         // 没有头像数据
         userAvatar.value = '';

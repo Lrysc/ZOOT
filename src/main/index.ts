@@ -110,7 +110,7 @@ function createWindow(): void {
       sandbox: false,
       nodeIntegration: false,
       contextIsolation: true,
-      webSecurity: true, // 启用webSecurity，通过其他方式解决CORS
+      webSecurity: true, // 启用webSecurity，通过代理方式解决防盗链
       allowRunningInsecureContent: false
     }
   })
@@ -322,7 +322,7 @@ function createWindow(): void {
           "default-src 'self' 'unsafe-inline' data: https:; " +
           "script-src 'self' 'unsafe-inline'; " +
           "style-src 'self' 'unsafe-inline'; " +
-          "img-src 'self' data: https: https://bbs.hycdn.cn https://raw.githubusercontent.com; " +
+          "img-src 'self' data: https: https://bbs.hycdn.cn https://raw.githubusercontent.com https://web.hycdn.cn; " +
           "font-src 'self' data:; " +
           "connect-src 'self' https: ws: " +
           "https://as.hypergryph.com https://zonai.skland.com https://www.skland.com; " +
@@ -335,7 +335,7 @@ function createWindow(): void {
           "default-src 'self'; " +
           "script-src 'self' 'unsafe-inline'; " +
           "style-src 'self' 'unsafe-inline'; " +
-          "img-src 'self' data: https: https://bbs.hycdn.cn https://raw.githubusercontent.com; " +
+          "img-src 'self' data: https: https://bbs.hycdn.cn https://raw.githubusercontent.com https://web.hycdn.cn; " +
           "font-src 'self' data:; " +
           "connect-src 'self' https://as.hypergryph.com https://zonai.skland.com https://www.skland.com; " +
           "object-src 'none'; " +
@@ -592,6 +592,35 @@ app.whenReady().then(() => {
     } catch (error) {
       console.error('发送通知失败:', error)
       return { success: false, error: '发送通知失败' }
+    }
+  })
+
+  // IPC处理器：代理获取图片（解决防盗链问题）
+  ipcMain.handle('fetch-image', async (_event, { url }) => {
+    try {
+      const response = await net.fetch(url, {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0',
+          'Referer': 'https://web.hycdn.cn/',
+          'Origin': 'https://web.hycdn.cn'
+        }
+      })
+
+      if (!response.ok) {
+        return { success: false, error: `HTTP ${response.status}` }
+      }
+
+      const buffer = await response.arrayBuffer()
+      const base64 = Buffer.from(buffer).toString('base64')
+      const contentType = response.headers.get('content-type') || 'image/png'
+
+      return {
+        success: true,
+        data: `data:${contentType};base64,${base64}`
+      }
+    } catch (error) {
+      console.error('代理图片获取失败:', error)
+      return { success: false, error: error instanceof Error ? error.message : 'Unknown error' }
     }
   })
 

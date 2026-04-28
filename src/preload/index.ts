@@ -36,7 +36,12 @@ const api = {
   sklandAttendance: () => ipcRenderer.invoke('skland-attendance'),
 
   // 发送系统通知
-  showNotification: (title: string, body: string) => ipcRenderer.invoke('show-notification', { title, body })
+  showNotification: (title: string, body: string) => ipcRenderer.invoke('show-notification', { title, body }),
+
+  // 代理获取图片（解决防盗链问题）
+  fetchImage: async (url: string) => {
+    return ipcRenderer.invoke('fetch-image', { url })
+  }
 }
 
 // Use `contextBridge` APIs to expose Electron APIs to

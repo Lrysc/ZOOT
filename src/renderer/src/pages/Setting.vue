@@ -81,8 +81,8 @@
                     :src="char.avatarUrl"
                     :alt="char.name"
                     class="char-avatar"
-                    @error="(event) => gameDataStore.handleOperatorImageError(char.charId, 'avatar', event)"
-                    @load="() => gameDataStore.handleOperatorImageLoad(char.charId, 'avatar')"
+                    @error="(event) => { const target = event.target as HTMLImageElement; target.style.display = 'none'; }"
+                    @load="(event) => { const target = event.target as HTMLImageElement; target.style.display = 'block'; }"
                   />
                   <!-- 等级角标 -->
                   <div class="char-level-badge">{{ char.level }}</div>
@@ -472,11 +472,8 @@ const handleUserAvatarError = (event: Event): void => {
     userAvatar: gameDataStore.userAvatar,
     avatarLoadError: gameDataStore.avatarLoadError
   });
-  // 如果 userAvatar 有值但加载失败，保留 URL 供调试
-  // 同时不显示默认头像
-  if (gameDataStore.userAvatar) {
-    logger.info('头像URL有效但加载失败，将尝试保留显示', { url: gameDataStore.userAvatar });
-  }
+  // 设置错误状态以显示默认头像
+  gameDataStore.avatarLoadError = true;
 };
 
 // 用户头像加载成功处理

@@ -76,7 +76,7 @@ export const useGameDataStore = defineStore('gameData', () => {
   const authStore = useAuthStore();
 
   // ========== 头像模块 ==========
-  const avatar = createAvatarModule(authStore);
+  const avatar = createAvatarModule(authStore, () => playerData.value);
   const { userAvatar, avatarLoadError, getAvatarPlaceholder, handleAvatarError, handleAvatarLoad, fetchUserAvatar } = avatar;
 
   // ========== 复制功能 ==========
